@@ -12,7 +12,8 @@ class DiscreteRootVariable(DiscreteVariable):
     num_values: int
     prob_distribution: ProbDistribution
 
-    def __init__(self, idx: int, num_values: int, prob_distribution: ProbDistribution):
+    def __init__(self, idx: int, prob_distribution: ProbDistribution):
+        num_values = prob_distribution.get_num_values()
         super(DiscreteRootVariable, self).__init__(idx=idx, num_values=num_values, parents=[],
                                                    noise=None)
         self.prob_distribution = prob_distribution

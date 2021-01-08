@@ -27,8 +27,7 @@ if __name__ == '__main__':
     #
     # variables_top_sort = [variables[idx] for idx in top_sort_idx]
 
-    A = DiscreteRootVariable(idx=0, num_values=2,
-                             prob_distribution=BinomialDistribution(probability=.75))
+    A = DiscreteRootVariable(idx=0, prob_distribution=BinomialDistribution(probability=.75))
     B = DiscreteVariable(idx=1, num_values=3, parents=[A],
                          noise=DiscreteNoise(prob_distribution=[.5, .2, .3, .5]))
     variables = [A, B]
