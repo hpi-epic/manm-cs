@@ -15,7 +15,7 @@ class DiscreteRootVariable(DiscreteVariable):
     def __init__(self, idx: int, prob_distribution: ProbDistribution):
         num_values = prob_distribution.get_num_values()
         super(DiscreteRootVariable, self).__init__(idx=idx, num_values=num_values, parents=[],
-                                                   noise=None)
+                                                   mapping=dict(), noise=None)
         self.prob_distribution = prob_distribution
 
     def sample(self, df: pd.DataFrame, num_observations: int) -> List[float]:
