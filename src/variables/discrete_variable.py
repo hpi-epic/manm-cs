@@ -20,4 +20,4 @@ class DiscreteVariable(Variable):
             0: 1,
             1: 2
         }
-        return self.noise + df[self.parents[0].idx].map(mapping)
+        return (self.noise + df[self.parents[0].idx].map(mapping)) % self.num_values
