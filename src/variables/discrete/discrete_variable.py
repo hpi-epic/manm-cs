@@ -11,7 +11,7 @@ class DiscreteVariable(Variable):
     num_values: int
     mapping: Dict[Tuple[int, ...], int]
 
-    def __init__(self, idx: int, num_values: int, parents: List['Variable'],
+    def __init__(self, idx: int, num_values: int, parents: List[Variable],
                  mapping: Dict[Tuple[int, ...], int], noise: Optional[Noise] = None):
         super(DiscreteVariable, self).__init__(idx=idx, parents=parents, noise=noise)
         self.num_values = num_values

@@ -39,7 +39,7 @@ def create_simple_discrete_model2():
 
 def create_simple_continuous_model1():
     A = ContinuousRootVariable(idx=0, prob_distribution=GaussianDistribution(mu=0, sigma=1))
-    B = ContinuousVariable(idx=1, parents=[A], func=lambda x: 2 * x,
+    B = ContinuousVariable(idx=1, parents=[A], betas=[2],
                            noise=ContinuousNoise(
                                prob_distribution=GaussianDistribution(mu=0, sigma=1)))
     variables = [A, B]
@@ -49,7 +49,7 @@ def create_simple_continuous_model1():
 def create_simple_continuous_model2():
     A = ContinuousRootVariable(idx=0, prob_distribution=GaussianDistribution(mu=0, sigma=1))
     B = ContinuousRootVariable(idx=1, prob_distribution=GaussianDistribution(mu=10, sigma=5))
-    C = ContinuousVariable(idx=2, parents=[A, B], func=lambda x1, x2: 2 * x1 + x2,
+    C = ContinuousVariable(idx=2, parents=[A, B], betas=[.5, 1.1],
                            noise=ContinuousNoise(
                                prob_distribution=GaussianDistribution(mu=0, sigma=1)))
     variables = [A, B, C]
