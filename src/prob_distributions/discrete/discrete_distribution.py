@@ -1,5 +1,5 @@
 from src.prob_distributions.prob_distribution import ProbDistribution
-from src.variables.variable import VariableType
+from src.variables import VariableType
 
 
 class DiscreteDistribution(ProbDistribution):

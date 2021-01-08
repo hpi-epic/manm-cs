@@ -1,13 +1,9 @@
 from src.graph.graph import Graph
-from src.noise.continous_noise import ContinuousNoise
-from src.noise.discrete_noise import DiscreteNoise
-from src.prob_distributions import BinomialDistribution, UniformDiscreteDistribution
-from src.prob_distributions.continuous.gaussian_distribution import GaussianDistribution
-from src.prob_distributions.discrete.custom_discrete_distribution import CustomDiscreteDistribution
-from src.variables.continuous import ContinuousRootVariable
-from src.variables.continuous import ContinuousVariable
-from src.variables.discrete.discrete_root_variable import DiscreteRootVariable
-from src.variables.discrete.discrete_variable import DiscreteVariable
+from src.noise import DiscreteNoise, ContinuousNoise
+from src.prob_distributions import BinomialDistribution, UniformDiscreteDistribution, \
+    CustomDiscreteDistribution, GaussianDistribution
+from src.variables.continuous import ContinuousRootVariable, ContinuousVariable
+from src.variables.discrete import DiscreteRootVariable, DiscreteVariable
 
 
 def create_simple_discrete_model1():

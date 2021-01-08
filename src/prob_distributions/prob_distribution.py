@@ -1,6 +1,6 @@
 from typing import List
 
-from src.variables.variable import VariableType
+from src.variables import VariableType
 
 
 class ProbDistribution:

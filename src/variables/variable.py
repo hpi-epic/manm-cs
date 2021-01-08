@@ -1,15 +1,10 @@
 from abc import ABC
-from enum import Enum
 from typing import List, Optional
 
 import pandas as pd
 
 from src.noise.noise import Noise
-
-
-class VariableType(Enum):
-    DISCRETE = 1
-    CONTINUOUS = 2
+from src.variables import VariableType
 
 
 class Variable(ABC):
