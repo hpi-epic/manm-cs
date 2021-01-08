@@ -1,4 +1,8 @@
+from src.variables.variable import VariableType
+
+
 class ProbDistribution:
+    type: VariableType
 
     def get_num_values(self):
         raise NotImplementedError()

@@ -1,2 +1,2 @@
-from .binomial_distribution import BinomialDistribution
-from .uniform_discrete_distribution import UniformDiscreteDistribution
+from src.prob_distributions.discrete import BinomialDistribution
+from src.prob_distributions.discrete import UniformDiscreteDistribution

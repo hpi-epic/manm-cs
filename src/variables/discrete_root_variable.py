@@ -1,22 +1,16 @@
-from typing import List
-
-import pandas as pd
-
 from src.prob_distributions.prob_distribution import ProbDistribution
 from src.variables.discrete_variable import DiscreteVariable
-from src.variables.variable import VariableType
+from src.variables.root_variable import RootVariable
 
 
-class DiscreteRootVariable(DiscreteVariable):
-    type = VariableType.DISCRETE
-    num_values: int
-    prob_distribution: ProbDistribution
+class DiscreteRootVariable(RootVariable, DiscreteVariable):
 
     def __init__(self, idx: int, prob_distribution: ProbDistribution):
-        num_values = prob_distribution.get_num_values()
-        super(DiscreteRootVariable, self).__init__(idx=idx, num_values=num_values, parents=[],
-                                                   mapping=dict(), noise=None)
-        self.prob_distribution = prob_distribution
+        if prob_distribution.type != self.type:
+            raise ValueError(f'Expected prob_distribution to be of type {self.type}, '
+                             f'but was {prob_distribution.type}')
 
-    def sample(self, df: pd.DataFrame, num_observations: int) -> List[float]:
-        return self.prob_distribution.sample(num_observations=num_observations)
+        num_values = prob_distribution.get_num_values()
+        DiscreteVariable.__init__(self, idx=idx, num_values=num_values, parents=[],
+                                  mapping=dict())
+        RootVariable.__init__(self, prob_distribution=prob_distribution)

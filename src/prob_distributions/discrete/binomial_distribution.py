@@ -1,9 +1,9 @@
 import numpy as np
 
-from src.prob_distributions.prob_distribution import ProbDistribution
+from src.prob_distributions.discrete.discrete_distribution import DiscreteDistribution
 
 
-class BinomialDistribution(ProbDistribution):
+class BinomialDistribution(DiscreteDistribution):
     probability: float
 
     def __init__(self, probability: float):
