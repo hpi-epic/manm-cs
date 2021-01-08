@@ -1,4 +1,22 @@
-class Noise:
+from typing import List, TYPE_CHECKING
 
-    def __add__(self, other):
-        raise NotImplementedError()
+import pandas as pd
+
+if TYPE_CHECKING:
+    from src.prob_distributions.prob_distribution import ProbDistribution
+
+
+class Noise:
+    prob_distribution: 'ProbDistribution'
+
+    def __init__(self, prob_distribution: 'ProbDistribution'):
+        self.prob_distribution = prob_distribution
+
+    def __sample(self, num: int) -> List[int]:
+        return self.prob_distribution.sample(num_observations=num)
+
+    def __add__(self, other) -> pd.Series:
+        if not isinstance(other, pd.Series):
+            raise ValueError(f'Cannot add other to Noise')
+
+        return other.apply(lambda x: x + self.__sample(num=1)[0])

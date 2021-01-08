@@ -23,8 +23,5 @@ class Variable(ABC):
         self.parents = parents
         self.noise = noise
 
-    def __func(self, variable: 'Variable'):
-        raise NotImplementedError()
-
     def sample(self, df: pd.DataFrame, num_observations: int) -> List[float]:
         raise NotImplementedError()
