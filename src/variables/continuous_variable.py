@@ -6,4 +6,3 @@ class ContinuousVariable(Variable):
 
     def __create_func(self, variable: Variable):
         pass
-
