@@ -12,6 +12,9 @@ class Noise:
     def __init__(self, prob_distribution: 'ProbDistribution'):
         self.prob_distribution = prob_distribution
 
+    def get_type(self):
+        return self.prob_distribution.type
+
     def __sample(self, num: int) -> List[int]:
         return self.prob_distribution.sample(num_observations=num)
 

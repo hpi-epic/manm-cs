@@ -11,8 +11,9 @@ class ContinuousVariable(Variable):
     type = VariableType.CONTINUOUS
     func: Callable[..., float]
 
-    def __init__(self, idx: int, parents: List[Variable], betas: List[float],
-                 noise: Optional[ContinuousNoise] = None):
+    def __init__(self, idx: int, noise: ContinuousNoise, parents: Optional[List[Variable]] = None, betas: Optional[List[float]] = None):
+        parents = [] if parents is None else parents
+        betas = [] if betas is None else betas
         super(ContinuousVariable, self).__init__(idx=idx, parents=parents, noise=noise)
         self.func = self.__create_func(betas=betas)
 
@@ -23,6 +24,10 @@ class ContinuousVariable(Variable):
         return func
 
     def sample(self, df: pd.DataFrame, num_observations: int):
-        parent_idxs = [p.idx for p in self.parents]
+        if self._is_root():
+            signal = pd.Series(np.zeros(num_observations, dtype=float))
+        else:
+            parent_idxs = [p.idx for p in self.parents]
+            signal = df[parent_idxs].apply(self.func, axis=1)
 
-        return self.noise + df[parent_idxs].apply(self.func, axis=1)
+        return self.noise + signal

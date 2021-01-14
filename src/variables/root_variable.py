@@ -5,7 +5,6 @@ import pandas as pd
 
 from src.prob_distributions.prob_distribution import ProbDistribution
 
-
 class RootVariable(ABC):
     prob_distribution: ProbDistribution
 

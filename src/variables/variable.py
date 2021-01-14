@@ -13,10 +13,17 @@ class Variable(ABC):
     parents: List['Variable']
     noise: Noise
 
-    def __init__(self, idx: int, parents: List['Variable'], noise: Optional[Noise] = None):
+    def __init__(self, idx: int, parents: List['Variable'], noise: Noise):
         self.idx = idx
         self.parents = parents
         self.noise = noise
+
+        if noise.get_type() != self.type:
+            raise ValueError(f'Expected noise to be of type {self.type}, '
+                             f'but was {noise.get_type()}')
+
+    def _is_root(self):
+        return len(self.parents) == 0
 
     def sample(self, df: pd.DataFrame, num_observations: int) -> List[float]:
         raise NotImplementedError()

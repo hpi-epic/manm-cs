@@ -1,2 +1,0 @@
-from .continuous_root_variable import ContinuousRootVariable
-from .continuous_variable import ContinuousVariable

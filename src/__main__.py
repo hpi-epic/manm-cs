@@ -2,12 +2,12 @@ from src.graph.graph import Graph
 from src.noise import DiscreteNoise, ContinuousNoise
 from src.prob_distributions import BinomialDistribution, UniformDiscreteDistribution, \
     CustomDiscreteDistribution, GaussianDistribution
-from src.variables.continuous import ContinuousRootVariable, ContinuousVariable
-from src.variables.discrete import DiscreteRootVariable, DiscreteVariable
+from src.variables.continuous_variable import ContinuousVariable
+from src.variables.discrete_variable import DiscreteVariable
 
 
 def create_simple_discrete_model1():
-    A = DiscreteRootVariable(idx=0, prob_distribution=BinomialDistribution(probability=.75))
+    A = DiscreteVariable(idx=0, num_values=2, noise=DiscreteNoise(prob_distribution=BinomialDistribution(probability=.75)))
     B = DiscreteVariable(idx=1, num_values=3, parents=[A], mapping={(0,): 1, (1,): 2},
                          noise=DiscreteNoise(
                              prob_distribution=CustomDiscreteDistribution(probs=[.5, .2, .3, .5])))
@@ -16,8 +16,8 @@ def create_simple_discrete_model1():
 
 
 def create_simple_discrete_model2():
-    A = DiscreteRootVariable(idx=0, prob_distribution=BinomialDistribution(probability=.25))
-    B = DiscreteRootVariable(idx=1, prob_distribution=UniformDiscreteDistribution(num_values=3))
+    A = DiscreteVariable(idx=0, num_values=2, noise=DiscreteNoise(prob_distribution=BinomialDistribution(probability=.25)))
+    B = DiscreteVariable(idx=1, num_values=3, noise=DiscreteNoise(UniformDiscreteDistribution(num_values=3)))
     C = DiscreteVariable(idx=2, num_values=3, parents=[A, B],
                          mapping={
                              (0, 0): 1,
@@ -34,7 +34,7 @@ def create_simple_discrete_model2():
 
 
 def create_simple_continuous_model1():
-    A = ContinuousRootVariable(idx=0, prob_distribution=GaussianDistribution(mu=0, sigma=1))
+    A = ContinuousVariable(idx=0, noise=ContinuousNoise(prob_distribution=GaussianDistribution(mu=0, sigma=1)))
     B = ContinuousVariable(idx=1, parents=[A], betas=[2],
                            noise=ContinuousNoise(
                                prob_distribution=GaussianDistribution(mu=0, sigma=1)))
@@ -43,8 +43,8 @@ def create_simple_continuous_model1():
 
 
 def create_simple_continuous_model2():
-    A = ContinuousRootVariable(idx=0, prob_distribution=GaussianDistribution(mu=0, sigma=1))
-    B = ContinuousRootVariable(idx=1, prob_distribution=GaussianDistribution(mu=10, sigma=5))
+    A = ContinuousVariable(idx=0, noise=ContinuousNoise(prob_distribution=GaussianDistribution(mu=0, sigma=1)))
+    B = ContinuousVariable(idx=1, noise=ContinuousNoise(prob_distribution=GaussianDistribution(mu=10, sigma=5)))
     C = ContinuousVariable(idx=2, parents=[A, B], betas=[.5, 1.1],
                            noise=ContinuousNoise(
                                prob_distribution=GaussianDistribution(mu=0, sigma=1)))
