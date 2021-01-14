@@ -51,6 +51,23 @@ def create_simple_continuous_model2():
     variables = [A, B, C]
     return Graph(variables=variables)
 
+def create_simple_conditional_model1():
+    A = DiscreteVariable(idx=0, num_values=2, noise=DiscreteNoise(prob_distribution=BinomialDistribution(probability=.25)))
+    B = ContinuousVariable(idx=1, parents=[A], mapping={(0,): 2, (1,): 10},
+                           noise=ContinuousNoise(
+                               prob_distribution=GaussianDistribution(mu=0, sigma=1)))
+    variables = [A, B]
+    return Graph(variables=variables)
+
+def create_simple_conditional_model2():
+    A = DiscreteVariable(idx=0, num_values=2, noise=DiscreteNoise(prob_distribution=BinomialDistribution(probability=.25)))
+    B = ContinuousVariable(idx=1, noise=ContinuousNoise(prob_distribution=GaussianDistribution(mu=0, sigma=1)))
+    C = ContinuousVariable(idx=2, parents=[A, B], betas=[2], mapping={(0,): 2, (1,): 10},
+                           noise=ContinuousNoise(
+                               prob_distribution=GaussianDistribution(mu=0, sigma=1)))
+    variables = [A, B, C]
+    return Graph(variables=variables)
+
 
 if __name__ == '__main__':
     # num_nodes = 3
@@ -80,8 +97,14 @@ if __name__ == '__main__':
         print(df)
 
 
+    print('Exemplary discrete models:')
     print_observations(graph=create_simple_discrete_model1())
     print_observations(graph=create_simple_discrete_model2())
 
+    print('\nExemplary continuous models:')
     print_observations(graph=create_simple_continuous_model1())
     print_observations(graph=create_simple_continuous_model2())
+
+    print('\nExemplary conditional models:')
+    print_observations(graph=create_simple_conditional_model1())
+    print_observations(graph=create_simple_conditional_model2())

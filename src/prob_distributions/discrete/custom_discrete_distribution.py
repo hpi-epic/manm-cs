@@ -15,6 +15,6 @@ class CustomDiscreteDistribution(DiscreteDistribution):
     def get_num_values(self) -> int:
         return len(self.probs)
 
-    def sample(self, num_observations: int):
+    def sample(self, num_observations: int) -> np.array:
         bins = np.add.accumulate(self.probs)
         return np.digitize(random_sample(self.get_num_values()), bins)

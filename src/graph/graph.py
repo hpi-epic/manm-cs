@@ -12,9 +12,10 @@ class Graph:
         self.variables = variables
 
     def __get_top_sort_variables(self):
+        # TODO: implement function
         return self.variables
 
-    def sample(self, num_observations: int):
+    def sample(self, num_observations: int) -> pd.DataFrame:
         """Return dataframe of size (num_observations, len(variables))
 
         """

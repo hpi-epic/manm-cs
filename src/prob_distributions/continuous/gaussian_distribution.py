@@ -14,5 +14,5 @@ class GaussianDistribution(ContinuousDistribution):
         self.mu = mu
         self.sigma = sigma
 
-    def sample(self, num_observations: int) -> List[float]:
+    def sample(self, num_observations: int) -> np.array:
         return np.random.normal(loc=self.mu, scale=self.sigma, size=num_observations)

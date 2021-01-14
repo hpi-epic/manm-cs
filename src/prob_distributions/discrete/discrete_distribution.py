@@ -5,5 +5,5 @@ from src.variables import VariableType
 class DiscreteDistribution(ProbDistribution):
     type = VariableType.DISCRETE
 
-    def get_num_values(self):
+    def get_num_values(self) -> int:
         raise NotImplementedError()

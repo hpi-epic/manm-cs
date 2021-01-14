@@ -22,8 +22,8 @@ class Variable(ABC):
             raise ValueError(f'Expected noise to be of type {self.type}, '
                              f'but was {noise.get_type()}')
 
-    def _is_root(self):
+    def _is_root(self) -> bool:
         return len(self.parents) == 0
 
-    def sample(self, df: pd.DataFrame, num_observations: int) -> List[float]:
+    def sample(self, df: pd.DataFrame, num_observations: int) -> pd.Series:
         raise NotImplementedError()
