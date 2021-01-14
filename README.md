@@ -12,7 +12,7 @@ git checkout feature/data-generation-anm
 ```
 ### Install requirements within venv
 Please make sure you have Python 3 installed.
-We recommend installing the requirements defined in `requirements.txt` using [venv](https://docs.python.org/3/library/venv.html).
+We recommend installing the requirements defined in [requirements.txt](requirements.txt) using [venv](https://docs.python.org/3/library/venv.html).
 ```
 # Create a virtual environment
 python -m venv venv
