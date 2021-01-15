@@ -36,7 +36,9 @@ class ContinuousVariable(Variable):
     def get_non_root_signal(self, df: pd.DataFrame) -> pd.Series:
         # Compute signal for continous parent variables
         continuous_parent_idxs = [p.idx for p in self._get_continous_parents()]
-        continuous_signal = df[continuous_parent_idxs].apply(self.continuous_mapper_func, axis=1)
+        continuous_signal = df[continuous_parent_idxs].apply(self.continuous_mapper_func, axis=1) \
+                            if len(continuous_parent_idxs) > 0 \
+                            else pd.Series(np.zeros(len(df)))
 
         # Compute signal for discrete parent variables
         discrete_parent_idxs = [p.idx for p in self._get_discrete_parents()]

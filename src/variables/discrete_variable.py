@@ -22,8 +22,8 @@ class DiscreteVariable(Variable):
 
         # Input parameter validation
         if len(self._get_continous_parents()) > 0:
-            raise ValueError(f'The discrete variable {self.id} must only ' \
-                                f'have discrete parents, but were {self._get_continous_parents()}')
+            raise ValueError(f'The discrete variable {self.idx} must only ' \
+                             f'have discrete parents, but were {self._get_continous_parents()}')
         if self.noise.get_num_values() != self.num_values:
             raise ValueError(f'The noise term must define a probability distribution over all possible values. ' \
                              f'Expected num_values equal to {self.num_values}, but received {self.noise.get_num_values()}')
