@@ -20,15 +20,9 @@ class ContinuousVariable(Variable):
         self.mapping = mapping
 
         # Input parameter validation
-        if len(betas) != len(self.__get_continous_parents()):
+        if len(betas) != len(self._get_continous_parents()):
             raise ValueError(f'There must be one beta value for each continuous parent. ' \
-                                f'Expected {len(self.__get_continous_parents())}, but were {len(betas)}')
-
-    def __get_continous_parents(self) -> List[Variable]:
-        return list(filter(lambda p: p.type == VariableType.CONTINUOUS, self.parents))
-
-    def __get_discrete_parents(self) -> List[Variable]:
-        return list(filter(lambda p: p.type == VariableType.DISCRETE, self.parents))
+                                f'Expected {len(self._get_continous_parents())}, but were {len(betas)}')
 
     def __create_func(self, betas: List[float]) -> Callable[[pd.Series], float]:
         def func(parent_values: pd.Series):
@@ -38,11 +32,11 @@ class ContinuousVariable(Variable):
 
     def get_non_root_signal(self, df: pd.DataFrame) -> pd.Series:
         # Compute signal for continous parent variables
-        continuous_parent_idxs = [p.idx for p in self.__get_continous_parents()]
+        continuous_parent_idxs = [p.idx for p in self._get_continous_parents()]
         continuous_signal = df[continuous_parent_idxs].apply(self.func, axis=1)
 
         # Compute signal for discrete parent variables
-        discrete_parent_idxs = [p.idx for p in self.__get_discrete_parents()]
+        discrete_parent_idxs = [p.idx for p in self._get_discrete_parents()]
         discrete_signal = df[discrete_parent_idxs].apply(lambda x: self.mapping[tuple(x)], axis=1) \
                             if len(discrete_parent_idxs) > 0 \
                             else pd.Series(np.zeros(len(df)))

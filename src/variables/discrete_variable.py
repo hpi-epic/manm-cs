@@ -3,7 +3,7 @@ from typing import List, Optional, Dict, Tuple
 import pandas as pd
 import numpy as np
 
-from src.noise.noise import Noise
+from src.noise.discrete_noise import DiscreteNoise
 from src.variables.variable import Variable, VariableType
 
 
@@ -13,7 +13,7 @@ class DiscreteVariable(Variable):
     mapping: Dict[Tuple[int, ...], int]
 
     def __init__(self, idx: int, num_values: int, parents: Optional[List['DiscreteVariable']] = None,
-                 mapping: Optional[Dict[Tuple[int, ...], int]] = None, noise: Optional[Noise] = None):
+                 mapping: Optional[Dict[Tuple[int, ...], int]] = None, noise: Optional[DiscreteNoise] = None):
         parents = [] if parents is None else parents
         mapping = {} if mapping is None else mapping
         super(DiscreteVariable, self).__init__(idx=idx, parents=parents, noise=noise)
@@ -21,10 +21,12 @@ class DiscreteVariable(Variable):
         self.mapping = mapping
 
         # Input parameter validation
-        parent_types = [(p.idx, p.type) for p in self.parents]
-        if not all(pt[1] == VariableType.DISCRETE for pt in parent_types):
+        if len(self._get_continous_parents()) > 0:
             raise ValueError(f'The discrete variable {self.id} must only ' \
-                                f'have discrete parents, but were {parent_types}')
+                                f'have discrete parents, but were {self._get_continous_parents()}')
+        if self.noise is not None and self.noise.get_num_values() != self.num_values:
+            raise ValueError(f'The noise term must define a probability distribution over all possible values. ' \
+                             f'Expected num_values equal to {self.num_values}, but received {self.noise.get_num_values()}')
 
     def sample(self, df: pd.DataFrame, num_observations: int) -> pd.Series:
         if self._is_root():
