@@ -10,7 +10,7 @@ def create_simple_discrete_model1():
     A = DiscreteVariable(idx=0, num_values=2, noise=DiscreteNoise(prob_distribution=BinomialDistribution(probability=.75)))
     B = DiscreteVariable(idx=1, num_values=3, parents=[A], mapping={(0,): 1, (1,): 2},
                          noise=DiscreteNoise(
-                             prob_distribution=CustomDiscreteDistribution(probs=[.5, .2, .3, .5])))
+                             prob_distribution=CustomDiscreteDistribution(probs=[.5, .2, .3])))
     variables = [A, B]
     return Graph(variables=variables)
 
@@ -28,7 +28,7 @@ def create_simple_discrete_model2():
                              (1, 2): 2
                          },
                          noise=DiscreteNoise(
-                             prob_distribution=CustomDiscreteDistribution(probs=[.5, .2, .3, .5])))
+                             prob_distribution=CustomDiscreteDistribution(probs=[.5, .2, .3])))
     variables = [A, B, C]
     return Graph(variables=variables)
 
@@ -95,6 +95,7 @@ if __name__ == '__main__':
     def print_observations(graph: Graph):
         df = graph.sample(num_observations=10)
         print(df)
+        print()
 
 
     print('Exemplary discrete models:')
