@@ -12,8 +12,8 @@ class DiscreteVariable(Variable):
     num_values: int
     mapping: Dict[Tuple[int, ...], int]
 
-    def __init__(self, idx: int, num_values: int, parents: Optional[List['DiscreteVariable']] = None,
-                 mapping: Optional[Dict[Tuple[int, ...], int]] = None, noise: Optional[DiscreteNoise] = None):
+    def __init__(self, idx: int, num_values: int, noise: DiscreteNoise, parents: Optional[List['DiscreteVariable']] = None,
+                 mapping: Optional[Dict[Tuple[int, ...], int]] = None):
         parents = [] if parents is None else parents
         mapping = {} if mapping is None else mapping
         super(DiscreteVariable, self).__init__(idx=idx, parents=parents, noise=noise)
@@ -24,7 +24,7 @@ class DiscreteVariable(Variable):
         if len(self._get_continous_parents()) > 0:
             raise ValueError(f'The discrete variable {self.id} must only ' \
                                 f'have discrete parents, but were {self._get_continous_parents()}')
-        if self.noise is not None and self.noise.get_num_values() != self.num_values:
+        if self.noise.get_num_values() != self.num_values:
             raise ValueError(f'The noise term must define a probability distribution over all possible values. ' \
                              f'Expected num_values equal to {self.num_values}, but received {self.noise.get_num_values()}')
 
