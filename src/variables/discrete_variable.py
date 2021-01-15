@@ -38,4 +38,5 @@ class DiscreteVariable(Variable):
             parent_idxs = [p.idx for p in self.parents]
             signal = df[parent_idxs].apply(lambda x: self.mapping[tuple(x)], axis=1)
 
+        # Combine noise and signal terms and apply ring transformation
         return (self.noise + signal) % self.num_values
