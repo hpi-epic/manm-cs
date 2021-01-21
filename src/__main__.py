@@ -1,8 +1,10 @@
+import argparse
+
+from typing import Type, Callable, Optional, Any
+
 from src.graph.graph import Graph
-from src.noise import DiscreteNoise, ContinuousNoise
-from src.prob_distributions import BinomialDistribution, UniformDiscreteDistribution, \
-    CustomDiscreteDistribution, GaussianDistribution
-from src.variables.continuous_variable import ContinuousVariable
+from src.noise import DiscreteNoise
+from src.prob_distributions import BinomialDistribution, CustomDiscreteDistribution
 from src.variables.discrete_variable import DiscreteVariable
 
 
@@ -14,98 +16,54 @@ def create_simple_discrete_model1():
     variables = [A, B]
     return Graph(variables=variables)
 
+def type_in_range(type_: Type, lower_bound: Optional[float], upper_bound: Optional[float]) -> Callable[[str], Any]:
+    def assert_float_in_range(x: str):
+        try:
+            x = type_(x)
+        except ValueError:
+            raise argparse.ArgumentTypeError(f"Cannot convert {x} to type {type_}")
 
-def create_simple_discrete_model2():
-    A = DiscreteVariable(idx=0, num_values=2, noise=DiscreteNoise(prob_distribution=BinomialDistribution(probability=.25)))
-    B = DiscreteVariable(idx=1, num_values=3, noise=DiscreteNoise(UniformDiscreteDistribution(num_values=3)))
-    C = DiscreteVariable(idx=2, num_values=3, parents=[A, B],
-                         mapping={
-                             (0, 0): 1,
-                             (0, 1): 2,
-                             (0, 2): 1,
-                             (1, 0): 2,
-                             (1, 1): 2,
-                             (1, 2): 2
-                         },
-                         noise=DiscreteNoise(
-                             prob_distribution=CustomDiscreteDistribution(probs=[.5, .2, .3])))
-    variables = [A, B, C]
-    return Graph(variables=variables)
+        if lower_bound is not None and x < lower_bound:
+            raise argparse.ArgumentTypeError(f"{x} not in range [{lower_bound}, {upper_bound}]")
+        if upper_bound is not None and x > upper_bound:
+            raise argparse.ArgumentTypeError(f"{x} not in range [{lower_bound}, {upper_bound}]")
+        return x
+    return assert_float_in_range
 
 
-def create_simple_continuous_model1():
-    A = ContinuousVariable(idx=0, noise=ContinuousNoise(prob_distribution=GaussianDistribution(mu=0, sigma=1)))
-    B = ContinuousVariable(idx=1, parents=[A], betas=[2],
-                           noise=ContinuousNoise(
-                               prob_distribution=GaussianDistribution(mu=0, sigma=1)))
-    variables = [A, B]
-    return Graph(variables=variables)
+def parse_args():
+    parser = argparse.ArgumentParser(description='Generate a dataset for benchmarking causal structure learning using '
+                                                 'the additive noise model')
+    parser.add_argument('--num_nodes', type=type_in_range(int, 1, None), required=True,
+                        help='Defines the number of nodes to be in the generated DAG.')
+    parser.add_argument('--edge_density', type=type_in_range(float, 0.0, 1.0), required=True,
+                        help='Defines the density of edges in the generated DAG.')
+    parser.add_argument('--discrete_node_ratio', type=type_in_range(float, 0.0, 1.0), required=True,
+                        help='Defines the percentage of nodes that shall be of discrete type. Depending on its value '
+                             'the appropriate model (multivariate normal, mixed gaussian, discrete only) is chosen.')
+    parser.add_argument('--num_samples', type=type_in_range(int, 1, None), required=True,
+                        help='Defines the number of samples that shall be generated from the DAG.')
+    parser.add_argument('--discrete_signal_to_noise_ratio', type=type_in_range(float, 0.0, 1.0), required=True,
+                        help='Defines the probability that no noise is added within the additive noise model.')
+    parser.add_argument('--min_discrete_value_classes', type=type_in_range(int, 2, None), required=True,
+                        help='Defines the minimum number of discrete classes a discrete variable shall have.')
+    parser.add_argument('--max_discrete_value_classes', type=type_in_range(int, 2, None), required=True,
+                        help='Defines the maximum number of discrete classes a discrete variable shall have.')
+    parser.add_argument('--continous_noise_standard_deviation', type=type_in_range(float, 0.0, None), required=True,
+                        help='Defines the standard deviation of gaussian noise added to continuous variables.')
+    parser.add_argument('--api_host', type=str, required=True,
+                        help='Endpoint to upload the results')
+    args = parser.parse_args()
 
+    assert args.min_discrete_value_classes < args.max_discrete_value_classes, \
+        f"Expected min_discrete_value_classes <= max_discrete_value_classes but got min: " \
+        f"{args.min_discrete_value_classes}, max: {args.max_discrete_value_classes} "
 
-def create_simple_continuous_model2():
-    A = ContinuousVariable(idx=0, noise=ContinuousNoise(prob_distribution=GaussianDistribution(mu=0, sigma=1)))
-    B = ContinuousVariable(idx=1, noise=ContinuousNoise(prob_distribution=GaussianDistribution(mu=10, sigma=5)))
-    C = ContinuousVariable(idx=2, parents=[A, B], betas=[.5, 1.1],
-                           noise=ContinuousNoise(
-                               prob_distribution=GaussianDistribution(mu=0, sigma=1)))
-    variables = [A, B, C]
-    return Graph(variables=variables)
-
-def create_simple_conditional_model1():
-    A = DiscreteVariable(idx=0, num_values=2, noise=DiscreteNoise(prob_distribution=BinomialDistribution(probability=.25)))
-    B = ContinuousVariable(idx=1, parents=[A], mapping={(0,): 2, (1,): 10},
-                           noise=ContinuousNoise(
-                               prob_distribution=GaussianDistribution(mu=0, sigma=1)))
-    variables = [A, B]
-    return Graph(variables=variables)
-
-def create_simple_conditional_model2():
-    A = DiscreteVariable(idx=0, num_values=2, noise=DiscreteNoise(prob_distribution=BinomialDistribution(probability=.25)))
-    B = ContinuousVariable(idx=1, noise=ContinuousNoise(prob_distribution=GaussianDistribution(mu=0, sigma=1)))
-    C = ContinuousVariable(idx=2, parents=[A, B], betas=[2], mapping={(0,): 2, (1,): 10},
-                           noise=ContinuousNoise(
-                               prob_distribution=GaussianDistribution(mu=0, sigma=1)))
-    variables = [A, B, C]
-    return Graph(variables=variables)
+    return args
 
 
 if __name__ == '__main__':
-    # num_nodes = 3
-    # edge_prob = .7
-    # seed = 3
-    #
-    # G = nx.gnp_random_graph(n=num_nodes, p=edge_prob, seed=seed, directed=True)
-    # dag = nx.DiGraph([(u, v, {}) for (u, v) in G.edges() if u < v])
-    #
-    # assert nx.is_directed_acyclic_graph(dag)
-    # print('dag: ', dag.edges())
-    #
-    # top_sort_idx = list(nx.topological_sort(dag))
-    # variables: Dict[int, Variable] = dict()
-    #
-    # for var_idx in top_sort_idx:
-    #     parents = [variables[idx] for idx in sorted(list(dag.predecessors(var_idx)))]
-    #
-    #     variable = DiscreteVariable(num_values=3, parents=parents)
-    #
-    #     variables[var_idx] = variable
-    #
-    # variables_top_sort = [variables[idx] for idx in top_sort_idx]
-
-    def print_observations(graph: Graph):
-        df = graph.sample(num_observations=10)
-        print(df)
-        print()
-
-
-    print('Exemplary discrete models:')
-    print_observations(graph=create_simple_discrete_model1())
-    print_observations(graph=create_simple_discrete_model2())
-
-    print('\nExemplary continuous models:')
-    print_observations(graph=create_simple_continuous_model1())
-    print_observations(graph=create_simple_continuous_model2())
-
-    print('\nExemplary conditional models:')
-    print_observations(graph=create_simple_conditional_model1())
-    print_observations(graph=create_simple_conditional_model2())
+    args = parse_args()
+    graph = create_simple_discrete_model1()
+    df = graph.sample(num_observations=50)
+    df.to_csv("anm_result.csv")
