@@ -25,7 +25,7 @@ class Graph:
             df[variable.idx] = variable.sample(df=df, num_observations=num_observations)
         return df
 
-    def to_networkx_graph(self):
+    def to_networkx_graph(self) -> nx.DiGraph:
         nx_graph = nx.DiGraph()
         for var in self.__get_top_sort_variables():
             nx_graph.add_node(var.idx)
