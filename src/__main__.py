@@ -1,4 +1,6 @@
 import argparse
+import sys
+
 import networkx as nx
 import requests
 
