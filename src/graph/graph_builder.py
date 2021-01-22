@@ -23,7 +23,7 @@ class GraphBuilder:
     max_discrete_value_classes: Optional[int] = None
     continuous_noise_std: float
     continuous_beta_mean: float
-    continuous_noise_std: float
+    continuous_beta_std: float
 
     def with_num_nodes(self, num_nodes: int) -> 'GraphBuilder':
         validate_int(num_nodes, min_value=1)
