@@ -1,4 +1,4 @@
-from src.graph.graph import Graph
+from src.graph import Graph, GraphBuilder
 from src.noise import DiscreteNoise, ContinuousNoise
 from src.prob_distributions import BinomialDistribution, UniformDiscreteDistribution, \
     CustomDiscreteDistribution, GaussianDistribution
@@ -70,6 +70,28 @@ def create_simple_conditional_model2():
 
 
 if __name__ == '__main__':
+
+    def print_observations(graph: Graph, num_observations: int = 10):
+        df = graph.sample(num_observations=num_observations)
+        print(df)
+        print()
+
+    graph = GraphBuilder() \
+        .with_num_nodes(num_nodes=10) \
+        .with_edge_density(edge_density=.7) \
+        .with_discrete_node_ratio(discrete_node_ratio=.5) \
+        .with_discrete_signal_to_noise_ratio(discrete_signal_to_noise_ratio=.6) \
+        .with_min_discrete_value_classes(min_discrete_value_classes=3) \
+        .with_max_discrete_value_classes(max_discrete_value_classes=5) \
+        .with_continuous_noise_std(continuous_noise_std=1.0) \
+        .with_continuous_beta_mean(continuous_beta_mean=2.0) \
+        .with_continuous_beta_std(continuous_beta_std=3.0) \
+        .build()
+
+    print_observations(graph=graph, num_observations=10)
+
+
+
     # num_nodes = 3
     # edge_prob = .7
     # seed = 3
@@ -92,20 +114,14 @@ if __name__ == '__main__':
     #
     # variables_top_sort = [variables[idx] for idx in top_sort_idx]
 
-    def print_observations(graph: Graph):
-        df = graph.sample(num_observations=10)
-        print(df)
-        print()
+    # print('Exemplary discrete models:')
+    # print_observations(graph=create_simple_discrete_model1())
+    # print_observations(graph=create_simple_discrete_model2())
 
+    # print('\nExemplary continuous models:')
+    # print_observations(graph=create_simple_continuous_model1())
+    # print_observations(graph=create_simple_continuous_model2())
 
-    print('Exemplary discrete models:')
-    print_observations(graph=create_simple_discrete_model1())
-    print_observations(graph=create_simple_discrete_model2())
-
-    print('\nExemplary continuous models:')
-    print_observations(graph=create_simple_continuous_model1())
-    print_observations(graph=create_simple_continuous_model2())
-
-    print('\nExemplary conditional models:')
-    print_observations(graph=create_simple_conditional_model1())
-    print_observations(graph=create_simple_conditional_model2())
+    # print('\nExemplary conditional models:')
+    # print_observations(graph=create_simple_conditional_model1())
+    # print_observations(graph=create_simple_conditional_model2())
