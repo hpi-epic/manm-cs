@@ -6,8 +6,11 @@ from networkx.algorithms.dag import topological_sort
 from validation import validate_int, validate_float
 from src.variables.variable import Variable
 from src.variables.discrete_variable import DiscreteVariable
-from src.noise import DiscreteNoise
+from src.variables.continuous_variable import ContinuousVariable
+from src.noise import DiscreteNoise, ContinuousNoise, GaussianNoiseBuilder
 from src.graph import Graph
+from src.prob_distributions.continuous.gaussian_distribution import GaussianDistribution
+from src.variables.variable_type import VariableType
 
 class GraphBuilder:
     num_nodes: int
@@ -18,7 +21,9 @@ class GraphBuilder:
     discrete_signal_to_noise_ratio: float
     min_discrete_value_classes: Optional[int] = None
     max_discrete_value_classes: Optional[int] = None
-    continous_noise_standard_deviation: float
+    continuous_noise_std: float
+    continuous_beta_mean: float
+    continuous_noise_std: float
 
     def with_num_nodes(self, num_nodes: int) -> 'GraphBuilder':
         validate_int(num_nodes, min_value=1)
@@ -65,19 +70,29 @@ class GraphBuilder:
         self.max_discrete_value_classes = max_discrete_value_classes
         return self
     
-    def with_continous_noise_standard_deviation(self, continous_noise_standard_deviation: float) -> 'GraphBuilder':
-        validate_float(continous_noise_standard_deviation, min_value=0.0)
-        self.continous_noise_standard_deviation = continous_noise_standard_deviation
+    def with_continuous_noise_std(self, continuous_noise_std: float) -> 'GraphBuilder':
+        validate_float(continuous_noise_std, min_value=0.0)
+        self.continuous_noise_std = continuous_noise_std
+        return self
+    
+    def with_continuous_beta_mean(self, continuous_beta_mean: float) -> 'GraphBuilder':
+        validate_float(continuous_beta_mean)
+        self.continuous_beta_mean = continuous_beta_mean
+        return self
+    
+    def with_continuous_beta_std(self, continuous_beta_std: float) -> 'GraphBuilder':
+        validate_float(continuous_beta_std, min_value=0.0)
+        self.continuous_beta_std = continuous_beta_std
         return self
 
     def build(self, seed: int = 0) -> Graph:
         # Generate graph using networkx package
         G = nx.gnp_random_graph(n=self.num_nodes, p=self.edge_density, seed=seed, directed=True)
         # Convert generated graph to DAG
-        dag = nx.DiGraph([(u, v, {}) for (u, v) in G.edges() if u < v])
+        dag = nx.DiGraph()
+        dag.add_nodes_from(G)
+        dag.add_edges_from([(u, v, {}) for (u, v) in G.edges() if u < v])
         assert nx.is_directed_acyclic_graph(dag)
-
-        print('dag: ', dag.edges())
 
         # Create list of topologically sorted nodes 
         top_sort_idx = list(nx.topological_sort(dag))
@@ -97,8 +112,13 @@ class GraphBuilder:
                     .build()
                 variable = DiscreteVariable(idx=node_idx, num_values=num_values, parents=parents, noise=noise)
             else:
-                raise Exception('Not yet supported')
-                # variable = ContinuousVariable(idx=node_idx)
+                noise = GaussianNoiseBuilder() \
+                        .with_sigma(sigma=self.continuous_noise_std) \
+                        .build()
+                num_continous_parents = sum([1 for p in parents if p.type == VariableType.CONTINUOUS])
+                betas = GaussianDistribution(mu=self.continuous_beta_mean, sigma=self.continuous_beta_std) \
+                        .sample(num_observations=num_continous_parents)
+                variable = ContinuousVariable(idx=node_idx, parents=parents, betas=betas, noise=noise)
 
             variables_by_idx[node_idx] = variable
 

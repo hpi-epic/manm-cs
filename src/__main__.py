@@ -77,12 +77,15 @@ if __name__ == '__main__':
         print()
 
     graph = GraphBuilder() \
-        .with_num_nodes(num_nodes=3) \
-        .with_edge_density(edge_density=.5) \
-        .with_discrete_node_ratio(discrete_node_ratio=1.) \
-        .with_discrete_signal_to_noise_ratio(discrete_signal_to_noise_ratio=.8) \
-        .with_min_discrete_value_classes(min_discrete_value_classes=2) \
-        .with_max_discrete_value_classes(max_discrete_value_classes=3) \
+        .with_num_nodes(num_nodes=10) \
+        .with_edge_density(edge_density=.7) \
+        .with_discrete_node_ratio(discrete_node_ratio=.5) \
+        .with_discrete_signal_to_noise_ratio(discrete_signal_to_noise_ratio=.6) \
+        .with_min_discrete_value_classes(min_discrete_value_classes=3) \
+        .with_max_discrete_value_classes(max_discrete_value_classes=5) \
+        .with_continuous_noise_std(continuous_noise_std=1.0) \
+        .with_continuous_beta_mean(continuous_beta_mean=2.0) \
+        .with_continuous_beta_std(continuous_beta_std=3.0) \
         .build()
 
     print_observations(graph=graph, num_observations=10)

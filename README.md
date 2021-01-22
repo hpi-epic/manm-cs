@@ -32,14 +32,16 @@ python -m src
 
 ## Parameters
 
-| name                               | Value Range | Description |
-| ---------------------------------- | ----------- |  --- |
-| num_nodes                          | \[1, Inf)   | Defines the number of nodes to be in the generated DAG. |
-| edge_density                       | \[0, 1\]    | Defines the density of edges in the generated DAG.  |
-| discrete_node_ratio                | \[0, 1\]    | Defines the percentage of nodes that shall be of discrete type. Depending on its value the appropriate model (mulivarate normal, mixed gaussian, discrete only) is chosen. |
-| num_samples                        | \[1, Inf)   | Defines the number of samples that shall be generated from the DAG. |
-| discrete_signal_to_noise_ratio     | \[0, 1\]    | Defines the probability that no noise is added within the additive noise model. |
-| min_discrete_value_classes         | \[1, Inf\]  | Defines the minimum number of discrete classes a discrete variable shall have. |
-| max_discrete_value_classes         | \[1, Inf\]  | Defines the maximum number of discrete classes a discrete variable shall have. |
-| continous_noise_standard_deviation | \[0, Inf)   | Defines the standard deviation of gaussian noise added to continuous variables. |
+| name                           | Value Range | Description |
+| ------------------------------ | ----------- |  --- |
+| num_nodes                      | \[1, Inf)   | Defines the number of nodes to be in the generated DAG. |
+| edge_density                   | \[0, 1\]    | Defines the density of edges in the generated DAG.  |
+| discrete_node_ratio            | \[0, 1\]    | Defines the percentage of nodes that shall be of discrete type. Depending on its value the appropriate model (mulivarate normal, mixed gaussian, discrete only) is chosen. |
+| num_samples                    | \[1, Inf)   | Defines the number of samples that shall be generated from the DAG. |
+| discrete_signal_to_noise_ratio | \[0, 1\]    | Defines the probability that no noise is added within the additive noise model. |
+| min_discrete_value_classes     | \[1, Inf\]  | Defines the minimum number of discrete classes a discrete variable shall have. |
+| max_discrete_value_classes     | \[1, Inf\]  | Defines the maximum number of discrete classes a discrete variable shall have. |
+| continous_beta_mean            | (-Inf, Inf) | Defines the mean of the beta values (edge weights) for continuous parent nodes. |
+| continous_beta_std             | \[0, Inf)   | Defines the standard deviation of the beta values (edge weights) for continuous parent nodes. |
+| continous_noise_std            | \[0, Inf)   | Defines the standard deviation of gaussian noise added to continuous variables. |
 
