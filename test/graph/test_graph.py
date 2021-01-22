@@ -9,14 +9,6 @@ def create_simple_discrete_model2():
     A = DiscreteVariable(idx=0, num_values=2, noise=DiscreteNoise(prob_distribution=BinomialDistribution(probability=.25)))
     B = DiscreteVariable(idx=1, num_values=3, noise=DiscreteNoise(UniformDiscreteDistribution(num_values=3)))
     C = DiscreteVariable(idx=2, num_values=3, parents=[A, B],
-                         mapping={
-                             (0, 0): 1,
-                             (0, 1): 2,
-                             (0, 2): 1,
-                             (1, 0): 2,
-                             (1, 1): 2,
-                             (1, 2): 2
-                         },
                          noise=DiscreteNoise(
                              prob_distribution=CustomDiscreteDistribution(probs=[.5, .2, .3])))
     variables = [A, B, C]

@@ -17,15 +17,6 @@ GROUND_TRUTH_FILE = "ground_truth.gml"
 SAMPLES_FILE = "samples.csv"
 
 
-def create_simple_discrete_model1():
-    A = DiscreteVariable(idx=0, num_values=2, noise=DiscreteNoise(prob_distribution=BinomialDistribution(probability=.75)))
-    B = DiscreteVariable(idx=1, num_values=3, parents=[A], mapping={(0,): 1, (1,): 2},
-                         noise=DiscreteNoise(
-                             prob_distribution=CustomDiscreteDistribution(probs=[.5, .2, .3])))
-    variables = [A, B]
-    return Graph(variables=variables)
-
-
 def type_in_range(type_: Type, lower_bound: Optional[float], upper_bound: Optional[float]) -> Callable[[str], Any]:
     def assert_float_in_range(x: str):
         try:
@@ -59,8 +50,13 @@ def parse_args():
                         help='Defines the minimum number of discrete classes a discrete variable shall have.')
     parser.add_argument('--max_discrete_value_classes', type=type_in_range(int, 2, None), required=True,
                         help='Defines the maximum number of discrete classes a discrete variable shall have.')
-    parser.add_argument('--continous_noise_standard_deviation', type=type_in_range(float, 0.0, None), required=True,
+    parser.add_argument('--continuous_noise_std', type=type_in_range(float, 0.0, None), required=True,
                         help='Defines the standard deviation of gaussian noise added to continuous variables.')
+    parser.add_argument('--continuous_beta_mean', type=type_in_range(float, None, None), required=True,
+                        help='Defines the mean of the beta values (edge weights) for continuous parent nodes.')
+    parser.add_argument('--continuous_beta_std', type=type_in_range(float, 0.0, None), required=True,
+                        help='Defines the standard deviation of the beta values (edge weights) for continuous parent '
+                             'nodes.')
     parser.add_argument('--uploadEndpoint', type=str, required=True,
                         help='Endpoint to upload the dataset')
     parser.add_argument('--apiHost', type=str, required=True,
@@ -90,32 +86,27 @@ def upload_results(dataset_upload_url: str, api_host: str):
     response.raise_for_status()
 
 
+def graph_from_args(args) -> Graph:
+    return GraphBuilder() \
+        .with_num_nodes(args.num_nodes) \
+        .with_edge_density(args.edge_density) \
+        .with_discrete_node_ratio(args.discrete_node_ratio) \
+        .with_discrete_signal_to_noise_ratio(args.discrete_signal_to_noise_ratio) \
+        .with_min_discrete_value_classes(args.min_discrete_value_classes) \
+        .with_max_discrete_value_classes(args.max_discrete_value_classes) \
+        .with_continuous_noise_std(args.continuous_noise_std) \
+        .with_continuous_beta_mean(args.continuous_beta_mean) \
+        .with_continuous_beta_std(args.continuous_beta_std) \
+        .build()
+
+
 if __name__ == '__main__':
     args = parse_args()
-    graph = create_simple_discrete_model1()
+    graph = graph_from_args(args)
     df = graph.sample(num_observations=50)
-    df.to_csv("samples.csv")
+    df.to_csv(SAMPLES_FILE)
     nx_graph = graph.to_networkx_graph()
     nx.write_gml(nx_graph, GROUND_TRUTH_FILE)
     upload_results(args.uploadEndpoint, args.apiHost)
-
-    # def print_observations(graph: Graph, num_observations: int = 10):
-    #     df = graph.sample(num_observations=num_observations)
-    #     print(df)
-    #     print()
-    #
-    # graph = GraphBuilder() \
-    #     .with_num_nodes(num_nodes=10) \
-    #     .with_edge_density(edge_density=.7) \
-    #     .with_discrete_node_ratio(discrete_node_ratio=.5) \
-    #     .with_discrete_signal_to_noise_ratio(discrete_signal_to_noise_ratio=.6) \
-    #     .with_min_discrete_value_classes(min_discrete_value_classes=3) \
-    #     .with_max_discrete_value_classes(max_discrete_value_classes=5) \
-    #     .with_continuous_noise_std(continuous_noise_std=1.0) \
-    #     .with_continuous_beta_mean(continuous_beta_mean=2.0) \
-    #     .with_continuous_beta_std(continuous_beta_std=3.0) \
-    #     .build()
-    #
-    # print_observations(graph=graph, num_observations=10)
 
 
