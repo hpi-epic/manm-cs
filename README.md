@@ -41,7 +41,7 @@ python -m src
 | discrete_signal_to_noise_ratio | \[0, 1\]    | Defines the probability that no noise is added within the additive noise model. |
 | min_discrete_value_classes     | \[2, Inf)  | Defines the minimum number of discrete classes a discrete variable shall have. |
 | max_discrete_value_classes     | \[2, Inf)  | Defines the maximum number of discrete classes a discrete variable shall have. |
-| continous_beta_mean            | (-Inf, Inf) | Defines the mean of the beta values (edge weights) for continuous parent nodes. |
-| continous_beta_std             | \[0, Inf)   | Defines the standard deviation of the beta values (edge weights) for continuous parent nodes. |
-| continous_noise_std            | \[0, Inf)   | Defines the standard deviation of gaussian noise added to continuous variables. |
+| continuous_beta_mean            | (-Inf, Inf) | Defines the mean of the beta values (edge weights) for continuous parent nodes. |
+| continuous_beta_std             | \[0, Inf)   | Defines the standard deviation of the beta values (edge weights) for continuous parent nodes. |
+| continuous_noise_std            | \[0, Inf)   | Defines the standard deviation of gaussian noise added to continuous variables. |
 
