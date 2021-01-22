@@ -103,7 +103,7 @@ def graph_from_args(args) -> Graph:
 if __name__ == '__main__':
     args = parse_args()
     graph = graph_from_args(args)
-    df = graph.sample(num_observations=50)
+    df = graph.sample(num_observations=args.num_samples)
     df.to_csv(SAMPLES_FILE)
     nx_graph = graph.to_networkx_graph()
     nx.write_gml(nx_graph, GROUND_TRUTH_FILE)
