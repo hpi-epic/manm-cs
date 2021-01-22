@@ -42,7 +42,7 @@ class ContinuousVariable(Variable):
 
         # Compute signal for discrete parent variables
         discrete_parent_idxs = [p.idx for p in self._get_discrete_parents()]
-        discrete_signal = df[discrete_parent_idxs].apply(lambda x: self.mapping[tuple(x)], axis=1) \
+        discrete_signal = df[discrete_parent_idxs].apply(sum, axis=1) \
                             if len(discrete_parent_idxs) > 0 \
                             else pd.Series(np.zeros(len(df)))
 

@@ -6,13 +6,16 @@ import requests
 
 from typing import Type, Callable, Optional, Any
 
-from src.graph.graph import Graph
-from src.noise import DiscreteNoise
-from src.prob_distributions import BinomialDistribution, CustomDiscreteDistribution
+from src.graph import Graph, GraphBuilder
+from src.noise import DiscreteNoise, ContinuousNoise
+from src.prob_distributions import BinomialDistribution, UniformDiscreteDistribution, \
+    CustomDiscreteDistribution, GaussianDistribution
+from src.variables.continuous_variable import ContinuousVariable
 from src.variables.discrete_variable import DiscreteVariable
 
 GROUND_TRUTH_FILE = "ground_truth.gml"
 SAMPLES_FILE = "samples.csv"
+
 
 def create_simple_discrete_model1():
     A = DiscreteVariable(idx=0, num_values=2, noise=DiscreteNoise(prob_distribution=BinomialDistribution(probability=.75)))
@@ -21,6 +24,7 @@ def create_simple_discrete_model1():
                              prob_distribution=CustomDiscreteDistribution(probs=[.5, .2, .3])))
     variables = [A, B]
     return Graph(variables=variables)
+
 
 def type_in_range(type_: Type, lower_bound: Optional[float], upper_bound: Optional[float]) -> Callable[[str], Any]:
     def assert_float_in_range(x: str):
@@ -94,3 +98,24 @@ if __name__ == '__main__':
     nx_graph = graph.to_networkx_graph()
     nx.write_gml(nx_graph, GROUND_TRUTH_FILE)
     upload_results(args.uploadEndpoint, args.apiHost)
+
+    # def print_observations(graph: Graph, num_observations: int = 10):
+    #     df = graph.sample(num_observations=num_observations)
+    #     print(df)
+    #     print()
+    #
+    # graph = GraphBuilder() \
+    #     .with_num_nodes(num_nodes=10) \
+    #     .with_edge_density(edge_density=.7) \
+    #     .with_discrete_node_ratio(discrete_node_ratio=.5) \
+    #     .with_discrete_signal_to_noise_ratio(discrete_signal_to_noise_ratio=.6) \
+    #     .with_min_discrete_value_classes(min_discrete_value_classes=3) \
+    #     .with_max_discrete_value_classes(max_discrete_value_classes=5) \
+    #     .with_continuous_noise_std(continuous_noise_std=1.0) \
+    #     .with_continuous_beta_mean(continuous_beta_mean=2.0) \
+    #     .with_continuous_beta_std(continuous_beta_std=3.0) \
+    #     .build()
+    #
+    # print_observations(graph=graph, num_observations=10)
+
+

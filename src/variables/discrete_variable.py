@@ -12,13 +12,10 @@ class DiscreteVariable(Variable):
     num_values: int
     mapping: Dict[Tuple[int, ...], int]
 
-    def __init__(self, idx: int, num_values: int, noise: DiscreteNoise, parents: Optional[List['DiscreteVariable']] = None,
-                 mapping: Optional[Dict[Tuple[int, ...], int]] = None):
+    def __init__(self, idx: int, num_values: int, noise: DiscreteNoise, parents: Optional[List['DiscreteVariable']] = None):
         parents = [] if parents is None else parents
-        mapping = {} if mapping is None else mapping
         super(DiscreteVariable, self).__init__(idx=idx, parents=parents, noise=noise)
         self.num_values = num_values
-        self.mapping = mapping
 
         # Input parameter validation
         if len(self._get_continous_parents()) > 0:
@@ -36,7 +33,7 @@ class DiscreteVariable(Variable):
             # If the variable has one or more parent variables, the sampling is driven 
             # by a combination of signal and noise term
             parent_idxs = [p.idx for p in self.parents]
-            signal = df[parent_idxs].apply(lambda x: self.mapping[tuple(x)], axis=1)
+            signal = df[parent_idxs].apply(sum, axis=1)
 
         # Combine noise and signal terms and apply ring transformation
         return (self.noise + signal) % self.num_values
