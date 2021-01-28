@@ -74,8 +74,8 @@ def execute_benchmark(args):
         current_measurement['time_generation'] = timedelta(seconds=end_generation - start) / timedelta(milliseconds=1)
         current_measurement['time_csv'] = timedelta(seconds=end_csv - start) / timedelta(milliseconds=1)
         current_measurement['time_gt'] = timedelta(seconds=end_gt - start) / timedelta(milliseconds=1)
-        current_measurement['path_dataset'] = file_path + GRAPH_EXTENSION
-        current_measurement['path_ground_truth'] = file_path + GROUND_TRUTH_EXTENSION
+        current_measurement['path_dataset'] = file_name + GRAPH_EXTENSION
+        current_measurement['path_ground_truth'] = file_name + GROUND_TRUTH_EXTENSION
         current_measurement['success'] = True
 
     except Exception as e:
