@@ -1,6 +1,7 @@
 import networkx as nx
 import numpy as np
 from src.graph import Graph, GraphBuilder
+from src.utils import write_single_csv
 import logging
 import random
 import string
@@ -58,11 +59,12 @@ def execute_benchmark(args):
 
         # graph generation
         graph = graph_from_args(args)
-        df = graph.sample(num_observations=args['num_samples'])
+        dfs = graph.sample(num_observations=args['num_samples'])
         end_generation = time.time()
 
         # write csv file
-        df.to_csv(file_path + GRAPH_EXTENSION)
+        target_file_path = file_path + GRAPH_EXTENSION
+        write_single_csv(dataframes=dfs, target_path=target_file_path)
         end_csv = time.time()
 
         nx_graph = graph.to_networkx_graph()
