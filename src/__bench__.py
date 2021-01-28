@@ -10,6 +10,7 @@ from pathlib import Path
 import pandas as pd
 import json
 import hashlib
+import os
 
 FOLDER_PATH = "../datasets/"
 GRAPH_EXTENSION = ".csv"
@@ -25,7 +26,10 @@ PARAMS['max_discrete_value_classes'] = [20]
 PARAMS['continuous_noise_std'] = [2.0]
 PARAMS['continuous_beta_mean'] = [6.0]
 PARAMS['continuous_beta_std'] = [0.5]
-PARAMS['num_samples'] = [10000, 100000, 1000000]
+PARAMS['num_samples'] = [10, 100]
+
+
+logging.getLogger().setLevel(logging.INFO)
 
 
 def graph_from_args(args) -> Graph:
@@ -42,11 +46,7 @@ def graph_from_args(args) -> Graph:
         .build()
 
 
-def random_name(n: int) -> str:
-    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=n))
-
-
-def execute_benchmark(args, file_name: str):
+def execute_benchmark(args):
     current_measurement = args
     file_name = hashlib.sha224(json.dumps(args, sort_keys=True).encode('utf-8')).hexdigest()
     file_path = f"{FOLDER_PATH}{file_name}"
@@ -92,6 +92,13 @@ def execute_benchmark(args, file_name: str):
     return current_measurement
 
 
+def is_valid(args):
+    if args['min_discrete_value_classes'] > args['max_discrete_value_classes']:
+        return False
+
+    return True
+
+
 if __name__ == '__main__':
     # Create folder if needed
     Path(FOLDER_PATH).mkdir(parents=True, exist_ok=True)
@@ -113,18 +120,20 @@ if __name__ == '__main__':
                                 for continuous_beta_mean in PARAMS['continuous_beta_mean']:
                                     for continuous_beta_std in PARAMS['continuous_beta_std']:
                                         for num_samples in PARAMS['num_samples']:
-                                            if min_discrete_value_classes <= max_discrete_value_classes:
-                                                args = dict()
-                                                args['num_nodes'] = num_nodes
-                                                args['edge_density'] = edge_density
-                                                args['discrete_node_ratio'] = discrete_node_ratio
-                                                args['discrete_signal_to_noise_ratio'] = discrete_signal_to_noise_ratio
-                                                args['min_discrete_value_classes'] = min_discrete_value_classes
-                                                args['max_discrete_value_classes'] = max_discrete_value_classes
-                                                args['continuous_noise_std'] = continuous_noise_std
-                                                args['continuous_beta_mean'] = continuous_beta_mean
-                                                args['continuous_beta_std'] = continuous_beta_std
-                                                args['num_samples'] = num_samples
+
+                                            args = dict()
+                                            args['num_nodes'] = num_nodes
+                                            args['edge_density'] = edge_density
+                                            args['discrete_node_ratio'] = discrete_node_ratio
+                                            args['discrete_signal_to_noise_ratio'] = discrete_signal_to_noise_ratio
+                                            args['min_discrete_value_classes'] = min_discrete_value_classes
+                                            args['max_discrete_value_classes'] = max_discrete_value_classes
+                                            args['continuous_noise_std'] = continuous_noise_std
+                                            args['continuous_beta_mean'] = continuous_beta_mean
+                                            args['continuous_beta_std'] = continuous_beta_std
+                                            args['num_samples'] = num_samples
+
+                                            if is_valid(args):
 
                                                 measurement = execute_benchmark(args)
                                                 measurements.append(measurement)
