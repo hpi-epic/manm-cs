@@ -13,6 +13,7 @@ from src.prob_distributions import BinomialDistribution, UniformDiscreteDistribu
     CustomDiscreteDistribution, GaussianDistribution
 from src.variables.continuous_variable import ContinuousVariable
 from src.variables.discrete_variable import DiscreteVariable
+from src.utils import write_single_csv
 
 GROUND_TRUTH_FILE = "ground_truth.gml"
 SAMPLES_FILE = "samples.csv"
@@ -103,20 +104,12 @@ def graph_from_args(args) -> Graph:
         .build()
 
 
-def write_single_csv(dataframes: List[pd.DataFrame]):
-    dfs[0].to_csv(SAMPLES_FILE)
-    for df in dfs[1:]:
-        df.to_csv(SAMPLES_FILE, mode='a', header=False)
-
-
 if __name__ == '__main__':
     args = parse_args()
     graph = graph_from_args(args)
     dfs = graph.sample(num_observations=args.num_samples, num_processes=args.num_processes)
-    write_single_csv(dataframes=dfs)
+    write_single_csv(dataframes=dfs, target_path=SAMPLES_FILE)
 
     nx_graph = graph.to_networkx_graph()
     nx.write_gml(nx_graph, GROUND_TRUTH_FILE)
     upload_results(args.uploadEndpoint, args.apiHost)
-
-
