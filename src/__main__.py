@@ -2,9 +2,10 @@ import argparse
 import sys
 
 import networkx as nx
+import pandas as pd
 import requests
 
-from typing import Type, Callable, Optional, Any
+from typing import List, Type, Callable, Optional, Any
 
 from src.graph import Graph, GraphBuilder
 from src.noise import DiscreteNoise, ContinuousNoise
@@ -57,10 +58,12 @@ def parse_args():
     parser.add_argument('--continuous_beta_std', type=type_in_range(float, 0.0, None), required=True,
                         help='Defines the standard deviation of the beta values (edge weights) for continuous parent '
                              'nodes.')
-    parser.add_argument('--uploadEndpoint', type=str, required=True,
-                        help='Endpoint to upload the dataset')
-    parser.add_argument('--apiHost', type=str, required=True,
-                        help='Url of backend')
+    parser.add_argument('--num_processes', type=type_in_range(int, 1, None), required=False,
+                        help='Defines the number of processes used to sample data from the created graph.')
+    # parser.add_argument('--uploadEndpoint', type=str, required=True,
+    #                     help='Endpoint to upload the dataset')
+    # parser.add_argument('--apiHost', type=str, required=True,
+    #                     help='Url of backend')
     args = parser.parse_args()
 
     assert args.min_discrete_value_classes < args.max_discrete_value_classes, \
@@ -100,13 +103,20 @@ def graph_from_args(args) -> Graph:
         .build()
 
 
+def write_single_csv(dataframes: List[pd.DataFrame]):
+    dfs[0].to_csv(SAMPLES_FILE)
+    for df in dfs[1:]:
+        df.to_csv(SAMPLES_FILE, mode='a', header=False)
+
+
 if __name__ == '__main__':
     args = parse_args()
     graph = graph_from_args(args)
-    df = graph.sample(num_observations=args.num_samples)
-    df.to_csv(SAMPLES_FILE)
-    nx_graph = graph.to_networkx_graph()
-    nx.write_gml(nx_graph, GROUND_TRUTH_FILE)
-    upload_results(args.uploadEndpoint, args.apiHost)
+    dfs = graph.sample(num_observations=args.num_samples, num_processes=args.num_processes)
+    write_single_csv(dataframes=dfs)
+    
+    # nx_graph = graph.to_networkx_graph()
+    # nx.write_gml(nx_graph, GROUND_TRUTH_FILE)
+    # upload_results(args.uploadEndpoint, args.apiHost)
 
 
