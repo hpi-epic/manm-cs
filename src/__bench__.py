@@ -1,7 +1,7 @@
 import networkx as nx
 import numpy as np
 from src.graph import Graph, GraphBuilder
-from src.utils import write_single_csv
+from src.utils import write_single_hdf
 import logging
 import random
 import string
@@ -14,11 +14,11 @@ import hashlib
 import os
 
 FOLDER_PATH = "../datasets/"
-GRAPH_EXTENSION = ".csv"
+DATA_EXTENSION = ".hd5"
 GROUND_TRUTH_EXTENSION = ".gml"
 
 PARAMS = {}
-PARAMS['num_nodes'] = [25, 100, 500, 1000]
+PARAMS['num_nodes'] = [25, 100, 500, 1000, 5000]
 PARAMS['edge_density'] = [0.2, 0.4, 0.6, 0.8, 1.0]
 PARAMS['discrete_node_ratio'] = [0.0, 0.25, 0.5, 0.75, 1.0]
 PARAMS['discrete_signal_to_noise_ratio'] = [0.5]
@@ -27,7 +27,7 @@ PARAMS['max_discrete_value_classes'] = [20]
 PARAMS['continuous_noise_std'] = [2.0]
 PARAMS['continuous_beta_mean'] = [6.0]
 PARAMS['continuous_beta_std'] = [0.5]
-PARAMS['num_samples'] = [10, 100]
+PARAMS['num_samples'] = [1e4, 1e5, 1e6]
 
 
 logging.getLogger().setLevel(logging.INFO)
@@ -63,8 +63,8 @@ def execute_benchmark(args):
         end_generation = time.time()
 
         # write csv file
-        target_file_path = file_path + GRAPH_EXTENSION
-        write_single_csv(dataframes=dfs, target_path=target_file_path)
+        target_file_path = file_path + DATA_EXTENSION
+        write_single_hdf(dataframes=dfs, target_path=target_file_path)
         end_csv = time.time()
 
         nx_graph = graph.to_networkx_graph()
@@ -76,7 +76,7 @@ def execute_benchmark(args):
         current_measurement['time_generation'] = timedelta(seconds=end_generation - start) / timedelta(milliseconds=1)
         current_measurement['time_csv'] = timedelta(seconds=end_csv - start) / timedelta(milliseconds=1)
         current_measurement['time_gt'] = timedelta(seconds=end_gt - start) / timedelta(milliseconds=1)
-        current_measurement['path_dataset'] = file_name + GRAPH_EXTENSION
+        current_measurement['path_dataset'] = file_name + DATA_EXTENSION
         current_measurement['path_ground_truth'] = file_name + GROUND_TRUTH_EXTENSION
         current_measurement['success'] = True
 
