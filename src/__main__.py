@@ -60,10 +60,10 @@ def parse_args():
                              'nodes.')
     parser.add_argument('--num_processes', type=type_in_range(int, 1, None), required=False,
                         help='Defines the number of processes used to sample data from the created graph.')
-    # parser.add_argument('--uploadEndpoint', type=str, required=True,
-    #                     help='Endpoint to upload the dataset')
-    # parser.add_argument('--apiHost', type=str, required=True,
-    #                     help='Url of backend')
+    parser.add_argument('--uploadEndpoint', type=str, required=True,
+                        help='Endpoint to upload the dataset')
+    parser.add_argument('--apiHost', type=str, required=True,
+                        help='Url of backend')
     args = parser.parse_args()
 
     assert args.min_discrete_value_classes < args.max_discrete_value_classes, \
@@ -114,9 +114,9 @@ if __name__ == '__main__':
     graph = graph_from_args(args)
     dfs = graph.sample(num_observations=args.num_samples, num_processes=args.num_processes)
     write_single_csv(dataframes=dfs)
-    
-    # nx_graph = graph.to_networkx_graph()
-    # nx.write_gml(nx_graph, GROUND_TRUTH_FILE)
-    # upload_results(args.uploadEndpoint, args.apiHost)
+
+    nx_graph = graph.to_networkx_graph()
+    nx.write_gml(nx_graph, GROUND_TRUTH_FILE)
+    upload_results(args.uploadEndpoint, args.apiHost)
 
 
