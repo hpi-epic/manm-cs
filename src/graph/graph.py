@@ -30,7 +30,8 @@ class Graph:
             return df
 
         if num_processes is None:
-            num_processes = multiprocessing.cpu_count()
+            max_num_processes = int(num_observations / 10000)
+            num_processes = min(multiprocessing.cpu_count(), max_num_processes)
 
         pool = ProcessingPool()
         chunk_sizes = [int(num_observations / num_processes) for _ in range(num_processes)]
