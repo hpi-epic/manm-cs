@@ -29,6 +29,8 @@ PARAMS['continuous_beta_mean'] = [6.0]
 PARAMS['continuous_beta_std'] = [0.5]
 PARAMS['num_samples'] = [1e4, 1e5, 1e6]
 
+PARAMS['keep_data'] = False
+
 
 logging.getLogger().setLevel(logging.INFO)
 
@@ -56,15 +58,14 @@ def execute_benchmark(args):
     start = time.time()
 
     try:
-
         # graph generation
         graph = graph_from_args(args)
         dfs = graph.sample(num_observations=args['num_samples'])
         end_generation = time.time()
 
         # write csv file
-        target_file_path = file_path + DATA_EXTENSION
-        write_single_hdf(dataframes=dfs, target_path=target_file_path)
+        data_file_path = file_path + DATA_EXTENSION
+        write_single_hdf(dataframes=dfs, target_path=data_file_path)
         end_csv = time.time()
 
         nx_graph = graph.to_networkx_graph()
@@ -76,9 +77,12 @@ def execute_benchmark(args):
         current_measurement['time_generation'] = timedelta(seconds=end_generation - start) / timedelta(milliseconds=1)
         current_measurement['time_csv'] = timedelta(seconds=end_csv - start) / timedelta(milliseconds=1)
         current_measurement['time_gt'] = timedelta(seconds=end_gt - start) / timedelta(milliseconds=1)
-        current_measurement['path_dataset'] = file_name + DATA_EXTENSION
+        current_measurement['path_dataset'] = data_file_path
         current_measurement['path_ground_truth'] = file_name + GROUND_TRUTH_EXTENSION
         current_measurement['success'] = True
+
+        if not args.keep_data:
+            os.remove(data_file_path)
 
     except Exception as e:
         logging.error(e)
@@ -134,6 +138,7 @@ if __name__ == '__main__':
                                             args['continuous_beta_mean'] = continuous_beta_mean
                                             args['continuous_beta_std'] = continuous_beta_std
                                             args['num_samples'] = num_samples
+                                            args['keep_data'] = PARAMS['keep_data']
 
                                             if is_valid(args):
 
