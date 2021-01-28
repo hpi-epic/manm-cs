@@ -79,7 +79,7 @@ def execute_benchmark(args):
         current_measurement['path_ground_truth'] = file_name + GROUND_TRUTH_EXTENSION
         current_measurement['success'] = True
 
-        if not args.keep_data:
+        if not args['keep_data']:
             os.remove(data_file_path)
 
     except Exception as e:
