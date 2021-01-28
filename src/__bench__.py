@@ -29,8 +29,6 @@ PARAMS['continuous_beta_mean'] = [6.0]
 PARAMS['continuous_beta_std'] = [0.5]
 PARAMS['num_samples'] = [10000, 100000, 1000000]
 
-PARAMS['keep_data'] = False
-
 
 logging.getLogger().setLevel(logging.INFO)
 
@@ -138,7 +136,7 @@ if __name__ == '__main__':
                                             args['continuous_beta_mean'] = continuous_beta_mean
                                             args['continuous_beta_std'] = continuous_beta_std
                                             args['num_samples'] = num_samples
-                                            args['keep_data'] = PARAMS['keep_data']
+                                            args['keep_data'] = False
 
                                             if is_valid(args):
 
