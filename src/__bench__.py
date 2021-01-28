@@ -27,7 +27,7 @@ PARAMS['max_discrete_value_classes'] = [20]
 PARAMS['continuous_noise_std'] = [2.0]
 PARAMS['continuous_beta_mean'] = [6.0]
 PARAMS['continuous_beta_std'] = [0.5]
-PARAMS['num_samples'] = [1e4, 1e5, 1e6]
+PARAMS['num_samples'] = [10000, 100000, 1000000]
 
 PARAMS['keep_data'] = False
 
