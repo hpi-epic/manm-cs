@@ -1,7 +1,10 @@
-from typing import List
+from typing import List, Optional
 
+import multiprocessing
 import pandas as pd
 import networkx as nx
+
+from pathos.multiprocessing import ProcessingPool
 
 from src.variables.variable import Variable
 
@@ -16,14 +19,24 @@ class Graph:
         # TODO: implement function
         return self.variables
 
-    def sample(self, num_observations: int) -> pd.DataFrame:
+    def sample(self, num_observations: int, num_processes: Optional[int] = None) -> List[pd.DataFrame]:
         """Return dataframe of size (num_observations, len(variables))
 
         """
-        df = pd.DataFrame()
-        for variable in self.variables:
-            df[variable.idx] = variable.sample(df=df, num_observations=num_observations)
-        return df
+        def fn(chunk_size: int):
+            df = pd.DataFrame()
+            for variable in self.variables:
+                df[variable.idx] = variable.sample(df=df, num_observations=chunk_size)
+            return df
+
+        if num_processes is None:
+            num_processes = multiprocessing.cpu_count()
+
+        pool = ProcessingPool()
+        chunk_sizes = [int(num_observations / num_processes) for _ in range(num_processes)]
+        chunk_sizes[-1] = num_observations - sum(chunk_sizes[:-1])
+        
+        return pool.map(fn, chunk_sizes)
 
     def to_networkx_graph(self) -> nx.DiGraph:
         nx_graph = nx.DiGraph()
