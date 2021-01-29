@@ -71,7 +71,6 @@ def upload_data_and_create_dataset(benchmark_id: str, data_path: str):
         df = pd.read_csv(data_path)
         logging.info('Uploading data to database...')
         df.to_sql(data_table_name, con=connection, index=False, if_exists="fail")
-        # connection.commit()
         logging.info(f'Successfully uploaded data to table {data_table_name}')
 
     json_data = {
@@ -111,6 +110,8 @@ def run_with_config(config: dict):
     data_path = generate_data(benchmark_id=benchmark_id, config=config)
     upload_data_and_create_dataset(benchmark_id=benchmark_id, data_path=data_path)
 
+    # delete_dataset_with_data("public.test1305_7dd0347a_d985_41af_9147_dca7172ac56a", "6", "http://localhost:5000")
+
 
 if __name__ == '__main__':
     config = dict()
@@ -124,8 +125,5 @@ if __name__ == '__main__':
     config['continuous_beta_mean'] = 3.0
     config['continuous_beta_std'] = 1.0
     config['num_samples'] = 1000
-    # data_path = generate_data()
-    upload_data_and_create_dataset(data_path='data_path')
-    # delete_dataset_with_data("public.test1305_7dd0347a_d985_41af_9147_dca7172ac56a", "6", "http://localhost:5000")
 
     run_with_config(config=config)
