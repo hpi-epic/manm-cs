@@ -1,6 +1,5 @@
-import requests, psycopg2, contextlib
-
-from typing import Callable
+import contextlib
+import psycopg2
 
 from src.graph.graph_builder import GraphBuilder
 from src.utils import write_single_csv
@@ -11,9 +10,11 @@ def execute_with_connection():
     conn = None
     try:
         conn = psycopg2.connect(
-            host="galileo.eaalab.hpi.uni-potsdam.de:5433",
+            host="localhost",
+            port="5431",
             user="admin",
-            password="admin"
+            password="admin",
+            dbname="postgres"
         )
         yield conn
     except (Exception, psycopg2.DatabaseError) as error:
@@ -22,6 +23,7 @@ def execute_with_connection():
         if conn is not None:
             conn.close()
             print('Database connection closed.')
+
 
 def generate_data(num_nodes: int, edge_density: float, discrete_node_ratio: float, \
                   discrete_signal_to_noise_ratio: float, min_discrete_value_classes: int, \
@@ -42,21 +44,25 @@ def generate_data(num_nodes: int, edge_density: float, discrete_node_ratio: floa
     dfs = graph.sample(num_observations=num_samples)
     write_single_csv(dataframes=dfs, target_path=data_path)
     return data_path
-    
+
 
 def upload_data_and_create_dataset(data_path: str):
     with execute_with_connection() as conn:
         print('asdf')
 
+
 def add_experiment():
     pass
+
 
 def run_experiment():
     pass
 
+
 def download_results():
     pass
-    
+
+
 def delete_dataset_with_data():
     pass
 
