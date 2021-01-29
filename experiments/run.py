@@ -1,7 +1,9 @@
 import contextlib
 import hashlib
+import json
 import logging
 import os
+from typing import Tuple
 from uuid import uuid4
 
 import pandas as pd
@@ -12,7 +14,7 @@ from sqlalchemy import create_engine
 from src.graph.graph_builder import GraphBuilder
 from src.utils import write_single_csv
 
-API_HOST = 'http://vm-mpws2018-proj.eaalab.hpi.uni-potsdam.de/'
+API_HOST = 'http://vm-mpws2018-proj.eaalab.hpi.uni-potsdam.de'
 
 logging.getLogger().setLevel(logging.INFO)
 
@@ -65,8 +67,8 @@ def generate_data(benchmark_id: str, config: dict) -> str:
     return data_path
 
 
-def upload_data_and_create_dataset(benchmark_id: str, data_path: str):
-    data_table_name = f'benchmarking-experiment-{benchmark_id}-data'
+def upload_data_and_create_dataset(benchmark_id: str, data_path: str) -> Tuple[str, str]:
+    data_table_name = f'benchmarking_experiment_{benchmark_id}_data'
     with engine.begin() as connection:
         df = pd.read_csv(data_path)
         logging.info('Uploading data to database...')
@@ -81,8 +83,12 @@ def upload_data_and_create_dataset(benchmark_id: str, data_path: str):
         'data_source': 'postgres'
     }
     logging.info('Creating dataset...')
-    requests.post(url=f'{API_HOST}/api/datasets', json=json_data)
+    res = requests.post(url=f'{API_HOST}/api/datasets', json=json_data)
+    res.raise_for_status()
+    res = res.json()
     logging.info('Successfully created dataset')
+
+    return res['id'], data_table_name
 
 
 def add_experiment():
@@ -108,22 +114,23 @@ def delete_dataset_with_data(table_name: str, dataset_id: str, api_host: id):
 def run_with_config(config: dict):
     benchmark_id = hashlib.md5(uuid4().__str__().encode()).hexdigest()
     data_path = generate_data(benchmark_id=benchmark_id, config=config)
-    upload_data_and_create_dataset(benchmark_id=benchmark_id, data_path=data_path)
+    dataset_id, data_table_name = upload_data_and_create_dataset(benchmark_id=benchmark_id,
+                                                                 data_path=data_path)
 
-    # delete_dataset_with_data("public.test1305_7dd0347a_d985_41af_9147_dca7172ac56a", "6", "http://localhost:5000")
+    # delete_dataset_with_data(table_name=data_table_name, dataset_id=dataset_id, api_host=API_HOST)
 
 
 if __name__ == '__main__':
     config = dict()
     config['num_nodes'] = 20
     config['edge_density'] = 0.8
-    config['discrete_node_ratio'] = 0.4
+    config['discrete_node_ratio'] = 1.0 # 0.4
     config['discrete_signal_to_noise_ratio'] = 0.5
     config['min_discrete_value_classes'] = 5
-    config['max_discrete_value_classes'] = 15
+    config['max_discrete_value_classes'] = 10
     config['continuous_noise_std'] = 2.0
     config['continuous_beta_mean'] = 3.0
     config['continuous_beta_std'] = 1.0
-    config['num_samples'] = 1000
+    config['num_samples'] = 10000
 
     run_with_config(config=config)
