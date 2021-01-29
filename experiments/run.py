@@ -1,6 +1,7 @@
 import contextlib
 import hashlib
 import logging
+import itertools
 import os
 from typing import Dict
 from typing import Tuple
@@ -273,18 +274,24 @@ def run_with_config(config: dict):
 
 
 if __name__ == '__main__':
-    config = dict()
-    config['num_nodes'] = 20
-    config['edge_density'] = 0.8
-    config['discrete_node_ratio'] = 1.0  # 0.4
-    config['discrete_signal_to_noise_ratio'] = 0.8
-    config['min_discrete_value_classes'] = 3
-    config['max_discrete_value_classes'] = 5
-    config['continuous_noise_std'] = 2.0
-    config['continuous_beta_mean'] = 3.0
-    config['continuous_beta_std'] = 1.0
-    config['num_samples'] = 100
-    config['cores'] = 120
-    config['node'] = "galileo"
+    num_nodes_list = [20, 50, 100]
+    edge_density_list = [0.2, 0.5, 0.8]
+    discrete_node_ratio = [0.0 , 0.4, 0.6, 1.0]
+    variable_params = [num_nodes_list, edge_density_list, discrete_node_ratio]
 
-    run_with_config(config=config)
+    for num_nodes, edge_density, discrete_node_ratio in list(itertools.product(*variable_params)):
+        config = dict()
+        config['num_nodes'] = num_nodes
+        config['edge_density'] = edge_density
+        config['discrete_node_ratio'] = discrete_node_ratio
+        config['discrete_signal_to_noise_ratio'] = 0.8
+        config['min_discrete_value_classes'] = 3
+        config['max_discrete_value_classes'] = 5
+        config['continuous_noise_std'] = 2.0
+        config['continuous_beta_mean'] = 3.0
+        config['continuous_beta_std'] = 1.0
+        config['num_samples'] = 100000
+        config['cores'] = 120
+        config['node'] = "galileo"
+
+        run_with_config(config=config)
