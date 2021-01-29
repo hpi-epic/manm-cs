@@ -7,6 +7,7 @@ import os
 from typing import Tuple
 from uuid import uuid4
 
+import networkx as nx
 import pandas as pd
 import psycopg2
 import requests
@@ -107,7 +108,7 @@ def execute_with_connection():
             logging.info(f'Database connection closed.')
 
 
-def generate_data(benchmark_id: str, config: dict) -> str:
+def generate_data(benchmark_id: str, config: dict) -> Tuple[str, str]:
     os.makedirs('data', exist_ok=True)
     data_path = f'data/benchmarking-experiment-{benchmark_id}-data.csv'
 
@@ -126,14 +127,20 @@ def generate_data(benchmark_id: str, config: dict) -> str:
     logging.info('Starting graph sampling...')
     dfs = graph.sample(num_observations=config['num_samples'])
 
-    logging.info(f'Writing samples...')
+    logging.info('Writing samples...')
     write_single_csv(dataframes=dfs, target_path=data_path)
     logging.info(f'Successfully written samples to {data_path}')
 
-    return data_path
+    logging.info('Writing graph...')
+    os.makedirs('graph', exist_ok=True)
+    graph_path = f'graph/benchmarking-experiment-{benchmark_id}-graph.gml'
+    nx.write_gml(graph.to_networkx_graph(), graph_path)
+    logging.info(f'successfully written graph to {graph_path}')
+
+    return data_path, graph_path
 
 
-def upload_data_and_create_dataset(benchmark_id: str, data_path: str) -> Tuple[str, str]:
+def upload_data_and_create_dataset(benchmark_id: str, data_path: str, graph_path: str) -> Tuple[str, str]:
     data_table_name = f'benchmarking_experiment_{benchmark_id}_data'
     with engine.begin() as connection:
         df = pd.read_csv(data_path)
@@ -152,10 +159,16 @@ def upload_data_and_create_dataset(benchmark_id: str, data_path: str) -> Tuple[s
     res = requests.post(url=f'{API_HOST}/api/datasets', json=json_data)
     res.raise_for_status()
     res = res.json()
+    dataset_id = res['id']
     logging.info('Successfully created dataset')
 
-    return res['id'], data_table_name
+    logging.info('Uploading ground truth...')
+    files = {"graph_file": open(graph_path, "rb")}
+    res = requests.post(url=f'{API_HOST}/api/dataset/{dataset_id}/upload', files=files)
+    res.raise_for_status()
+    logging.info('Successfully uploaded ground truth')
 
+    return dataset_id, data_table_name
 
 def add_experiment(dataset_id: int, discrete_limit: int, cores: int):
     experiments = []
@@ -234,9 +247,9 @@ def delete_dataset_with_data(table_name: str, dataset_id: str, api_host: id):
 
 def run_with_config(config: dict):
     benchmark_id = hashlib.md5(uuid4().__str__().encode()).hexdigest()
-    data_path = generate_data(benchmark_id=benchmark_id, config=config)
+    data_path, graph_path = generate_data(benchmark_id=benchmark_id, config=config)
     dataset_id, data_table_name = upload_data_and_create_dataset(benchmark_id=benchmark_id,
-                                                                 data_path=data_path)
+                                                                 data_path=data_path, graph_path=graph_path)
 
     # delete_dataset_with_data(table_name=data_table_name, dataset_id=dataset_id, api_host=API_HOST)
 
@@ -260,10 +273,10 @@ if __name__ == '__main__':
     config = dict()
     config['num_nodes'] = 20
     config['edge_density'] = 0.8
-    config['discrete_node_ratio'] = 1.0
-    config['discrete_signal_to_noise_ratio'] = 0.5
-    config['min_discrete_value_classes'] = 5
-    config['max_discrete_value_classes'] = 10
+    config['discrete_node_ratio'] = 1.0 # 0.4
+    config['discrete_signal_to_noise_ratio'] = 0.8
+    config['min_discrete_value_classes'] = 3
+    config['max_discrete_value_classes'] = 5
     config['continuous_noise_std'] = 2.0
     config['continuous_beta_mean'] = 3.0
     config['continuous_beta_std'] = 1.0
