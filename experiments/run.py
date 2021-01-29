@@ -1,5 +1,6 @@
 import contextlib
 import psycopg2
+import requests
 
 from src.graph.graph_builder import GraphBuilder
 from src.utils import write_single_csv
@@ -63,10 +64,15 @@ def download_results():
     pass
 
 
-def delete_dataset_with_data():
-    pass
+def delete_dataset_with_data(table_name: str, dataset_id: str, api_host: id):
+    with execute_with_connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(f"DROP TABLE {table_name};")
+            conn.commit()
+    requests.delete(f"{api_host}/api/dataset/{dataset_id}")
 
 
 if __name__ == '__main__':
     # data_path = generate_data()
     upload_data_and_create_dataset(data_path='data_path')
+    # delete_dataset_with_data("public.test1305_7dd0347a_d985_41af_9147_dca7172ac56a", "6", "http://localhost:5000")
