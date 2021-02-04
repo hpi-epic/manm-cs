@@ -2,10 +2,11 @@ import contextlib
 import hashlib
 import logging
 import os
-from typing import Dict
+from typing import Dict, List
 from typing import Tuple
 from uuid import uuid4
-
+import socketio
+from flatten_dict import flatten
 import networkx as nx
 import pandas as pd
 import psycopg2
@@ -16,16 +17,73 @@ from src.graph.graph_builder import GraphBuilder
 from src.utils import write_single_csv
 
 logging.getLogger().setLevel(logging.INFO)
-engine = create_engine('postgresql+psycopg2://admin:admin@localhost:5431/postgres', echo=False)
+engine = create_engine('postgresql+psycopg2://admin:admin@localhost:5432/postgres', echo=False)
 
-API_HOST = "http://vm-mpws2018-proj.eaalab.hpi.uni-potsdam.de"
+API_HOST = "http://localhost:5000"
 API_EXPERIMENTS = f"{API_HOST}/api/experiments"
 API_EXPERIMENT_START = lambda id: f"{API_HOST}/api/experiment/{id}/start"
 API_EXPERIMENT_JOBS = lambda id: f"{API_HOST}/api/experiment/{id}/jobs"
 API_RESULT_GTCOMPARE = lambda id: f"{API_HOST}/api/result/{id}/gtcompare"
+API_JOB = lambda id: f"{API_HOST}/api/job/{id}"
+
+SOCKET_IO_URI = "http://localhost:5000"
 
 ALPHA_VALUES = [0.01, 0.05]
 NUM_JOBS = 1
+
+RUNNING_JOBS = []
+
+MEASUREMENTS_CONFIGS = {}
+MEASUREMENTS = [] # {"config", "experiment_config", "result"}
+
+# Setup job listener
+sio = socketio.Client()
+sio.connect(SOCKET_IO_URI)
+
+@sio.on('job')
+def on_message(job):
+
+    job_id = job["id"]
+    if job_id in RUNNING_JOBS:
+        logging.info("Received socket.io request")
+        job = get_job(job_id)
+
+        if job["status"] == "done" or job["status"] == "error":
+            row_properties = MEASUREMENTS_CONFIGS[job_id]
+
+            job_result = job["result"]
+
+            gd_compare = get_gtcompare(job_result["id"])
+
+            row_properties["result"] = job_result
+            row_properties["gd_compare"] = gd_compare
+
+            MEASUREMENTS.append(flatten(row_properties, reducer='path'))
+
+            RUNNING_JOBS.remove(job_id)
+
+            pd.DataFrame(MEASUREMENTS).to_csv("data.csv")
+
+
+def get_job(job_id: int):
+    response_job = requests.get(API_JOB(job_id))
+
+    if response_job.status_code != 200:
+        error_msg = f"API Request to {API_JOB(job_id)} failed."
+        logging.error(error_msg)
+        raise Exception(error_msg)
+
+    return response_job.json()
+
+def get_gtcompare(result_id: int):
+    gt_compare = requests.get(API_RESULT_GTCOMPARE(result_id))
+
+    if gt_compare.status_code != 200:
+        error_msg = f"API Request to {API_RESULT_GTCOMPARE(result_id)} failed."
+        logging.error(error_msg)
+        raise Exception(error_msg)
+
+    return gt_compare.json()
 
 
 def generate_experiment_settings(dataset_id: int, max_discrete_value_classes: int, cores: int,
@@ -92,7 +150,7 @@ def execute_with_connection():
     try:
         conn = psycopg2.connect(
             host="localhost",
-            port="5431",
+            port="5432",
             user="admin",
             password="admin",
             dbname="postgres"
@@ -193,8 +251,7 @@ def add_experiment(dataset_id: int, max_discrete_value_classes: int, cores: int,
 
         responses.append(response.json())
 
-    experiment_ids = [response['id'] for response in responses]
-    return experiment_ids
+    return responses
 
 
 def run_experiment(experiment_id: int, node: str, runs: int, enforce_cpus: int):
@@ -207,8 +264,7 @@ def run_experiment(experiment_id: int, node: str, runs: int, enforce_cpus: int):
         raise Exception(error_msg)
 
 
-def download_results(experiment_id: int):
-    # Get jobs of experiment
+def get_jobs(experiment_id: int):
     response_jobs = requests.get(API_EXPERIMENT_JOBS(experiment_id))
 
     if response_jobs.status_code != 200:
@@ -216,23 +272,7 @@ def download_results(experiment_id: int):
         logging.error(error_msg)
         raise Exception(error_msg)
 
-    jobs = response_jobs.json()
-    result_ids = [job["result"]["id"] for job in jobs if job["result"]]
-
-    gtcompares = []
-    for id in result_ids:
-        response = requests.get(API_RESULT_GTCOMPARE(id))
-
-        if response.status_code != 200:
-            error_msg = f"API Request to {API_RESULT_GTCOMPARE(id)} failed."
-            logging.error(error_msg)
-            raise Exception(error_msg)
-
-        gtcompares.append(response.json())
-
-    # Get result id's of experiment jobs
-
-    pass
+    return response_jobs.json()
 
 
 def delete_dataset_with_data(table_name: str, dataset_id: str, api_host: id):
@@ -251,7 +291,7 @@ def run_with_config(config: dict):
                                                                  graph_path=graph_path)
 
     logging.info('Adding experiment...')
-    experiment_ids = add_experiment(
+    experiments = add_experiment(
         dataset_id=dataset_id,
         max_discrete_value_classes=config['max_discrete_value_classes'],
         discrete_node_ratio=config['discrete_node_ratio'],
@@ -260,13 +300,28 @@ def run_with_config(config: dict):
     logging.info('Successfully added experiment')
 
     logging.info('Starting all experiments...')
-    for id in experiment_ids:
+    experiment_ids = [experiment["id"] for experiment in experiments]
+
+    for index, experiment_id in enumerate(experiment_ids):
         run_experiment(
-            experiment_id=id,
+            experiment_id=experiment_id,
             node=config["node"],
             runs=NUM_JOBS,
             enforce_cpus=0
         )
+        logging.info(f'Getting jobs for experiment {experiment_id}')
+
+        jobs = get_jobs(experiment_id)
+
+        for job in jobs:
+            job_id = job["id"]
+            RUNNING_JOBS.append(job_id)
+            MEASUREMENTS_CONFIGS[job_id] = {
+                "config": config,
+                "experiment_config": experiments[index]
+            }
+
+
     logging.info('Successfully started all experiments')
 
     # delete_dataset_with_data(table_name=data_table_name, dataset_id=dataset_id, api_host=API_HOST)
@@ -284,7 +339,7 @@ if __name__ == '__main__':
     config['continuous_beta_mean'] = 3.0
     config['continuous_beta_std'] = 1.0
     config['num_samples'] = 100
-    config['cores'] = 120
-    config['node'] = "galileo"
+    config['cores'] = 1
+    config['node'] = "minikube"
 
     run_with_config(config=config)
