@@ -7,7 +7,6 @@ import time
 from typing import Dict
 from typing import Tuple
 from uuid import uuid4
-from odo import odo
 
 import networkx as nx
 import pandas as pd
@@ -141,22 +140,34 @@ def generate_data(benchmark_id: str, config: dict) -> Tuple[str, str]:
     return data_path, graph_path
 
 
+def sql_column_type_string(column_name:str, dtype: str) -> str:
+    if dtype == "int64":
+        return f'"{column_name}" INT'
+    if dtype == "float64":
+        return f'"{column_name}" FLOAT'
+    raise AttributeError(f"dtype {dtype} unknown")
+
+
 def upload_data_and_create_dataset(benchmark_id: str, data_path: str,
                                    graph_path: str) -> Tuple[int, str]:
     data_table_name = f'benchmarking_experiment_{benchmark_id}_data'
-    with engine.begin() as connection:
-        # df = pd.read_csv(data_path)
-        logging.info('Uploading data to database...')
-        with execute_with_connection() as conn:
-            start = time.time()
-            data_file = open(data_path, 'r')
-            cur = conn.cursor()
-            cur.copy_from(data_file, sep=',')
-            data_file.close()
-            # Error with pandas: odo(data_path, f'postgresql://admin:admin@localhost:5433/postgres:{data_table_name}')
-            # Too slow: df.to_sql(data_table_name, con=connection, method='multi', index=False, if_exists='replace')
-            end = time.time()
-        logging.info(f'Successfully uploaded data to table {data_table_name} in {end - start}s')
+    df = pd.read_csv(data_path)
+    dtypes = df.dtypes
+    sql_columns = ', '.join([sql_column_type_string(name, dtypes[name]) for name in df.columns])
+    create_table_query = f'CREATE TABLE {data_table_name} ({sql_columns})'
+
+    logging.info('Uploading data to database...')
+    with execute_with_connection() as conn, open(data_path, 'r') as data_file:
+        start = time.time()
+        cur = conn.cursor()
+        cur.execute(create_table_query)
+        next(data_file) # Skip the header row.
+        cur.copy_from(data_file, data_table_name, sep=',')
+        # Error with pandas: odo(data_path, f'postgresql://admin:admin@localhost:5433/postgres:{data_table_name}')
+        # Too slow: df.to_sql(data_table_name, con=connection, method='multi', index=False, if_exists='replace')
+        conn.commit()
+        end = time.time()
+    logging.info(f'Successfully uploaded data to table {data_table_name} in {end - start}s')
 
     json_data = {
         'name': f'benchmarking-experiment-{benchmark_id}',
