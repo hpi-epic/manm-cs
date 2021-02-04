@@ -3,6 +3,7 @@ import hashlib
 import logging
 import itertools
 import os
+import time
 from typing import Dict
 from typing import Tuple
 from uuid import uuid4
@@ -17,7 +18,7 @@ from src.graph.graph_builder import GraphBuilder
 from src.utils import write_single_csv
 
 logging.getLogger().setLevel(logging.INFO)
-engine = create_engine('postgresql+psycopg2://admin:admin@localhost:5431/postgres', echo=False)
+engine = create_engine('postgresql+psycopg2://admin:admin@localhost:5433/postgres', echo=False)
 
 API_HOST = "http://vm-mpws2018-proj.eaalab.hpi.uni-potsdam.de"
 API_EXPERIMENTS = f"{API_HOST}/api/experiments"
@@ -93,7 +94,7 @@ def execute_with_connection():
     try:
         conn = psycopg2.connect(
             host="localhost",
-            port="5431",
+            port="5433",
             user="admin",
             password="admin",
             dbname="postgres"
@@ -145,8 +146,10 @@ def upload_data_and_create_dataset(benchmark_id: str, data_path: str,
     with engine.begin() as connection:
         df = pd.read_csv(data_path)
         logging.info('Uploading data to database...')
+        start = time.time()
         df.to_sql(data_table_name, con=connection, index=False, if_exists="fail")
-        logging.info(f'Successfully uploaded data to table {data_table_name}')
+        end = time.time()
+        logging.info(f'Successfully uploaded data to table {data_table_name} in {end - start}s')
 
     json_data = {
         'name': f'benchmarking-experiment-{benchmark_id}',
@@ -274,9 +277,9 @@ def run_with_config(config: dict):
 
 
 if __name__ == '__main__':
-    num_nodes_list = [20, 50, 100]
-    edge_density_list = [0.2, 0.5, 0.8]
-    discrete_node_ratio = [0.0 , 0.4, 0.6, 1.0]
+    num_nodes_list = [20] # [20, 50, 100]
+    edge_density_list = [.5] # [0.2, 0.5, 0.8]
+    discrete_node_ratio = [0.0] # , 0.4, 0.6, 1.0]
     variable_params = [num_nodes_list, edge_density_list, discrete_node_ratio]
 
     for num_nodes, edge_density, discrete_node_ratio in list(itertools.product(*variable_params)):
