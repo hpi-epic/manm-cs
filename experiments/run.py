@@ -18,6 +18,12 @@ from src.utils import write_single_csv
 
 logging.getLogger().setLevel(logging.INFO)
 
+POSTGRES_HOST = "localhost"
+POSTGRES_PORT = "5433"
+POSTGRES_USER = "admin"
+POSTGRES_PASSWORD = "admin"
+POSTGRES_DBNAME = "postgres"
+
 API_HOST = "http://vm-mpws2018-proj.eaalab.hpi.uni-potsdam.de"
 API_EXPERIMENTS = f"{API_HOST}/api/experiments"
 API_EXPERIMENT_START = lambda id: f"{API_HOST}/api/experiment/{id}/start"
@@ -91,11 +97,11 @@ def execute_with_connection():
     conn = None
     try:
         conn = psycopg2.connect(
-            host="localhost",
-            port="5433",
-            user="admin",
-            password="admin",
-            dbname="postgres"
+            host=POSTGRES_HOST,
+            port=POSTGRES_PORT,
+            user=POSTGRES_USER,
+            password=POSTGRES_PASSWORD,
+            dbname=POSTGRES_DBNAME
         )
         yield conn
     except (Exception, psycopg2.DatabaseError) as error:
