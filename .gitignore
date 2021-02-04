@@ -132,5 +132,5 @@ dmypy.json
 .idea
 
 datasets
-experiments/data
-experiments/graph
+data
+graph
