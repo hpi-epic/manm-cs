@@ -12,13 +12,11 @@ import networkx as nx
 import pandas as pd
 import psycopg2
 import requests
-from sqlalchemy import create_engine
 
 from src.graph.graph_builder import GraphBuilder
 from src.utils import write_single_csv
 
 logging.getLogger().setLevel(logging.INFO)
-engine = create_engine('postgresql+psycopg2://admin:admin@localhost:5433/postgres', echo=False)
 
 API_HOST = "http://vm-mpws2018-proj.eaalab.hpi.uni-potsdam.de"
 API_EXPERIMENTS = f"{API_HOST}/api/experiments"
@@ -152,8 +150,7 @@ def upload_data_and_create_dataset(benchmark_id: str, data_path: str,
                                    graph_path: str) -> Tuple[int, str]:
     data_table_name = f'benchmarking_experiment_{benchmark_id}_data'
     df = pd.read_csv(data_path)
-    dtypes = df.dtypes
-    sql_columns = ', '.join([sql_column_type_string(name, dtypes[name]) for name in df.columns])
+    sql_columns = ', '.join([sql_column_type_string(name, df.dtypes[name]) for name in df.columns])
     create_table_query = f'CREATE TABLE {data_table_name} ({sql_columns})'
 
     logging.info('Uploading data to database...')
@@ -163,8 +160,6 @@ def upload_data_and_create_dataset(benchmark_id: str, data_path: str,
         cur.execute(create_table_query)
         next(data_file) # Skip the header row.
         cur.copy_from(data_file, data_table_name, sep=',')
-        # Error with pandas: odo(data_path, f'postgresql://admin:admin@localhost:5433/postgres:{data_table_name}')
-        # Too slow: df.to_sql(data_table_name, con=connection, method='multi', index=False, if_exists='replace')
         conn.commit()
         end = time.time()
     logging.info(f'Successfully uploaded data to table {data_table_name} in {end - start}s')
