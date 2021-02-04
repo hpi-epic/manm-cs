@@ -25,17 +25,20 @@ POSTGRES_USER = "admin"
 POSTGRES_PASSWORD = "admin"
 POSTGRES_DBNAME = "postgres"
 
-API_HOST = "http://localhost:5000"
+API_HOST = "http://vm-mpws2018-proj.eaalab.hpi.uni-potsdam.de"
 API_EXPERIMENTS = f"{API_HOST}/api/experiments"
 API_EXPERIMENT_START = lambda id: f"{API_HOST}/api/experiment/{id}/start"
 API_EXPERIMENT_JOBS = lambda id: f"{API_HOST}/api/experiment/{id}/jobs"
 API_RESULT_GTCOMPARE = lambda id: f"{API_HOST}/api/result/{id}/gtcompare"
 API_JOB = lambda id: f"{API_HOST}/api/job/{id}"
 
-SOCKET_IO_URI = "http://localhost:5000"
+CSV__RESULT_OUTPUT = "job_results.csv"
 
+
+# TODO
 ALPHA_VALUES = [0.01, 0.05]
 NUM_JOBS = 1
+
 
 RUNNING_JOBS = []
 
@@ -44,17 +47,17 @@ MEASUREMENTS = [] # {"config", "experiment_config", "result"}
 
 # Setup job listener
 sio = socketio.Client()
-sio.connect(SOCKET_IO_URI)
+sio.connect(API_HOST)
 
 @sio.on('job')
-def on_message(job):
+def on_job_update(job):
 
     job_id = job["id"]
     if job_id in RUNNING_JOBS:
-        logging.info("Received socket.io request")
         job = get_job(job_id)
 
         if job["status"] == "done" or job["status"] == "error":
+            logging.info(f'Completed job {job_id} with status {job["status"]}')
             row_properties = MEASUREMENTS_CONFIGS[job_id]
 
             job_result = job["result"]
@@ -68,7 +71,11 @@ def on_message(job):
 
             RUNNING_JOBS.remove(job_id)
 
-            pd.DataFrame(MEASUREMENTS).to_csv("data.csv")
+            pd.DataFrame(MEASUREMENTS).to_csv(CSV__RESULT_OUTPUT)
+
+            if len(RUNNING_JOBS) == 0:
+                logging.info("No more jobs are running")
+                sio.disconnect()
 
 
 def get_job(job_id: int):
@@ -351,23 +358,24 @@ def run_with_config(config: dict):
 
 
 if __name__ == '__main__':
-    num_nodes_list = [20] # [20, 50, 100]
-    edge_density_list = [.5] # [0.2, 0.5, 0.8]
-    discrete_node_ratio = [0.0] # , 0.4, 0.6, 1.0]
-    variable_params = [num_nodes_list, edge_density_list, discrete_node_ratio]
+    num_nodes_list = [20, 50, 100, 200]
+    edge_density_list = [0.05, 0.1, 0.2, 0.4]
+    discrete_node_ratio_list = [0.0, 0.4, 0.6, 1.0]
+    num_samples_list = [50000, 100000, 200000]
+    variable_params = [num_nodes_list, edge_density_list, discrete_node_ratio_list, num_samples_list]
 
-    for num_nodes, edge_density, discrete_node_ratio in list(itertools.product(*variable_params)):
+    for num_nodes, edge_density, discrete_node_ratio, num_samples in list(itertools.product(*variable_params)):
         config = dict()
         config['num_nodes'] = num_nodes
         config['edge_density'] = edge_density
         config['discrete_node_ratio'] = discrete_node_ratio
-        config['discrete_signal_to_noise_ratio'] = 0.8
-        config['min_discrete_value_classes'] = 3
-        config['max_discrete_value_classes'] = 5
-        config['continuous_noise_std'] = 2.0
-        config['continuous_beta_mean'] = 3.0
-        config['continuous_beta_std'] = 1.0
-        config['num_samples'] = 100000
+        config['discrete_signal_to_noise_ratio'] = 0.9
+        config['min_discrete_value_classes'] = 2
+        config['max_discrete_value_classes'] = 4
+        config['continuous_noise_std'] = 1.0
+        config['continuous_beta_mean'] = 5.0
+        config['continuous_beta_std'] = 3.0
+        config['num_samples'] = num_samples
         config['cores'] = 120
         config['node'] = "galileo"
 
