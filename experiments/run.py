@@ -7,6 +7,7 @@ import time
 from typing import Dict
 from typing import Tuple
 from uuid import uuid4
+from odo import odo
 
 import networkx as nx
 import pandas as pd
@@ -144,11 +145,17 @@ def upload_data_and_create_dataset(benchmark_id: str, data_path: str,
                                    graph_path: str) -> Tuple[int, str]:
     data_table_name = f'benchmarking_experiment_{benchmark_id}_data'
     with engine.begin() as connection:
-        df = pd.read_csv(data_path)
+        # df = pd.read_csv(data_path)
         logging.info('Uploading data to database...')
-        start = time.time()
-        df.to_sql(data_table_name, con=connection, index=False, if_exists="fail")
-        end = time.time()
+        with execute_with_connection() as conn:
+            start = time.time()
+            data_file = open(data_path, 'r')
+            cur = conn.cursor()
+            cur.copy_from(data_file, sep=',')
+            data_file.close()
+            # Error with pandas: odo(data_path, f'postgresql://admin:admin@localhost:5433/postgres:{data_table_name}')
+            # Too slow: df.to_sql(data_table_name, con=connection, method='multi', index=False, if_exists='replace')
+            end = time.time()
         logging.info(f'Successfully uploaded data to table {data_table_name} in {end - start}s')
 
     json_data = {
