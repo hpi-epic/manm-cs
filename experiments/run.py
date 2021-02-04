@@ -12,13 +12,17 @@ import networkx as nx
 import pandas as pd
 import psycopg2
 import requests
-from sqlalchemy import create_engine
 
 from src.graph.graph_builder import GraphBuilder
 from src.utils import write_single_csv
 
 logging.getLogger().setLevel(logging.INFO)
-engine = create_engine('postgresql+psycopg2://admin:admin@localhost:5433/postgres', echo=False)
+
+POSTGRES_HOST = "localhost"
+POSTGRES_PORT = "5433"
+POSTGRES_USER = "admin"
+POSTGRES_PASSWORD = "admin"
+POSTGRES_DBNAME = "postgres"
 
 API_HOST = "http://vm-mpws2018-proj.eaalab.hpi.uni-potsdam.de"
 API_EXPERIMENTS = f"{API_HOST}/api/experiments"
@@ -93,11 +97,11 @@ def execute_with_connection():
     conn = None
     try:
         conn = psycopg2.connect(
-            host="localhost",
-            port="5433",
-            user="admin",
-            password="admin",
-            dbname="postgres"
+            host=POSTGRES_HOST,
+            port=POSTGRES_PORT,
+            user=POSTGRES_USER,
+            password=POSTGRES_PASSWORD,
+            dbname=POSTGRES_DBNAME
         )
         yield conn
     except (Exception, psycopg2.DatabaseError) as error:
@@ -140,16 +144,31 @@ def generate_data(benchmark_id: str, config: dict) -> Tuple[str, str]:
     return data_path, graph_path
 
 
+def sql_column_type_string(column_name:str, dtype: str) -> str:
+    if dtype == "int64":
+        return f'"{column_name}" INT'
+    if dtype == "float64":
+        return f'"{column_name}" FLOAT'
+    raise AttributeError(f"dtype {dtype} unknown")
+
+
 def upload_data_and_create_dataset(benchmark_id: str, data_path: str,
                                    graph_path: str) -> Tuple[int, str]:
     data_table_name = f'benchmarking_experiment_{benchmark_id}_data'
-    with engine.begin() as connection:
-        df = pd.read_csv(data_path)
-        logging.info('Uploading data to database...')
+    df = pd.read_csv(data_path)
+    sql_columns = ', '.join([sql_column_type_string(name, df.dtypes[name]) for name in df.columns])
+    create_table_query = f'CREATE TABLE {data_table_name} ({sql_columns})'
+
+    logging.info('Uploading data to database...')
+    with execute_with_connection() as conn, open(data_path, 'r') as data_file:
         start = time.time()
-        df.to_sql(data_table_name, con=connection, index=False, if_exists="fail")
+        cur = conn.cursor()
+        cur.execute(create_table_query)
+        next(data_file) # Skip the header row.
+        cur.copy_from(data_file, data_table_name, sep=',')
+        conn.commit()
         end = time.time()
-        logging.info(f'Successfully uploaded data to table {data_table_name} in {end - start}s')
+    logging.info(f'Successfully uploaded data to table {data_table_name} in {end - start}s')
 
     json_data = {
         'name': f'benchmarking-experiment-{benchmark_id}',
