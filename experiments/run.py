@@ -391,5 +391,6 @@ if __name__ == '__main__':
         config['node'] = "galileo"
 
         run_with_config(config=config)
+        time.sleep(60)
 
     ALL_EXPERIMENTS_STARTED = True
