@@ -13,6 +13,8 @@ import networkx as nx
 import pandas as pd
 import psycopg2
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 from src.graph.graph_builder import GraphBuilder
 from src.utils import write_single_csv
@@ -39,11 +41,22 @@ CSV__RESULT_OUTPUT = "job_results.csv"
 ALPHA_VALUES = [0.01, 0.05]
 NUM_JOBS = 1
 
-
+ALL_EXPERIMENTS_STARTED = False
 RUNNING_JOBS = []
 
 MEASUREMENTS_CONFIGS = {}
 MEASUREMENTS = [] # {"config", "experiment_config", "result"}
+
+# Setup retry strategy
+retry_strategy = Retry(
+    total=3,
+    status_forcelist=[429, 500, 502, 503, 504],
+    method_whitelist=["GET", "PUT", "DELETE", "OPTIONS"],
+    backoff_factor=10
+)
+adapter = HTTPAdapter(max_retries=retry_strategy)
+http = requests.Session()
+http.mount("http://", adapter)
 
 # Setup job listener
 sio = socketio.Client()
@@ -67,19 +80,19 @@ def on_job_update(job):
             row_properties["result"] = job_result
             row_properties["gd_compare"] = gd_compare
 
-            MEASUREMENTS.append(flatten(row_properties, reducer='path'))
+            if job_id in RUNNING_JOBS:
+                MEASUREMENTS.append(flatten(row_properties, reducer='path'))
+                RUNNING_JOBS.remove(job_id)
 
-            RUNNING_JOBS.remove(job_id)
+                pd.DataFrame(MEASUREMENTS).to_csv(CSV__RESULT_OUTPUT)
 
-            pd.DataFrame(MEASUREMENTS).to_csv(CSV__RESULT_OUTPUT)
-
-            if len(RUNNING_JOBS) == 0:
+            if ALL_EXPERIMENTS_STARTED and len(RUNNING_JOBS) == 0:
                 logging.info("No more jobs are running")
                 sio.disconnect()
 
 
 def get_job(job_id: int):
-    response_job = requests.get(API_JOB(job_id))
+    response_job = http.get(API_JOB(job_id))
 
     if response_job.status_code != 200:
         error_msg = f"API Request to {API_JOB(job_id)} failed."
@@ -89,7 +102,7 @@ def get_job(job_id: int):
     return response_job.json()
 
 def get_gtcompare(result_id: int):
-    gt_compare = requests.get(API_RESULT_GTCOMPARE(result_id))
+    gt_compare = http.get(API_RESULT_GTCOMPARE(result_id))
 
     if gt_compare.status_code != 200:
         error_msg = f"API Request to {API_RESULT_GTCOMPARE(result_id)} failed."
@@ -243,7 +256,7 @@ def upload_data_and_create_dataset(benchmark_id: str, data_path: str,
         'data_source': 'postgres'
     }
     logging.info('Creating dataset...')
-    res = requests.post(url=f'{API_HOST}/api/datasets', json=json_data)
+    res = http.post(url=f'{API_HOST}/api/datasets', json=json_data)
     res.raise_for_status()
     res = res.json()
     dataset_id = res['id']
@@ -251,7 +264,7 @@ def upload_data_and_create_dataset(benchmark_id: str, data_path: str,
 
     logging.info('Uploading ground truth...')
     files = {"graph_file": open(graph_path, "rb")}
-    res = requests.post(url=f'{API_HOST}/api/dataset/{dataset_id}/upload', files=files)
+    res = http.post(url=f'{API_HOST}/api/dataset/{dataset_id}/upload', files=files)
     res.raise_for_status()
     logging.info('Successfully uploaded ground truth')
 
@@ -272,10 +285,10 @@ def add_experiment(dataset_id: int, max_discrete_value_classes: int, cores: int,
 
     responses = []
     for experiment_payload in experiments:
-        response = requests.post(API_EXPERIMENTS, json=experiment_payload)
+        response = http.post(API_EXPERIMENTS, json=experiment_payload)
 
         if response.status_code != 200:
-            error_msg = f"API Request to {API_EXPERIMENTS} with payload={experiment_payload} failed."
+            error_msg = f"API Request to {API_EXPERIMENTS} with payload={experiment_payload} failed with response {response.content}."
             logging.error(error_msg)
             raise Exception(error_msg)
 
@@ -286,16 +299,16 @@ def add_experiment(dataset_id: int, max_discrete_value_classes: int, cores: int,
 
 def run_experiment(experiment_id: int, node: str, runs: int, enforce_cpus: int):
     job_config = generate_job_config(node, runs, enforce_cpus)
-    response = requests.post(API_EXPERIMENT_START(experiment_id), json=job_config)
+    response = http.post(API_EXPERIMENT_START(experiment_id), json=job_config)
 
     if response.status_code != 200:
-        error_msg = f"API Request to {API_EXPERIMENT_START(experiment_id)} failed."
+        error_msg = f"API Request to {API_EXPERIMENT_START(experiment_id)} failed with response {response.content}."
         logging.error(error_msg)
         raise Exception(error_msg)
 
 
 def get_jobs(experiment_id: int):
-    response_jobs = requests.get(API_EXPERIMENT_JOBS(experiment_id))
+    response_jobs = http.get(API_EXPERIMENT_JOBS(experiment_id))
 
     if response_jobs.status_code != 200:
         error_msg = f"API Request to {API_EXPERIMENT_JOBS(experiment_id)} failed."
@@ -310,7 +323,7 @@ def delete_dataset_with_data(table_name: str, dataset_id: str, api_host: id):
         with conn.cursor() as cursor:
             cursor.execute(f"DROP TABLE {table_name};")
             conn.commit()
-    requests.delete(f"{api_host}/api/dataset/{dataset_id}")
+    http.delete(f"{api_host}/api/dataset/{dataset_id}")
 
 
 def run_with_config(config: dict):
@@ -350,8 +363,6 @@ def run_with_config(config: dict):
                 "config": config,
                 "experiment_config": experiments[index]
             }
-
-
     logging.info('Successfully started all experiments')
 
     # delete_dataset_with_data(table_name=data_table_name, dataset_id=dataset_id, api_host=API_HOST)
@@ -359,9 +370,9 @@ def run_with_config(config: dict):
 
 if __name__ == '__main__':
     num_nodes_list = [20, 50, 100, 200]
-    edge_density_list = [0.05, 0.1, 0.2, 0.4]
+    edge_density_list = [0.2, 0.4, 0.6]
     discrete_node_ratio_list = [0.0, 0.4, 0.6, 1.0]
-    num_samples_list = [50000, 100000, 200000]
+    num_samples_list = [1000, 2500, 5000, 7500, 10000]
     variable_params = [num_nodes_list, edge_density_list, discrete_node_ratio_list, num_samples_list]
 
     for num_nodes, edge_density, discrete_node_ratio, num_samples in list(itertools.product(*variable_params)):
@@ -371,12 +382,14 @@ if __name__ == '__main__':
         config['discrete_node_ratio'] = discrete_node_ratio
         config['discrete_signal_to_noise_ratio'] = 0.9
         config['min_discrete_value_classes'] = 2
-        config['max_discrete_value_classes'] = 4
-        config['continuous_noise_std'] = 1.0
-        config['continuous_beta_mean'] = 5.0
-        config['continuous_beta_std'] = 3.0
+        config['max_discrete_value_classes'] = 3
+        config['continuous_noise_std'] = 0.2
+        config['continuous_beta_mean'] = 1.0
+        config['continuous_beta_std'] = 0.0
         config['num_samples'] = num_samples
         config['cores'] = 120
         config['node'] = "galileo"
 
         run_with_config(config=config)
+
+    ALL_EXPERIMENTS_STARTED = True
