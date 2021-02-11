@@ -367,15 +367,34 @@ def run_with_config(config: dict):
 
     # delete_dataset_with_data(table_name=data_table_name, dataset_id=dataset_id, api_host=API_HOST)
 
+def should_continue(num_nodes: int, edge_density: float, discrete_node_ratio: float, num_samples: int):
+    if num_nodes < 50:
+        return True
+    elif num_nodes == 50:
+        if edge_density < 0.6:
+            return True
+        elif edge_density == 0.6:
+            if discrete_node_ratio < 0.4:
+                return True
+            elif discrete_node_ratio == 0.4:
+                if num_samples <= 7500:
+                    return True
+
+    return False
+
 
 if __name__ == '__main__':
-    num_nodes_list = [20, 50, 100, 200]
+    num_nodes_list = [100, 200]
     edge_density_list = [0.2, 0.4, 0.6]
     discrete_node_ratio_list = [0.0, 0.4, 0.6, 1.0]
     num_samples_list = [1000, 2500, 5000, 7500, 10000]
     variable_params = [num_nodes_list, edge_density_list, discrete_node_ratio_list, num_samples_list]
 
     for num_nodes, edge_density, discrete_node_ratio, num_samples in list(itertools.product(*variable_params)):
+
+        # if should_continue(num_nodes=num_nodes, edge_density=edge_density, discrete_node_ratio=discrete_node_ratio, num_samples=num_samples):
+        #    continue
+
         config = dict()
         config['num_nodes'] = num_nodes
         config['edge_density'] = edge_density
@@ -391,6 +410,7 @@ if __name__ == '__main__':
         config['node'] = "galileo"
 
         run_with_config(config=config)
+        print('Sleeping for 60s...')
         time.sleep(60)
 
     ALL_EXPERIMENTS_STARTED = True
