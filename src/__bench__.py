@@ -1,17 +1,17 @@
-import networkx as nx
-import numpy as np
-from src.graph import Graph, GraphBuilder
-from src.utils import write_single_hdf
+import hashlib
+import json
 import logging
-import random
-import string
+import os
 import time
 from datetime import timedelta
 from pathlib import Path
+
+import networkx as nx
+import numpy as np
 import pandas as pd
-import json
-import hashlib
-import os
+
+from src.graph import Graph, GraphBuilder
+from src.utils import write_single_hdf
 
 FOLDER_PATH = "../datasets/"
 DATA_EXTENSION = ".hd5"
@@ -28,7 +28,6 @@ PARAMS['continuous_noise_std'] = [2.0]
 PARAMS['continuous_beta_mean'] = [6.0]
 PARAMS['continuous_beta_std'] = [0.5]
 PARAMS['num_samples'] = [10000, 100000, 1000000]
-
 
 logging.getLogger().setLevel(logging.INFO)
 
@@ -72,9 +71,12 @@ def execute_benchmark(args):
         # end measurement
         end_gt = time.time()
 
-        current_measurement['time_generation'] = timedelta(seconds=end_generation - start) / timedelta(milliseconds=1)
-        current_measurement['time_csv'] = timedelta(seconds=end_csv - start) / timedelta(milliseconds=1)
-        current_measurement['time_gt'] = timedelta(seconds=end_gt - start) / timedelta(milliseconds=1)
+        current_measurement['time_generation'] = timedelta(
+            seconds=end_generation - start) / timedelta(milliseconds=1)
+        current_measurement['time_csv'] = timedelta(seconds=end_csv - start) / timedelta(
+            milliseconds=1)
+        current_measurement['time_gt'] = timedelta(seconds=end_gt - start) / timedelta(
+            milliseconds=1)
         current_measurement['path_dataset'] = data_file_path
         current_measurement['path_ground_truth'] = file_name + GROUND_TRUTH_EXTENSION
         current_measurement['success'] = True
@@ -107,7 +109,7 @@ if __name__ == '__main__':
     # Create folder if needed
     Path(FOLDER_PATH).mkdir(parents=True, exist_ok=True)
 
-    #Calculate number of benchmark iterations
+    # Calculate number of benchmark iterations
     number_iterations = np.prod([len(PARAMS[key]) for key in PARAMS])
     current_number = 0
 
@@ -129,9 +131,12 @@ if __name__ == '__main__':
                                             args['num_nodes'] = num_nodes
                                             args['edge_density'] = edge_density
                                             args['discrete_node_ratio'] = discrete_node_ratio
-                                            args['discrete_signal_to_noise_ratio'] = discrete_signal_to_noise_ratio
-                                            args['min_discrete_value_classes'] = min_discrete_value_classes
-                                            args['max_discrete_value_classes'] = max_discrete_value_classes
+                                            args[
+                                                'discrete_signal_to_noise_ratio'] = discrete_signal_to_noise_ratio
+                                            args[
+                                                'min_discrete_value_classes'] = min_discrete_value_classes
+                                            args[
+                                                'max_discrete_value_classes'] = max_discrete_value_classes
                                             args['continuous_noise_std'] = continuous_noise_std
                                             args['continuous_beta_mean'] = continuous_beta_mean
                                             args['continuous_beta_std'] = continuous_beta_std
@@ -139,16 +144,18 @@ if __name__ == '__main__':
                                             args['keep_data'] = False
 
                                             if is_valid(args):
-
                                                 measurement = execute_benchmark(args)
                                                 measurements.append(measurement)
 
                                                 df_measurements = pd.DataFrame(measurements)
                                                 df_measurements.to_csv(FOLDER_PATH + "metadata.csv")
                                                 current_number += 1
-                                                current_time_delta_global = timedelta(seconds=time.time() - start_time_global) / timedelta(milliseconds=1) / 1000
+                                                current_time_delta_global = timedelta(
+                                                    seconds=time.time() - start_time_global) / timedelta(
+                                                    milliseconds=1) / 1000
 
                                                 avg_time_per_iteration = current_time_delta_global / current_number
-                                                logging.info(f" {current_number} / {number_iterations}"
-                                                             f" Avg: {round(avg_time_per_iteration, 3)}s"
-                                                             f" Est: {round((number_iterations - current_number) * avg_time_per_iteration, 3)}s")
+                                                logging.info(
+                                                    f" {current_number} / {number_iterations}"
+                                                    f" Avg: {round(avg_time_per_iteration, 3)}s"
+                                                    f" Est: {round((number_iterations - current_number) * avg_time_per_iteration, 3)}s")
