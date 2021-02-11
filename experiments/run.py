@@ -18,6 +18,7 @@ from requests.packages.urllib3.util.retry import Retry
 
 from src.graph.graph_builder import GraphBuilder
 from src.utils import write_single_csv
+import queue
 
 logging.getLogger().setLevel(logging.INFO)
 
@@ -44,6 +45,7 @@ NUM_JOBS = 1
 ALL_EXPERIMENTS_STARTED = False
 RUNNING_JOBS = []
 
+CONFIG_QUEUE = queue.Queue()
 MEASUREMENTS_CONFIGS = {}
 MEASUREMENTS = [] # {"config", "experiment_config", "result"}
 
@@ -86,7 +88,10 @@ def on_job_update(job):
 
                 pd.DataFrame(MEASUREMENTS).to_csv(CSV__RESULT_OUTPUT)
 
-            if ALL_EXPERIMENTS_STARTED and len(RUNNING_JOBS) == 0:
+                #Start next
+                run_with_config(config=CONFIG_QUEUE.get())
+
+            if CONFIG_QUEUE.empty():
                 logging.info("No more jobs are running")
                 sio.disconnect()
 
@@ -392,9 +397,6 @@ if __name__ == '__main__':
 
     for num_nodes, edge_density, discrete_node_ratio, num_samples in list(itertools.product(*variable_params)):
 
-        # if should_continue(num_nodes=num_nodes, edge_density=edge_density, discrete_node_ratio=discrete_node_ratio, num_samples=num_samples):
-        #    continue
-
         config = dict()
         config['num_nodes'] = num_nodes
         config['edge_density'] = edge_density
@@ -409,8 +411,8 @@ if __name__ == '__main__':
         config['cores'] = 120
         config['node'] = "galileo"
 
-        run_with_config(config=config)
-        print('Sleeping for 60s...')
-        time.sleep(60)
+        CONFIG_QUEUE.put(config)
 
-    ALL_EXPERIMENTS_STARTED = True
+    # start first config:
+    run_with_config(config=CONFIG_QUEUE.get())
+
