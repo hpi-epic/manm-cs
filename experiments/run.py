@@ -80,7 +80,7 @@ def on_job_update(job):
                 gd_compare = get_gtcompare(job_result["id"])
                 row_properties["gd_compare"] = gd_compare
 
-            row_properties["result"] = job_result
+                row_properties["result"] = job_result
 
             if job_id in RUNNING_JOBS:
                 MEASUREMENTS.append(flatten(row_properties, reducer='path'))
@@ -89,7 +89,8 @@ def on_job_update(job):
                 pd.DataFrame(MEASUREMENTS).to_csv(CSV_RESULT_OUTPUT)
 
                 #Start next
-                run_with_config(config=CONFIG_QUEUE.get())
+                if len(RUNNING_JOBS) == 0:
+                    run_with_config(config=CONFIG_QUEUE.get())
 
             if CONFIG_QUEUE.empty():
                 logging.info("No more jobs are running")
