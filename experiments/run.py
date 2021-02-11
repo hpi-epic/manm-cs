@@ -35,14 +35,13 @@ API_EXPERIMENT_JOBS = lambda id: f"{API_HOST}/api/experiment/{id}/jobs"
 API_RESULT_GTCOMPARE = lambda id: f"{API_HOST}/api/result/{id}/gtcompare"
 API_JOB = lambda id: f"{API_HOST}/api/job/{id}"
 
-CSV__RESULT_OUTPUT = "job_results.csv"
+CSV_RESULT_OUTPUT = "job_results.csv"
 
 
 # TODO
 ALPHA_VALUES = [0.01, 0.05]
 NUM_JOBS = 1
 
-ALL_EXPERIMENTS_STARTED = False
 RUNNING_JOBS = []
 
 CONFIG_QUEUE = queue.Queue()
@@ -75,18 +74,19 @@ def on_job_update(job):
             logging.info(f'Completed job {job_id} with status {job["status"]}')
             row_properties = MEASUREMENTS_CONFIGS[job_id]
 
-            job_result = job["result"]
+            if job["status"] == "done":
+                job_result = job["result"]
 
-            gd_compare = get_gtcompare(job_result["id"])
+                gd_compare = get_gtcompare(job_result["id"])
+                row_properties["gd_compare"] = gd_compare
 
             row_properties["result"] = job_result
-            row_properties["gd_compare"] = gd_compare
 
             if job_id in RUNNING_JOBS:
                 MEASUREMENTS.append(flatten(row_properties, reducer='path'))
                 RUNNING_JOBS.remove(job_id)
 
-                pd.DataFrame(MEASUREMENTS).to_csv(CSV__RESULT_OUTPUT)
+                pd.DataFrame(MEASUREMENTS).to_csv(CSV_RESULT_OUTPUT)
 
                 #Start next
                 run_with_config(config=CONFIG_QUEUE.get())
