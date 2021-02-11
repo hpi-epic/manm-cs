@@ -32,5 +32,5 @@ class DiscreteNoiseBuilder:
         num_noise_classes = self.num_discrete_values - 1
         avg_noise = (1 - signal) / num_noise_classes
         probs = [signal] + [avg_noise for _ in range(num_noise_classes)]
-        
+
         return DiscreteNoise(prob_distribution=CustomDiscreteDistribution(probs=probs))

@@ -1,6 +1,3 @@
-from typing import List
-
-import math
 import numpy as np
 
 from src.prob_distributions.continuous import ContinuousDistribution, GaussianDistribution
@@ -22,5 +19,5 @@ class BimodalDistribution(ContinuousDistribution):
 
         samples = np.concatenate([samples1, samples2])
         np.random.shuffle(samples)
-        
+
         return samples
