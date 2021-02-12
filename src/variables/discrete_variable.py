@@ -3,7 +3,7 @@ from typing import List, Dict, Tuple
 import pandas as pd
 
 from src.noise.discrete_noise import DiscreteNoise
-from src.prob_distributions import UniformDiscreteDistribution
+from src.prob_distributions.discrete import RandomDiscreteDistribution
 from src.variables.variable import Variable, VariableType
 
 
@@ -30,7 +30,7 @@ class DiscreteVariable(Variable):
     def sample(self, df: pd.DataFrame, num_observations: int) -> pd.Series:
         if self._is_root():
             # If the variable is a root variable, the sampling is determined by the noise term only
-            signal = pd.Series(UniformDiscreteDistribution(self.num_values).sample(
+            signal = pd.Series(RandomDiscreteDistribution(self.num_values).sample(
                 num_observations=num_observations))
         else:
             # If the variable has one or more parent variables, the sampling is driven 

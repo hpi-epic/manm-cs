@@ -5,7 +5,7 @@ import numpy as np
 from validation import validate_int, validate_float
 
 from src.graph import Graph
-from src.noise import DiscreteNoise, GaussianNoiseBuilder
+from src.noise import GaussianNoiseBuilder, DiscreteNoiseBuilder
 from src.prob_distributions.continuous.bimodal_distribution import BimodalDistribution
 from src.prob_distributions.continuous.gaussian_distribution import GaussianDistribution
 from src.variables.continuous_variable import ContinuousVariable
@@ -109,7 +109,7 @@ class GraphBuilder:
                 # Consider the first num_discrete_nodes nodes to be of discrete type
                 num_values = np.random.randint(low=self.min_discrete_value_classes,
                                                high=self.max_discrete_value_classes, size=1)[0]
-                noise = DiscreteNoise.builder() \
+                noise = DiscreteNoiseBuilder() \
                     .with_signal_to_noise_ratio(
                     signal_to_noise_ratio=self.discrete_signal_to_noise_ratio) \
                     .with_num_discrete_values(num_discrete_values=num_values) \
