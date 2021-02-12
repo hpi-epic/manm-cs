@@ -1,9 +1,9 @@
 from typing import List, Optional, Dict, Tuple
 
-import numpy as np
 import pandas as pd
 
 from src.noise.discrete_noise import DiscreteNoise
+from src.prob_distributions import UniformDiscreteDistribution
 from src.variables.variable import Variable, VariableType
 
 
@@ -19,18 +19,19 @@ class DiscreteVariable(Variable):
         self.num_values = num_values
 
         # Input parameter validation
-        if len(self._get_continous_parents()) > 0:
-            raise ValueError(f'The discrete variable {self.idx} must only ' \
-                             f'have discrete parents, but were {self._get_continous_parents()}')
+        if len(self._get_continuous_parents()) > 0:
+            raise ValueError(f'The discrete variable {self.idx} must only '
+                             f'have discrete parents, but were {self._get_continuous_parents()}')
         if self.noise.get_num_values() != self.num_values:
             raise ValueError(
-                f'The noise term must define a probability distribution over all possible values. ' \
+                f'The noise term must define a probability distribution over all possible values. '
                 f'Expected num_values equal to {self.num_values}, but received {self.noise.get_num_values()}')
 
     def sample(self, df: pd.DataFrame, num_observations: int) -> pd.Series:
         if self._is_root():
             # If the variable is a root variable, the sampling is determined by the noise term only
-            signal = pd.Series(np.zeros(num_observations, dtype=int))
+            signal = pd.Series(UniformDiscreteDistribution(self.num_values).sample(
+                num_observations=num_observations))
         else:
             # If the variable has one or more parent variables, the sampling is driven 
             # by a combination of signal and noise term
