@@ -1,9 +1,10 @@
 from typing import List, Dict, Tuple
 
+import numpy as np
 import pandas as pd
 
 from src.noise.discrete_noise import DiscreteNoise
-from src.prob_distributions.discrete import RandomDiscreteDistribution
+from src.prob_distributions import CustomDiscreteDistribution
 from src.variables.variable import Variable, VariableType
 
 
@@ -30,7 +31,8 @@ class DiscreteVariable(Variable):
     def sample(self, df: pd.DataFrame, num_observations: int) -> pd.Series:
         if self._is_root():
             # If the variable is a root variable, the sampling is determined by the noise term only
-            signal = pd.Series(RandomDiscreteDistribution(self.num_values).sample(
+            props = [1] + list(np.zeros(self.num_values - 1))
+            signal = pd.Series(CustomDiscreteDistribution(props).sample(
                 num_observations=num_observations))
         else:
             # If the variable has one or more parent variables, the sampling is driven 

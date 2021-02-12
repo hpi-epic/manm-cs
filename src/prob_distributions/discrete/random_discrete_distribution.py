@@ -18,8 +18,6 @@ class RandomDiscreteDistribution(DiscreteDistribution):
             probs.append(next_prob)
         probs.append(1 - sum(probs))
 
-        print('probs: ', probs)
-
         return CustomDiscreteDistribution(probs=probs)
 
     def sample(self, num_observations: int) -> np.array:
