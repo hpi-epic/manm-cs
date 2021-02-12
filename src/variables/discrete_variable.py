@@ -1,4 +1,4 @@
-from typing import List, Optional, Dict, Tuple
+from typing import List, Dict, Tuple
 
 import pandas as pd
 
@@ -13,7 +13,7 @@ class DiscreteVariable(Variable):
     mapping: Dict[Tuple[int, ...], int]
 
     def __init__(self, idx: int, num_values: int, noise: DiscreteNoise,
-                 parents: Optional[List['DiscreteVariable']] = None):
+                 parents: List['DiscreteVariable'] = None):
         parents = [] if parents is None else parents
         super(DiscreteVariable, self).__init__(idx=idx, parents=parents, noise=noise)
         self.num_values = num_values

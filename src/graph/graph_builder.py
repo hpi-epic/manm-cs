@@ -114,8 +114,8 @@ class GraphBuilder:
                     signal_to_noise_ratio=self.discrete_signal_to_noise_ratio) \
                     .with_num_discrete_values(num_discrete_values=num_values) \
                     .build()
-                variable = DiscreteVariable(idx=node_idx, num_values=num_values, parents=parents,
-                                            noise=noise)
+                variable = DiscreteVariable(idx=node_idx, num_values=num_values,
+                                            parents=parents, noise=noise)
             else:
                 noise = GaussianNoiseBuilder() \
                     .with_sigma(sigma=self.continuous_noise_std) \

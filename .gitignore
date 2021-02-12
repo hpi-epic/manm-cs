@@ -132,3 +132,5 @@ dmypy.json
 .idea
 
 datasets
+ground_truth.gml
+samples.csv
