@@ -18,8 +18,8 @@ class Graph:
         # TODO: implement function
         return self.variables
 
-    def sample(self, num_observations: int, num_processes: Optional[int] = None) -> List[
-        pd.DataFrame]:
+    def sample(self, num_observations: int,
+               num_processes: Optional[int] = None) -> List[pd.DataFrame]:
         """Return dataframe of size (num_observations, len(variables))
 
         """

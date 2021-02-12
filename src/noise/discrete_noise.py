@@ -23,7 +23,7 @@ class DiscreteNoiseBuilder:
         self.signal_to_noise_ratio = signal_to_noise_ratio
         return self
 
-    def with_num_discrete_values(self, num_discrete_values: float) -> 'DiscreteNoiseBuilder':
+    def with_num_discrete_values(self, num_discrete_values: int) -> 'DiscreteNoiseBuilder':
         self.num_discrete_values = num_discrete_values
         return self
 
