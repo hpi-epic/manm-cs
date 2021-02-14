@@ -90,6 +90,7 @@ def on_job_update(job):
 
                 #Start next
                 if len(RUNNING_JOBS) == 0:
+                    logging.info("Starting new config run")
                     run_with_config(config=CONFIG_QUEUE.get())
 
             if CONFIG_QUEUE.empty():
@@ -390,7 +391,7 @@ def should_continue(num_nodes: int, edge_density: float, discrete_node_ratio: fl
 
 
 if __name__ == '__main__':
-    num_nodes_list = [100, 200]
+    num_nodes_list = [5, 10, 20, 40]
     edge_density_list = [0.2, 0.4, 0.6]
     discrete_node_ratio_list = [0.0, 0.4, 0.6, 1.0]
     num_samples_list = [1000, 2500, 5000, 7500, 10000]
