@@ -12,7 +12,7 @@ SAMPLES_FILE = "samples.csv"
 
 
 def type_in_range(type_: Type, lower_bound: Optional[float], upper_bound: Optional[float]) -> \
-Callable[[str], Any]:
+        Callable[[str], Any]:
     def assert_float_in_range(x: str):
         try:
             x = type_(x)
@@ -116,4 +116,4 @@ if __name__ == '__main__':
 
     nx_graph = graph.to_networkx_graph()
     nx.write_gml(nx_graph, GROUND_TRUTH_FILE)
-    upload_results(args.uploadEndpoint, args.apiHost)
+    #upload_results(args.uploadEndpoint, args.apiHost)

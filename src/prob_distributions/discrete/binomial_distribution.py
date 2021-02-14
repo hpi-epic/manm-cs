@@ -8,9 +8,7 @@ class BinomialDistribution(DiscreteDistribution):
 
     def __init__(self, probability: float):
         self.probability = probability
-
-    def get_num_values(self) -> int:
-        return 2
+        super(BinomialDistribution, self).__init__(num_values=2)
 
     def sample(self, num_observations: int) -> np.array:
         return np.random.binomial(1, self.probability, num_observations)
