@@ -1,7 +1,7 @@
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 from src.variables import VariableType
 
