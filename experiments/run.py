@@ -75,10 +75,10 @@ def on_job_update(job):
 
             job_result = job["result"]
 
-            gd_compare = get_gtcompare(job_result["id"])
-
-            row_properties["result"] = job_result
-            row_properties["gd_compare"] = gd_compare
+            if job["status"] != "error": # or if job_result:
+                gd_compare = get_gtcompare(job_result["id"])
+                row_properties["result"] = job_result
+                row_properties["gd_compare"] = gd_compare
 
             if job_id in RUNNING_JOBS:
                 MEASUREMENTS.append(flatten(row_properties, reducer='path'))
