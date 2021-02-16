@@ -375,6 +375,8 @@ def run_with_config(config: dict, num_samples_list: List[int]):
                     "experiment_config": experiments[index]
                 }
         logging.info('Successfully started all experiments')
+        logging.info('Sleeping for 10s ...')
+        time.sleep(10)
 
     # delete_dataset_with_data(table_name=data_table_name, dataset_id=dataset_id, api_host=API_HOST)
 
@@ -401,6 +403,7 @@ if __name__ == '__main__':
         config['node'] = "galileo"
 
         run_with_config(config=config, num_samples_list=num_samples_list)
-        time.sleep(60)
+        logging.info('Sleeping for 120s ...')
+        time.sleep(120)
 
     ALL_EXPERIMENTS_STARTED = True
