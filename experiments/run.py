@@ -4,8 +4,7 @@ import logging
 import itertools
 import os
 import time
-from typing import Dict
-from typing import Tuple
+from typing import Dict, Tuple, List
 from uuid import uuid4
 import socketio
 from flatten_dict import flatten
@@ -38,8 +37,8 @@ CSV__RESULT_OUTPUT = "job_results.csv"
 
 
 # TODO
-ALPHA_VALUES = [0.01, 0.05]
-NUM_JOBS = 1
+ALPHA_VALUES = [0.05]
+NUM_JOBS = 10
 
 ALL_EXPERIMENTS_STARTED = False
 RUNNING_JOBS = []
@@ -113,7 +112,7 @@ def get_gtcompare(result_id: int):
 
 
 def generate_experiment_settings(dataset_id: int, max_discrete_value_classes: int, cores: int,
-                                 alpha: float, discrete_node_ratio: float) -> Dict:
+                                 alpha: float, discrete_node_ratio: float, sampling_factor: float) -> Dict:
     if discrete_node_ratio == 1:
         return {
             "algorithm_id": 1,
@@ -126,7 +125,8 @@ def generate_experiment_settings(dataset_id: int, max_discrete_value_classes: in
                 "independence_test": "disCI",
                 "skeleton_method": "stable.fast",
                 "subset_size": -1,
-                "verbose": 0
+                "verbose": 0,
+                "sampling_factor": sampling_factor
             }
         }
     elif discrete_node_ratio == 0:
@@ -141,7 +141,8 @@ def generate_experiment_settings(dataset_id: int, max_discrete_value_classes: in
                 "independence_test": "gaussCI",
                 "skeleton_method": "stable.fast",
                 "subset_size": -1,
-                "verbose": 0
+                "verbose": 0,
+                "sampling_factor": sampling_factor
             }
         }
     else:
@@ -156,7 +157,8 @@ def generate_experiment_settings(dataset_id: int, max_discrete_value_classes: in
                 'discrete_limit': max_discrete_value_classes,
                 'independence_test': "mi-cg",
                 'subset_size': -1,
-                'verbose': 0
+                'verbose': 0,
+                "sampling_factor": sampling_factor
             }
         }
 
@@ -230,8 +232,7 @@ def sql_column_type_string(column_name:str, dtype: str) -> str:
     raise AttributeError(f"dtype {dtype} unknown")
 
 
-def upload_data_and_create_dataset(benchmark_id: str, data_path: str,
-                                   graph_path: str) -> Tuple[int, str]:
+def upload_data(benchmark_id: str, data_path: str) -> Tuple[int, str]:
     data_table_name = f'benchmarking_experiment_{benchmark_id}_data'
     df = pd.read_csv(data_path)
     sql_columns = ', '.join([sql_column_type_string(name, df.dtypes[name]) for name in df.columns])
@@ -248,31 +249,11 @@ def upload_data_and_create_dataset(benchmark_id: str, data_path: str,
         end = time.time()
     logging.info(f'Successfully uploaded data to table {data_table_name} in {end - start}s')
 
-    json_data = {
-        'name': f'benchmarking-experiment-{benchmark_id}',
-        'description': f'Dataset containing the data for '
-                       f'the benchmarking-experiment with id {benchmark_id}',
-        'load_query': f'SELECT * FROM {data_table_name}',
-        'data_source': 'postgres'
-    }
-    logging.info('Creating dataset...')
-    res = http.post(url=f'{API_HOST}/api/datasets', json=json_data)
-    res.raise_for_status()
-    res = res.json()
-    dataset_id = res['id']
-    logging.info('Successfully created dataset')
-
-    logging.info('Uploading ground truth...')
-    files = {"graph_file": open(graph_path, "rb")}
-    res = http.post(url=f'{API_HOST}/api/dataset/{dataset_id}/upload', files=files)
-    res.raise_for_status()
-    logging.info('Successfully uploaded ground truth')
-
-    return dataset_id, data_table_name
+    return data_table_name
 
 
 def add_experiment(dataset_id: int, max_discrete_value_classes: int, cores: int,
-                   discrete_node_ratio: float):
+                   discrete_node_ratio: float, sampling_factor: float):
     experiments = []
     for alpha in ALPHA_VALUES:
         experiments += [generate_experiment_settings(
@@ -280,7 +261,8 @@ def add_experiment(dataset_id: int, max_discrete_value_classes: int, cores: int,
             max_discrete_value_classes=max_discrete_value_classes,
             cores=cores,
             alpha=alpha,
-            discrete_node_ratio=discrete_node_ratio
+            discrete_node_ratio=discrete_node_ratio,
+            sampling_factor=sampling_factor
         )]
 
     responses = []
@@ -326,56 +308,85 @@ def delete_dataset_with_data(table_name: str, dataset_id: str, api_host: id):
     http.delete(f"{api_host}/api/dataset/{dataset_id}")
 
 
-def run_with_config(config: dict):
+def create_dataset(benchmark_id: int, data_table_name: str, graph_path: str) -> int:
+    # Create dataset metadata object
+    json_data = {
+        'name': f'benchmarking-experiment-{benchmark_id}',
+        'description': f'Dataset containing the data for '
+                    f'the benchmarking-experiment with id {benchmark_id}',
+        'load_query': f'SELECT * FROM {data_table_name}',
+        'data_source': 'postgres'
+    }
+    logging.info('Creating dataset...')
+    res = http.post(url=f'{API_HOST}/api/datasets', json=json_data)
+    res.raise_for_status()
+    res = res.json()
+    dataset_id = res['id']
+    logging.info('Successfully created dataset')
+
+    logging.info('Uploading ground truth...')
+    files = {"graph_file": open(graph_path, "rb")}
+    res = http.post(url=f'{API_HOST}/api/dataset/{dataset_id}/upload', files=files)
+    res.raise_for_status()
+    logging.info('Successfully uploaded ground truth')
+
+    return dataset_id
+
+
+def run_with_config(config: dict, num_samples_list: List[int]):
     benchmark_id = hashlib.md5(uuid4().__str__().encode()).hexdigest()
+    config["num_samples"] = max(num_samples_list)
     data_path, graph_path = generate_data(benchmark_id=benchmark_id, config=config)
-    dataset_id, data_table_name = upload_data_and_create_dataset(benchmark_id=benchmark_id,
-                                                                 data_path=data_path,
-                                                                 graph_path=graph_path)
+    data_table_name = upload_data(benchmark_id=benchmark_id,
+                                       data_path=data_path)
+    dataset_id = create_dataset(benchmark_id=benchmark_id, data_table_name=data_table_name, 
+                                graph_path=graph_path)
 
-    logging.info('Adding experiment...')
-    experiments = add_experiment(
-        dataset_id=dataset_id,
-        max_discrete_value_classes=config['max_discrete_value_classes'],
-        discrete_node_ratio=config['discrete_node_ratio'],
-        cores=config["cores"]
-    )
-    logging.info('Successfully added experiment')
-
-    logging.info('Starting all experiments...')
-    experiment_ids = [experiment["id"] for experiment in experiments]
-
-    for index, experiment_id in enumerate(experiment_ids):
-        run_experiment(
-            experiment_id=experiment_id,
-            node=config["node"],
-            runs=NUM_JOBS,
-            enforce_cpus=0
+    for num_samples in num_samples_list:
+        logging.info('Adding experiment...')
+        experiments = add_experiment(
+            dataset_id=dataset_id,
+            max_discrete_value_classes=config['max_discrete_value_classes'],
+            discrete_node_ratio=config['discrete_node_ratio'],
+            cores=config["cores"],
+            sampling_factor=round(num_samples / max(num_samples_list), 2)
         )
-        logging.info(f'Getting jobs for experiment {experiment_id}')
+        logging.info('Successfully added experiment')
 
-        jobs = get_jobs(experiment_id)
+        logging.info('Starting all experiments...')
+        experiment_ids = [experiment["id"] for experiment in experiments]
 
-        for job in jobs:
-            job_id = job["id"]
-            RUNNING_JOBS.append(job_id)
-            MEASUREMENTS_CONFIGS[job_id] = {
-                "config": config,
-                "experiment_config": experiments[index]
-            }
-    logging.info('Successfully started all experiments')
+        for index, experiment_id in enumerate(experiment_ids):
+            run_experiment(
+                experiment_id=experiment_id,
+                node=config["node"],
+                runs=NUM_JOBS,
+                enforce_cpus=0
+            )
+            logging.info(f'Getting jobs for experiment {experiment_id}')
+
+            jobs = get_jobs(experiment_id)
+
+            for job in jobs:
+                job_id = job["id"]
+                RUNNING_JOBS.append(job_id)
+                MEASUREMENTS_CONFIGS[job_id] = {
+                    "config": config,
+                    "experiment_config": experiments[index]
+                }
+        logging.info('Successfully started all experiments')
 
     # delete_dataset_with_data(table_name=data_table_name, dataset_id=dataset_id, api_host=API_HOST)
 
 
 if __name__ == '__main__':
-    num_nodes_list = [20, 50, 100, 200]
+    num_nodes_list = [5, 10, 20, 50, 100]
     edge_density_list = [0.2, 0.4, 0.6]
     discrete_node_ratio_list = [0.0, 0.4, 0.6, 1.0]
-    num_samples_list = [1000, 2500, 5000, 7500, 10000]
-    variable_params = [num_nodes_list, edge_density_list, discrete_node_ratio_list, num_samples_list]
+    num_samples_list = [100, 500, 1000, 2500, 5000, 7500, 10000]
+    variable_params = [num_nodes_list, edge_density_list, discrete_node_ratio_list]
 
-    for num_nodes, edge_density, discrete_node_ratio, num_samples in list(itertools.product(*variable_params)):
+    for num_nodes, edge_density, discrete_node_ratio in list(itertools.product(*variable_params)):
         config = dict()
         config['num_nodes'] = num_nodes
         config['edge_density'] = edge_density
@@ -386,11 +397,10 @@ if __name__ == '__main__':
         config['continuous_noise_std'] = 0.2
         config['continuous_beta_mean'] = 1.0
         config['continuous_beta_std'] = 0.0
-        config['num_samples'] = num_samples
         config['cores'] = 120
         config['node'] = "galileo"
 
-        run_with_config(config=config)
+        run_with_config(config=config, num_samples_list=num_samples_list)
         time.sleep(60)
 
     ALL_EXPERIMENTS_STARTED = True
