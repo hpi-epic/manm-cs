@@ -14,6 +14,8 @@ import psycopg2
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
+import subprocess
+import sys
 
 from src.graph.graph_builder import GraphBuilder
 from src.utils import write_single_csv
@@ -21,12 +23,12 @@ from src.utils import write_single_csv
 logging.getLogger().setLevel(logging.INFO)
 
 POSTGRES_HOST = "localhost"
-POSTGRES_PORT = "5433"
+POSTGRES_PORT = "5432"
 POSTGRES_USER = "admin"
 POSTGRES_PASSWORD = "admin"
 POSTGRES_DBNAME = "postgres"
 
-API_HOST = "http://vm-mpws2018-proj.eaalab.hpi.uni-potsdam.de"
+API_HOST = "http://localhost:5000"
 API_EXPERIMENTS = f"{API_HOST}/api/experiments"
 API_EXPERIMENT_START = lambda id: f"{API_HOST}/api/experiment/{id}/start"
 API_EXPERIMENT_JOBS = lambda id: f"{API_HOST}/api/experiment/{id}/jobs"
@@ -38,7 +40,8 @@ CSV__RESULT_OUTPUT = "job_results.csv"
 
 # TODO
 ALPHA_VALUES = [0.05]
-NUM_JOBS = 10
+NUM_JOBS = 1
+DOCKER_PROCESS_TIMEOUT_SEC=30*60
 
 ALL_EXPERIMENTS_STARTED = False
 RUNNING_JOBS = []
@@ -57,14 +60,14 @@ adapter = HTTPAdapter(max_retries=retry_strategy)
 http = requests.Session()
 http.mount("http://", adapter)
 
+docker_run_logs_dir = "docker_run_logs"
+os.makedirs(docker_run_logs_dir, exist_ok=True)
+
 # Setup job listener
 sio = socketio.Client()
 sio.connect(API_HOST)
 
-@sio.on('job')
-def on_job_update(job):
-
-    job_id = job["id"]
+def check_job_for_completion(job_id):
     if job_id in RUNNING_JOBS:
         job = get_job(job_id)
 
@@ -88,6 +91,20 @@ def on_job_update(job):
             if ALL_EXPERIMENTS_STARTED and len(RUNNING_JOBS) == 0:
                 logging.info("No more jobs are running")
                 sio.disconnect()
+        else:
+            logging.info(f"Job with id {job_id} is not finished, its status is {job['status']}")
+
+def check_all_jobs_for_completion():
+    # sometimes the job message from socketio comes in when the job status is not yet done, so we need to recheck this.
+    logging.info("Checking all jobs for completion")
+    for job_id in RUNNING_JOBS:
+        check_job_for_completion(job_id)
+
+@sio.on('job')
+def on_job_update(job):
+
+    job_id = job["id"]
+    check_job_for_completion(job_id)
 
 
 def get_job(job_id: int):
@@ -332,6 +349,16 @@ def create_dataset(benchmark_id: int, data_table_name: str, graph_path: str) -> 
 
     return dataset_id
 
+def run_job_in_docker(job: dict, experiment: dict) -> subprocess.Popen:
+    log_file = os.path.join(docker_run_logs_dir, f"{job['id']}.log")
+    command = ["docker", "run", "--net=host", "mpci/mpci_execution_r", experiment['algorithm']['script_filename'], "-j",
+               str(job['id']), "-d", str(experiment['dataset_id']), "--api_host", "localhost:5000", "--send_sepsets", "0"]
+    for k, v in experiment['parameters'].items():
+        command.append('--' + k)
+        command.append(str(v))
+    with open(log_file, 'w') as log_file_handle:
+        ls_output = subprocess.Popen(command, stdout=log_file_handle, stderr=log_file_handle)
+    return ls_output
 
 def run_with_config(config: dict, num_samples_list: List[int]):
     benchmark_id = hashlib.md5(uuid4().__str__().encode()).hexdigest()
@@ -367,6 +394,8 @@ def run_with_config(config: dict, num_samples_list: List[int]):
 
             jobs = get_jobs(experiment_id)
 
+            # we start NUM_JOBS jobs in parallel, then wait for them to be finished
+            docker_subprocess_handles = []
             for job in jobs:
                 job_id = job["id"]
                 RUNNING_JOBS.append(job_id)
@@ -374,18 +403,33 @@ def run_with_config(config: dict, num_samples_list: List[int]):
                     "config": config,
                     "experiment_config": experiments[index]
                 }
+                subprocess_handle = run_job_in_docker(job, experiments[index])
+                docker_subprocess_handles.append(subprocess_handle)
+            for process in docker_subprocess_handles:
+                try:
+                    process.communicate(timeout=DOCKER_PROCESS_TIMEOUT_SEC)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    logging.info("The process was killed commandline is {}".format(process.args))
+            # for job in jobs:
+            #     job_id = job["id"]
+            #     check_job_for_completion(job_id)
         logging.info('Successfully started all experiments')
-        logging.info('Sleeping for 10s ...')
-        time.sleep(10)
+        check_all_jobs_for_completion()
 
     # delete_dataset_with_data(table_name=data_table_name, dataset_id=dataset_id, api_host=API_HOST)
 
 
 if __name__ == '__main__':
-    num_nodes_list = [5, 10, 20, 50, 100]
-    edge_density_list = [0.2, 0.4, 0.6]
-    discrete_node_ratio_list = [0.0, 0.4, 0.6, 1.0]
-    num_samples_list = [100, 500, 1000, 2500, 5000, 7500, 10000]
+    # num_nodes_list = [5, 10, 20, 50, 100]
+    # edge_density_list = [0.2, 0.4, 0.6]
+    # discrete_node_ratio_list = [0.0, 0.4, 0.6, 1.0]
+    # num_samples_list = [100, 500, 1000, 2500, 5000, 7500, 10000]
+
+    num_nodes_list = [5]
+    edge_density_list = [0.4]
+    discrete_node_ratio_list = [0.5]
+    num_samples_list = [100, 1000]
     variable_params = [num_nodes_list, edge_density_list, discrete_node_ratio_list]
 
     for num_nodes, edge_density, discrete_node_ratio in list(itertools.product(*variable_params)):
@@ -399,11 +443,16 @@ if __name__ == '__main__':
         config['continuous_noise_std'] = 0.2
         config['continuous_beta_mean'] = 1.0
         config['continuous_beta_std'] = 0.0
-        config['cores'] = 120
+        config['cores'] = 2
         config['node'] = "galileo"
 
         run_with_config(config=config, num_samples_list=num_samples_list)
-        logging.info('Sleeping for 120s ...')
-        time.sleep(120)
 
     ALL_EXPERIMENTS_STARTED = True
+
+    while RUNNING_JOBS:
+        logging.info(f"Still waiting for jobs {RUNNING_JOBS}")
+
+        time.sleep(60)
+    logging.info(f"All jobs completed")
+    sio.disconnect()
