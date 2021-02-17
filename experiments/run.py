@@ -40,7 +40,7 @@ CSV__RESULT_OUTPUT = "job_results.csv"
 
 # TODO
 ALPHA_VALUES = [0.05]
-NUM_JOBS = 1
+NUM_JOBS = 5
 DOCKER_PROCESS_TIMEOUT_SEC=30*60
 
 ALL_EXPERIMENTS_STARTED = False
@@ -366,7 +366,7 @@ def run_with_config(config: dict, num_samples_list: List[int]):
     data_path, graph_path = generate_data(benchmark_id=benchmark_id, config=config)
     data_table_name = upload_data(benchmark_id=benchmark_id,
                                        data_path=data_path)
-    dataset_id = create_dataset(benchmark_id=benchmark_id, data_table_name=data_table_name, 
+    dataset_id = create_dataset(benchmark_id=benchmark_id, data_table_name=data_table_name,
                                 graph_path=graph_path)
 
     for num_samples in num_samples_list:
@@ -421,15 +421,10 @@ def run_with_config(config: dict, num_samples_list: List[int]):
 
 
 if __name__ == '__main__':
-    # num_nodes_list = [5, 10, 20, 50, 100]
-    # edge_density_list = [0.2, 0.4, 0.6]
-    # discrete_node_ratio_list = [0.0, 0.4, 0.6, 1.0]
-    # num_samples_list = [100, 500, 1000, 2500, 5000, 7500, 10000]
-
-    num_nodes_list = [5]
-    edge_density_list = [0.4]
-    discrete_node_ratio_list = [0.5]
-    num_samples_list = [100, 1000]
+    num_nodes_list = [5, 10, 20, 50, 100]
+    edge_density_list = [0.2, 0.4, 0.6]
+    discrete_node_ratio_list = [0.0, 0.4, 0.6, 1.0]
+    num_samples_list = [100, 500, 1000, 2500, 5000, 7500, 10000]
     variable_params = [num_nodes_list, edge_density_list, discrete_node_ratio_list]
 
     for num_nodes, edge_density, discrete_node_ratio in list(itertools.product(*variable_params)):
@@ -443,7 +438,7 @@ if __name__ == '__main__':
         config['continuous_noise_std'] = 0.2
         config['continuous_beta_mean'] = 1.0
         config['continuous_beta_std'] = 0.0
-        config['cores'] = 2
+        config['cores'] = 10
         config['node'] = "galileo"
 
         run_with_config(config=config, num_samples_list=num_samples_list)
