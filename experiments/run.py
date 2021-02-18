@@ -17,7 +17,7 @@ from requests.packages.urllib3.util.retry import Retry
 import subprocess
 import sys
 
-from src.graph.graph_builder import GraphBuilder
+from src.graph.graph_builder import GraphBuilder, Graph
 from src.utils import write_single_csv
 
 logging.getLogger().setLevel(logging.INFO)
@@ -209,22 +209,32 @@ def execute_with_connection():
             logging.info(f'Database connection closed.')
 
 
+def generate_graph_with_at_least_one_edge(config: dict) -> Graph:
+    max_retries = 100
+    for retry_id in range(max_retries):
+        logging.info('Starting graph builder...')
+        graph = GraphBuilder() \
+            .with_num_nodes(config['num_nodes']) \
+            .with_edge_density(config['edge_density']) \
+            .with_discrete_node_ratio(config['discrete_node_ratio']) \
+            .with_discrete_signal_to_noise_ratio(config['discrete_signal_to_noise_ratio']) \
+            .with_min_discrete_value_classes(config['min_discrete_value_classes']) \
+            .with_max_discrete_value_classes(config['max_discrete_value_classes']) \
+            .with_continuous_noise_std(config['continuous_noise_std']) \
+            .with_continuous_beta_mean(config['continuous_beta_mean']) \
+            .with_continuous_beta_std(config['continuous_beta_std']) \
+            .build(seed=retry_id)
+        nx_graph = graph.to_networkx_graph()
+        if nx_graph.edges:
+            return graph
+    raise Exception(f"Retried {max_retries} times to generate a graph but no edge was generated Config: {config}")
+
 def generate_data(benchmark_id: str, config: dict) -> Tuple[str, str]:
     os.makedirs('data', exist_ok=True)
     data_path = f'data/benchmarking-experiment-{benchmark_id}-data.csv'
 
-    logging.info('Starting graph builder...')
-    graph = GraphBuilder() \
-        .with_num_nodes(config['num_nodes']) \
-        .with_edge_density(config['edge_density']) \
-        .with_discrete_node_ratio(config['discrete_node_ratio']) \
-        .with_discrete_signal_to_noise_ratio(config['discrete_signal_to_noise_ratio']) \
-        .with_min_discrete_value_classes(config['min_discrete_value_classes']) \
-        .with_max_discrete_value_classes(config['max_discrete_value_classes']) \
-        .with_continuous_noise_std(config['continuous_noise_std']) \
-        .with_continuous_beta_mean(config['continuous_beta_mean']) \
-        .with_continuous_beta_std(config['continuous_beta_std']) \
-        .build()
+    graph = generate_graph_with_at_least_one_edge(config)
+
     logging.info('Starting graph sampling...')
     dfs = graph.sample(num_observations=config['num_samples'])
 
@@ -349,6 +359,7 @@ def create_dataset(benchmark_id: int, data_table_name: str, graph_path: str) -> 
 
     return dataset_id
 
+
 def run_job_in_docker(job: dict, experiment: dict) -> subprocess.Popen:
     log_file = os.path.join(docker_run_logs_dir, f"{job['id']}.log")
     command = ["docker", "run", "--net=host", "mpci/mpci_execution_r", experiment['algorithm']['script_filename'], "-j",
@@ -357,6 +368,8 @@ def run_job_in_docker(job: dict, experiment: dict) -> subprocess.Popen:
         command.append('--' + k)
         command.append(str(v))
     with open(log_file, 'w') as log_file_handle:
+        log_file_handle.write(" ".join(command))
+        log_file_handle.write("\n")
         ls_output = subprocess.Popen(command, stdout=log_file_handle, stderr=log_file_handle)
     return ls_output
 
