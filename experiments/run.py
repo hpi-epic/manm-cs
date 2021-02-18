@@ -3,6 +3,7 @@ import hashlib
 import logging
 import itertools
 import os
+import threading
 import time
 from typing import Dict, Tuple, List
 from uuid import uuid4
@@ -45,6 +46,7 @@ DOCKER_PROCESS_TIMEOUT_SEC=30*60
 
 ALL_EXPERIMENTS_STARTED = False
 RUNNING_JOBS = []
+write_file_lock = threading.Lock()
 
 MEASUREMENTS_CONFIGS = {}
 MEASUREMENTS = [] # {"config", "experiment_config", "result"}
@@ -81,12 +83,12 @@ def check_job_for_completion(job_id):
                 gd_compare = get_gtcompare(job_result["id"])
                 row_properties["result"] = job_result
                 row_properties["gd_compare"] = gd_compare
+            with write_file_lock:
+                if job_id in RUNNING_JOBS:
+                    MEASUREMENTS.append(flatten(row_properties, reducer='path'))
+                    RUNNING_JOBS.remove(job_id)
 
-            if job_id in RUNNING_JOBS:
-                MEASUREMENTS.append(flatten(row_properties, reducer='path'))
-                RUNNING_JOBS.remove(job_id)
-
-                pd.DataFrame(MEASUREMENTS).to_csv(CSV__RESULT_OUTPUT)
+                    pd.DataFrame(MEASUREMENTS).to_csv(CSV__RESULT_OUTPUT)
 
             if ALL_EXPERIMENTS_STARTED and len(RUNNING_JOBS) == 0:
                 logging.info("No more jobs are running")
