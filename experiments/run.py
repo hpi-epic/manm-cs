@@ -445,10 +445,10 @@ def run_with_config(config: dict, num_samples_list: List[int]):
 
 
 if __name__ == '__main__':
-    num_nodes_list = [5, 10, 20, 50, 100]
+    num_nodes_list = [5, 10, 20, 50]
     edge_density_list = [0.2, 0.4, 0.6]
     discrete_node_ratio_list = [0.0, 0.4, 0.6, 1.0]
-    num_samples_list = [100, 500, 1000, 2500, 5000, 7500, 10000]
+    num_samples_list = [100, 500, 1000, 5000, 10000, 50000, 100000]
     variable_params = [num_nodes_list, edge_density_list, discrete_node_ratio_list]
 
     for num_nodes, edge_density, discrete_node_ratio in list(itertools.product(*variable_params)):
@@ -462,7 +462,7 @@ if __name__ == '__main__':
         config['continuous_noise_std'] = 0.2
         config['continuous_beta_mean'] = 1.0
         config['continuous_beta_std'] = 0.0
-        config['cores'] = 10
+        config['cores'] = 80
         config['node'] = "galileo"
 
         run_with_config(config=config, num_samples_list=num_samples_list)
