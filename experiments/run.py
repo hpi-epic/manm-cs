@@ -419,10 +419,19 @@ def run_with_config(config: dict, num_samples_list: List[int]):
                     "experiment_config": experiments[index]
                 }
                 subprocess_handle = run_job_in_docker(job, experiments[index])
-                docker_subprocess_handles.append(subprocess_handle)
-            for process in docker_subprocess_handles:
+                docker_subprocess_handles.append((job_id, subprocess_handle))
+
+            for job_id, process in docker_subprocess_handles:
                 try:
                     process.communicate(timeout=DOCKER_PROCESS_TIMEOUT_SEC)
+                    return_code = process.returncode
+                    if return_code != 0:
+                        with execute_with_connection() as conn:
+                            update_job_status_error = f"UPDATE job SET status = 'error', error_code = 'UNKNOWN' WHERE id={job_id}"
+                            cur = conn.cursor()
+                            cur.execute(update_job_status_error)
+                            conn.commit()
+                    
                 except subprocess.TimeoutExpired:
                     process.kill()
                     logging.info("The process was killed commandline is {}".format(process.args))
