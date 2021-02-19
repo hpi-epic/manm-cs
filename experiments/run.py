@@ -375,6 +375,16 @@ def run_job_in_docker(job: dict, experiment: dict) -> subprocess.Popen:
         ls_output = subprocess.Popen(command, stdout=log_file_handle, stderr=log_file_handle)
     return ls_output
 
+def set_error_code_for_job(job_id: int):
+    with execute_with_connection() as conn:
+        update_job_status_error = f"UPDATE job SET status = 'error', error_code = 'UNKNOWN' WHERE id={job_id}"
+        cur = conn.cursor()
+        cur.execute(update_job_status_error)
+        conn.commit()
+    failed_jobs_file = os.path.join(docker_run_logs_dir, "failed_jobs.log")
+    with open(failed_jobs_file, 'a') as failed_jobs_file_handle:
+        failed_jobs_file_handle.write(f"{job_id} \n")
+
 def run_with_config(config: dict, num_samples_list: List[int]):
     benchmark_id = hashlib.md5(uuid4().__str__().encode()).hexdigest()
     config["num_samples"] = max(num_samples_list)
@@ -391,7 +401,7 @@ def run_with_config(config: dict, num_samples_list: List[int]):
             max_discrete_value_classes=config['max_discrete_value_classes'],
             discrete_node_ratio=config['discrete_node_ratio'],
             cores=config["cores"],
-            sampling_factor=round(num_samples / max(num_samples_list), 2)
+            sampling_factor=num_samples / max(num_samples_list)
         )
         logging.info('Successfully added experiment')
 
@@ -426,15 +436,12 @@ def run_with_config(config: dict, num_samples_list: List[int]):
                     process.communicate(timeout=DOCKER_PROCESS_TIMEOUT_SEC)
                     return_code = process.returncode
                     if return_code != 0:
-                        with execute_with_connection() as conn:
-                            update_job_status_error = f"UPDATE job SET status = 'error', error_code = 'UNKNOWN' WHERE id={job_id}"
-                            cur = conn.cursor()
-                            cur.execute(update_job_status_error)
-                            conn.commit()
+                        set_error_code_for_job(job_id)
                     
                 except subprocess.TimeoutExpired:
                     process.kill()
                     logging.info("The process was killed commandline is {}".format(process.args))
+                    set_error_code_for_job(job_id)
             # for job in jobs:
             #     job_id = job["id"]
             #     check_job_for_completion(job_id)
