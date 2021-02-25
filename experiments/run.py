@@ -385,14 +385,27 @@ def set_error_code_for_job(job_id: int):
     with open(failed_jobs_file, 'a') as failed_jobs_file_handle:
         failed_jobs_file_handle.write(f"{job_id} \n")
 
-def run_with_config(config: dict, num_samples_list: List[int]):
+def rename_data_and_graph_files(graph_path: str, data_path: str, dataset_id: int) -> None:
+    path, file = os.path.split(graph_path)
+    file = f"{dataset_id}.gml"
+    new_path = os.path.join(path, file)
+    os.rename(graph_path, new_path)
+
+    path, file = os.path.split(data_path)
+    file = f"{dataset_id}.csv"
+    new_path = os.path.join(path, file)
+    os.rename(data_path, new_path)
+    
+def run_with_config(config: dict, num_samples_list: List[int], dataset_num_samples: int):
+    assert dataset_num_samples >= max(num_samples_list), f"dataset_num_samples {dataset_num_samples} should be >= max {max(num_samples_list)}"
     benchmark_id = hashlib.md5(uuid4().__str__().encode()).hexdigest()
-    config["num_samples"] = max(num_samples_list)
+    config["num_samples"] = dataset_num_samples
     data_path, graph_path = generate_data(benchmark_id=benchmark_id, config=config)
     data_table_name = upload_data(benchmark_id=benchmark_id,
                                        data_path=data_path)
     dataset_id = create_dataset(benchmark_id=benchmark_id, data_table_name=data_table_name,
                                 graph_path=graph_path)
+    rename_data_and_graph_files(graph_path, data_path, dataset_id)
 
     for num_samples in num_samples_list:
         logging.info('Adding experiment...')
@@ -401,7 +414,7 @@ def run_with_config(config: dict, num_samples_list: List[int]):
             max_discrete_value_classes=config['max_discrete_value_classes'],
             discrete_node_ratio=config['discrete_node_ratio'],
             cores=config["cores"],
-            sampling_factor=num_samples / max(num_samples_list)
+            sampling_factor=num_samples / dataset_num_samples
         )
         logging.info('Successfully added experiment')
 
@@ -457,6 +470,7 @@ if __name__ == '__main__':
     discrete_node_ratio_list = [0.0, 0.4, 0.6, 1.0]
     num_samples_list = [100, 500, 1000, 5000, 10000, 50000, 100000]
     variable_params = [num_nodes_list, edge_density_list, discrete_node_ratio_list]
+    dataset_num_samples = 200000
 
     for num_nodes, edge_density, discrete_node_ratio in list(itertools.product(*variable_params)):
         config = dict()
