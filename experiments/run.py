@@ -486,7 +486,7 @@ if __name__ == '__main__':
         config['cores'] = 80
         config['node'] = "galileo"
 
-        run_with_config(config=config, num_samples_list=num_samples_list)
+        run_with_config(config=config, num_samples_list=num_samples_list, dataset_num_samples=dataset_num_samples)
 
     ALL_EXPERIMENTS_STARTED = True
 
