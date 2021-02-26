@@ -122,7 +122,7 @@ class GraphBuilder:
                 num_continuous_parents = sum(
                     [1 for p in parents if p.type == VariableType.CONTINUOUS])
 
-                # TODO: remove for testing
+                # TODO: Removed for testing
                 # betas_dist1 = GaussianDistribution(mu=self.continuous_beta_mean,
                 #                                    sigma=self.continuous_beta_std)
                 # betas_dist2 = GaussianDistribution(mu=-1 * self.continuous_beta_mean,
