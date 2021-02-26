@@ -355,7 +355,7 @@ def create_dataset(benchmark_id: int, data_table_name: str, graph_path: str) -> 
 
     logging.info('Uploading ground truth...')
     files = {"graph_file": open(graph_path, "rb")}
-    res = http.post(url=f'{API_HOST}/api/dataset/{dataset_id}/upload', files=files)
+    res = http.post(url=f'{API_HOST}/api/dataset/{dataset_id}/ground-truth', files=files)
     res.raise_for_status()
     logging.info('Successfully uploaded ground truth')
 
@@ -396,11 +396,15 @@ def rename_data_and_graph_files(graph_path: str, data_path: str, dataset_id: int
     new_path = os.path.join(path, file)
     os.rename(data_path, new_path)
     
-def run_with_config(config: dict, num_samples_list: List[int], dataset_num_samples: int, dataset_id: int):
+def run_with_config(config: dict, num_samples_list: List[int], dataset_num_samples: int, dataset_id: int, data_path: str, graph_path: str):
     assert dataset_num_samples >= max(num_samples_list), f"dataset_num_samples {dataset_num_samples} should be >= max {max(num_samples_list)}"
     benchmark_id = hashlib.md5(uuid4().__str__().encode()).hexdigest()
     config["num_samples"] = dataset_num_samples
-    rename_data_and_graph_files(graph_path, data_path, dataset_id)
+    data_table_name = upload_data(benchmark_id=benchmark_id,
+                                  data_path=data_path)
+    dataset_id = create_dataset(benchmark_id=benchmark_id, data_table_name=data_table_name,
+                                graph_path=graph_path)
+    # rename_data_and_graph_files(graph_path, data_path, dataset_id)
 
     for num_samples in num_samples_list:
         logging.info('Adding experiment...')
