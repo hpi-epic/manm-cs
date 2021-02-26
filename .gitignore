@@ -131,4 +131,10 @@ dmypy.json
 .vscode
 .idea
 
+.DS_Store
+
 datasets
+data
+graph
+ground_truth.gml
+samples.csv

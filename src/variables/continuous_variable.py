@@ -11,7 +11,9 @@ class ContinuousVariable(Variable):
     type = VariableType.CONTINUOUS
     continuous_mapper_func: Callable[..., float]
 
-    def __init__(self, idx: int, noise: ContinuousNoise, parents: Optional[List[Variable]] = None, betas: Optional[List[float]] = None, mapping: Optional[Dict[Tuple[int], int]] = None):
+    def __init__(self, idx: int, noise: ContinuousNoise, parents: Optional[List[Variable]] = None,
+                 betas: Optional[List[float]] = None,
+                 mapping: Optional[Dict[Tuple[int], int]] = None):
         parents = [] if parents is None else parents
         betas = [] if betas is None else betas
         mapping = {} if mapping is None else mapping
@@ -20,31 +22,32 @@ class ContinuousVariable(Variable):
         self.mapping = mapping
 
         # Input parameter validation
-        if len(betas) != len(self._get_continous_parents()):
-            raise ValueError(f'There must be one beta value for each continuous parent. ' \
-                                f'Expected {len(self._get_continous_parents())}, but were {len(betas)}')
+        if len(betas) != len(self._get_continuous_parents()):
+            raise ValueError(f'There must be one beta value for each continuous parent. Expected '
+                             f'{len(self._get_continuous_parents())}, but were {len(betas)}')
 
     def __create_continuous_mapper_func(self, betas: List[float]) -> Callable[[pd.Series], float]:
         """Creates the mapper function for continuous parents
 
         """
+
         def func(parent_values: pd.Series):
             return np.sum([x * betas[i] for i, x in enumerate(parent_values)])
 
         return func
 
     def get_non_root_signal(self, df: pd.DataFrame) -> pd.Series:
-        # Compute signal for continous parent variables
-        continuous_parent_idxs = [p.idx for p in self._get_continous_parents()]
+        # Compute signal for continuous parent variables
+        continuous_parent_idxs = [p.idx for p in self._get_continuous_parents()]
         continuous_signal = df[continuous_parent_idxs].apply(self.continuous_mapper_func, axis=1) \
-                            if len(continuous_parent_idxs) > 0 \
-                            else pd.Series(np.zeros(len(df)))
+            if len(continuous_parent_idxs) > 0 \
+            else pd.Series(np.zeros(len(df)))
 
         # Compute signal for discrete parent variables
         discrete_parent_idxs = [p.idx for p in self._get_discrete_parents()]
         discrete_signal = df[discrete_parent_idxs].apply(sum, axis=1) \
-                            if len(discrete_parent_idxs) > 0 \
-                            else pd.Series(np.zeros(len(df)))
+            if len(discrete_parent_idxs) > 0 \
+            else pd.Series(np.zeros(len(df)))
 
         # Aggregate continuous and discrete signal terms into overall signal term
         return continuous_signal + discrete_signal
