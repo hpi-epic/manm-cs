@@ -31,7 +31,7 @@ class Graph:
             return df
 
         if num_processes is None:
-            max_num_processes = int(num_observations / 10000)
+            max_num_processes = max(int(num_observations / 10000), 1)
             num_processes = min(multiprocessing.cpu_count(), max_num_processes)
 
         pool = ProcessingPool()
