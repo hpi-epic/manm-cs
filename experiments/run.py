@@ -465,14 +465,15 @@ def run_with_config(config: dict, num_samples_list: List[int], dataset_num_sampl
 
 
 if __name__ == '__main__':
-    num_nodes_list = [5, 10, 20, 50]
-    edge_density_list = [0.2, 0.4, 0.6]
-    discrete_node_ratio_list = [0.0, 0.4, 0.6, 1.0]
+    num_nodes_list = [10]  # [5, 10, 20, 50]
+    edge_density_list = [0.6]  # [0.2, 0.4, 0.6]
+    discrete_node_ratio_list = [0.0]  # [0.0, 0.4, 0.6, 1.0]
+    continuous_noise_std_list = [0.05, 0.1, 0.15, 0.2]
     num_samples_list = [100, 500, 1000, 5000, 10000, 50000, 100000]
-    variable_params = [num_nodes_list, edge_density_list, discrete_node_ratio_list]
+    variable_params = [num_nodes_list, edge_density_list, discrete_node_ratio_list, continuous_noise_std_list]
     dataset_num_samples = 200000
 
-    for num_nodes, edge_density, discrete_node_ratio in list(itertools.product(*variable_params)):
+    for num_nodes, edge_density, discrete_node_ratio, continuous_noise_std in list(itertools.product(*variable_params)):
         config = dict()
         config['num_nodes'] = num_nodes
         config['edge_density'] = edge_density
@@ -480,7 +481,7 @@ if __name__ == '__main__':
         config['discrete_signal_to_noise_ratio'] = 0.9
         config['min_discrete_value_classes'] = 2
         config['max_discrete_value_classes'] = 3
-        config['continuous_noise_std'] = 0.2
+        config['continuous_noise_std'] = continuous_noise_std
         config['continuous_beta_mean'] = 1.0
         config['continuous_beta_std'] = 0.0
         config['cores'] = 80
