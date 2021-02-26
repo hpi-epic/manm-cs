@@ -122,12 +122,15 @@ class GraphBuilder:
                 num_continuous_parents = sum(
                     [1 for p in parents if p.type == VariableType.CONTINUOUS])
 
-                betas_dist1 = GaussianDistribution(mu=self.continuous_beta_mean,
-                                                   sigma=self.continuous_beta_std)
-                betas_dist2 = GaussianDistribution(mu=-1 * self.continuous_beta_mean,
-                                                   sigma=self.continuous_beta_std)
-                betas = BimodalDistribution(prob_dist1=betas_dist1, prob_dist2=betas_dist2) \
-                    .sample(num_observations=num_continuous_parents)
+                # TODO: remove for testing
+                # betas_dist1 = GaussianDistribution(mu=self.continuous_beta_mean,
+                #                                    sigma=self.continuous_beta_std)
+                # betas_dist2 = GaussianDistribution(mu=-1 * self.continuous_beta_mean,
+                #                                    sigma=self.continuous_beta_std)
+                # betas = BimodalDistribution(prob_dist1=betas_dist1, prob_dist2=betas_dist2) \
+                #     .sample(num_observations=num_continuous_parents)
+
+                betas = list(np.ones(num_continuous_parents))
                 variable = ContinuousVariable(idx=node_idx, parents=parents, betas=betas,
                                               noise=noise)
 
