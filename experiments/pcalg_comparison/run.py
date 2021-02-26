@@ -16,7 +16,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 import subprocess
-import sys
+import copy
 
 from src.graph.graph_builder import GraphBuilder, Graph
 from src.utils import write_single_csv
@@ -63,8 +63,11 @@ http = requests.Session()
 http.mount("http://", adapter)
 
 docker_run_logs_dir = "docker_run_logs"
+r_logs_dir = "r-logs"
 os.makedirs(docker_run_logs_dir, exist_ok=True)
-
+os.makedirs(r_logs_dir, exist_ok=True)
+pcalg_dataset_dir = "pcalg_dataset"
+os.makedirs(pcalg_dataset_dir, exist_ok=True)
 # Setup job listener
 sio = socketio.Client()
 sio.connect(API_HOST)
@@ -385,27 +388,15 @@ def set_error_code_for_job(job_id: int):
     with open(failed_jobs_file, 'a') as failed_jobs_file_handle:
         failed_jobs_file_handle.write(f"{job_id} \n")
 
-def rename_data_and_graph_files(graph_path: str, data_path: str, dataset_id: int) -> None:
-    path, file = os.path.split(graph_path)
-    file = f"{dataset_id}.gml"
-    new_path = os.path.join(path, file)
-    os.rename(graph_path, new_path)
+def rename_file_with_dataset_id(path: str, dataset_id: int) -> None:
+    extension = os.path.splitext(path)[1]
+    folder, _ = os.path.split(path)
+    file = f"{dataset_id}{extension}"
+    new_path = os.path.join(folder, file)
+    os.rename(path, new_path)
 
-    path, file = os.path.split(data_path)
-    file = f"{dataset_id}.csv"
-    new_path = os.path.join(path, file)
-    os.rename(data_path, new_path)
-    
-def run_with_config(config: dict, num_samples_list: List[int], dataset_num_samples: int, dataset_id: int, data_path: str, graph_path: str):
-    assert dataset_num_samples >= max(num_samples_list), f"dataset_num_samples {dataset_num_samples} should be >= max {max(num_samples_list)}"
-    benchmark_id = hashlib.md5(uuid4().__str__().encode()).hexdigest()
-    config["num_samples"] = dataset_num_samples
-    data_table_name = upload_data(benchmark_id=benchmark_id,
-                                  data_path=data_path)
-    dataset_id = create_dataset(benchmark_id=benchmark_id, data_table_name=data_table_name,
-                                graph_path=graph_path)
-    # rename_data_and_graph_files(graph_path, data_path, dataset_id)
 
+def run_experiments_for_config(config: dict, dataset_id: int, num_samples_list: List[int], dataset_num_samples: int):
     for num_samples in num_samples_list:
         logging.info('Adding experiment...')
         experiments = add_experiment(
@@ -449,7 +440,7 @@ def run_with_config(config: dict, num_samples_list: List[int], dataset_num_sampl
                     return_code = process.returncode
                     if return_code != 0:
                         set_error_code_for_job(job_id)
-                    
+
                 except subprocess.TimeoutExpired:
                     process.kill()
                     logging.info("The process was killed commandline is {}".format(process.args))
@@ -460,29 +451,82 @@ def run_with_config(config: dict, num_samples_list: List[int], dataset_num_sampl
         logging.info('Successfully started all experiments')
         check_all_jobs_for_completion()
 
-    # delete_dataset_with_data(table_name=data_table_name, dataset_id=dataset_id, api_host=API_HOST)
+
+def generate_pcalg_data(benchmark_id, dataset_num_samples: int, graph_path: str):
+    dataset_path = os.path.join(pcalg_dataset_dir, f"{benchmark_id}.csv")
+    command = ["Rscript", "data_from_graph.R", "--inputFile", graph_path, "--outputFile", dataset_path, "--nSamples", str(dataset_num_samples)]
+    log_file = os.path.join(r_logs_dir, f"{benchmark_id}.log")
+    with open(log_file, 'w') as log_file_handle:
+        log_file_handle.write(" ".join(command))
+        log_file_handle.write("\n")
+        ls_output = subprocess.Popen(command, stdout=log_file_handle, stderr=log_file_handle)
+    logging.info("Executing for pcalg rscript")
+    ls_output.communicate()
+    return dataset_path, log_file
+
+def run_with_config(config: dict, num_samples_list: List[int], dataset_num_samples: int):
+    assert dataset_num_samples >= max(num_samples_list), f"dataset_num_samples {dataset_num_samples} should be >= max {max(num_samples_list)}"
+    benchmark_id = hashlib.md5(uuid4().__str__().encode()).hexdigest()
+    config["num_samples"] = dataset_num_samples
+    # Mpci-dag experiments
+    data_path, graph_path = generate_data(benchmark_id=benchmark_id, config=config)
+    data_table_name = upload_data(benchmark_id=benchmark_id,
+                                  data_path=data_path)
+    dataset_id = create_dataset(benchmark_id=benchmark_id, data_table_name=data_table_name,
+                                graph_path=graph_path)
+    mpci_config = copy.deepcopy(config)
+    mpci_config["generator"] = "mpci-dag"
+    run_experiments_for_config(mpci_config, dataset_id, num_samples_list, dataset_num_samples)
+
+    # pcalg experiments
+    pcalg_benchmark_id = f"pcalg_{benchmark_id}"
+    pcalg_data_path, pcalg_log_path = generate_pcalg_data(pcalg_benchmark_id, dataset_num_samples, graph_path)
+    pcalg_data_table_name = upload_data(benchmark_id=pcalg_benchmark_id,
+                                  data_path=pcalg_data_path)
+    pcalg_dataset_id = create_dataset(benchmark_id=pcalg_benchmark_id, data_table_name=pcalg_data_table_name,
+                                graph_path=graph_path)
+    pcalg_config = copy.deepcopy(config)
+    pcalg_config["generator"] = "pcalg"
+    run_experiments_for_config(pcalg_config, pcalg_dataset_id, num_samples_list, dataset_num_samples)
+
+    # cleanup
+    rename_file_with_dataset_id(data_path, dataset_id)
+    rename_file_with_dataset_id(graph_path, dataset_id)
+    rename_file_with_dataset_id(pcalg_data_path, pcalg_dataset_id)
+    rename_file_with_dataset_id(pcalg_log_path, pcalg_dataset_id)
+
+
+def run():
+    # num_nodes_list = [5, 10, 20, 50]
+    # edge_density_list = [0.2, 0.4, 0.6]
+    # discrete_node_ratio_list = [0.0, 0.4, 0.6, 1.0]
+    # num_samples_list = [100, 500, 1000, 5000, 10000, 50000, 100000]
+    num_nodes_list = [5, 7, 10, 12]
+    edge_density_list = [0.2, 0.4, 0.6]
+    discrete_node_ratio_list = [0.0]
+    num_samples_list = [100, 500, 1000, 5000, 10000, 50000, 100000]
+    variable_params = [num_nodes_list, edge_density_list, discrete_node_ratio_list]
+    dataset_num_samples = 200000
+
+    for num_nodes, edge_density, discrete_node_ratio in list(itertools.product(*variable_params)):
+        config = dict()
+        config['num_nodes'] = num_nodes
+        config['edge_density'] = edge_density
+        config['discrete_node_ratio'] = discrete_node_ratio
+        config['discrete_signal_to_noise_ratio'] = 0.9
+        config['min_discrete_value_classes'] = 2
+        config['max_discrete_value_classes'] = 3
+        config['continuous_noise_std'] = 0.2
+        config['continuous_beta_mean'] = 1.0
+        config['continuous_beta_std'] = 0.0
+        config['cores'] = 80
+        config['node'] = "galileo"
+
+        run_with_config(config=config, num_samples_list=num_samples_list, dataset_num_samples=dataset_num_samples)
 
 
 if __name__ == '__main__':
-    num_samples_list = [100, 500, 1000, 5000, 10000, 50000, 100000]
-    dataset_num_samples = 200000
-    dataset_id = 0  # create this dataset manually and put the id here.
-
-    config = dict()  # some bullshit values so the code doesn't break
-    config['num_nodes'] = 0
-    config['edge_density'] = 0.0
-    config['discrete_node_ratio'] = 0.0
-    config['discrete_signal_to_noise_ratio'] = 0.0
-    config['min_discrete_value_classes'] = 0
-    config['max_discrete_value_classes'] = 0
-    config['continuous_noise_std'] = 0
-    config['continuous_beta_mean'] = 0
-    config['continuous_beta_std'] = 0.0
-    config['cores'] = 80
-    config['node'] = "galileo"
-
-    run_with_config(config=config, num_samples_list=num_samples_list, dataset_num_samples=dataset_num_samples, dataset_id=dataset_id)
-
+    run()
     ALL_EXPERIMENTS_STARTED = True
 
     while RUNNING_JOBS:
