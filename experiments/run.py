@@ -355,7 +355,7 @@ def create_dataset(benchmark_id: int, data_table_name: str, graph_path: str) -> 
 
     logging.info('Uploading ground truth...')
     files = {"graph_file": open(graph_path, "rb")}
-    res = http.post(url=f'{API_HOST}/api/dataset/{dataset_id}/upload', files=files)
+    res = http.post(url=f'{API_HOST}/api/dataset/{dataset_id}/ground-truth', files=files)
     res.raise_for_status()
     logging.info('Successfully uploaded ground truth')
 
