@@ -465,22 +465,39 @@ def run_with_config(config: dict, num_samples_list: List[int], dataset_num_sampl
 
 
 if __name__ == '__main__':
-    num_nodes_list = [10]  # [5, 10, 20, 50]
+    num_nodes_list = [5, 7, 10, 15, 20]
     edge_density_list = [0.6]  # [0.2, 0.4, 0.6]
-    discrete_node_ratio_list = [0.0]  # [0.0, 0.4, 0.6, 1.0]
+    discrete_node_ratio_list = [0.0, 0.4, 0.6]
     continuous_noise_std_list = [0.05, 0.1, 0.15, 0.2]
     num_samples_list = [100, 500, 1000, 5000, 10000, 50000, 100000]
-    variable_params = [num_nodes_list, edge_density_list, discrete_node_ratio_list, continuous_noise_std_list]
+    discrete_signal_to_noise_ratio_list = [0.9]
+    discrete_value_classes_list = [(2, 3)]
+
+    variable_params = [
+        num_nodes_list,
+        edge_density_list,
+        discrete_node_ratio_list,
+        continuous_noise_std_list,
+        discrete_signal_to_noise_ratio_list,
+        discrete_value_classes_list
+    ]
     dataset_num_samples = 200000
 
-    for num_nodes, edge_density, discrete_node_ratio, continuous_noise_std in list(itertools.product(*variable_params)):
+    for \
+            num_nodes, \
+            edge_density, \
+            discrete_node_ratio, \
+            continuous_noise_std, \
+            discrete_signal_to_noise_ratio, \
+            discrete_value_classes in list(itertools.product(*variable_params)):
+        min_discrete_value_classes, max_discrete_value_classes = discrete_value_classes
         config = dict()
         config['num_nodes'] = num_nodes
         config['edge_density'] = edge_density
         config['discrete_node_ratio'] = discrete_node_ratio
-        config['discrete_signal_to_noise_ratio'] = 0.9
-        config['min_discrete_value_classes'] = 2
-        config['max_discrete_value_classes'] = 3
+        config['discrete_signal_to_noise_ratio'] = discrete_signal_to_noise_ratio
+        config['min_discrete_value_classes'] = min_discrete_value_classes
+        config['max_discrete_value_classes'] = max_discrete_value_classes
         config['continuous_noise_std'] = continuous_noise_std
         config['continuous_beta_mean'] = 1.0
         config['continuous_beta_std'] = 0.0
