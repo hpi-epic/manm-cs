@@ -22,8 +22,7 @@ output_file <- opt$outputFile
 nSamples <- opt$nSamples
 
 graph <- read.graph(input_graph_file, format="gml")
-topo_graph <- topo_sort(graph)
-graph_nel <- igraph.to.graphNEL(topo_graph)
+graph_nel <- igraph.to.graphNEL(graph)
 
 dataset <- rmvDAG(nSamples,graph_nel)
 colnames(dataset) <- as.character(as.numeric(colnames(dataset)) - 1) # otherwise the columns would be 1 indexed but we need 0 indices
