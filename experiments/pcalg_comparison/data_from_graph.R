@@ -19,13 +19,14 @@ for (name in names(opt)) {
 
 input_graph_file <- opt$inputFile
 output_file <- opt$outputFile
+nSamples <- opt$nSamples
 
 graph <- read.graph(input_graph_file, format="gml")
-graph_nel <- igraph.to.graphNEL(graph)
+topo_graph <- topo_sort(graph)
+graph_nel <- igraph.to.graphNEL(topo_graph)
 
-nSamples <- opt$nSamples
 dataset <- rmvDAG(nSamples,graph_nel)
-colnames(dataset) <- seq(0, ncol(dataset) - 1) # otherwise the columns would be 1 indexed but we need 0 indices
+colnames(dataset) <- as.character(as.numeric(colnames(dataset)) - 1) # otherwise the columns would be 1 indexed but we need 0 indices
 write.csv(dataset, output_file, row.names = FALSE, quote = FALSE)
 
 

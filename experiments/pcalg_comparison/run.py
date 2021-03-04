@@ -516,7 +516,7 @@ def run():
         config['discrete_signal_to_noise_ratio'] = 0.9
         config['min_discrete_value_classes'] = 2
         config['max_discrete_value_classes'] = 3
-        config['continuous_noise_std'] = 0.2
+        config['continuous_noise_std'] = 1.0
         config['continuous_beta_mean'] = 1.0
         config['continuous_beta_std'] = 0.0
         config['cores'] = 80
