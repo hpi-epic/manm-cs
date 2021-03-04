@@ -13,6 +13,7 @@ import networkx as nx
 import pandas as pd
 import psycopg2
 import requests
+from pathos.multiprocessing import ProcessingPool
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 import subprocess
@@ -41,7 +42,7 @@ CSV__RESULT_OUTPUT = "job_results.csv"
 
 # TODO
 ALPHA_VALUES = [0.05]
-NUM_JOBS = 5
+NUM_JOBS = 10
 DOCKER_PROCESS_TIMEOUT_SEC=30*60
 
 ALL_EXPERIMENTS_STARTED = False
@@ -214,9 +215,9 @@ def execute_with_connection():
             logging.info(f'Database connection closed.')
 
 
-def generate_graph_with_at_least_one_edge(config: dict) -> Graph:
+def generate_graph_with_at_least_one_edge(config: dict, seed: int) -> Graph:
     max_retries = 100
-    for retry_id in range(max_retries):
+    for retry_id in range(seed, seed + max_retries):
         logging.info('Starting graph builder...')
         graph = GraphBuilder() \
             .with_num_nodes(config['num_nodes']) \
@@ -234,11 +235,11 @@ def generate_graph_with_at_least_one_edge(config: dict) -> Graph:
             return graph
     raise Exception(f"Retried {max_retries} times to generate a graph but no edge was generated Config: {config}")
 
-def generate_data(benchmark_id: str, config: dict) -> Tuple[str, str]:
+def generate_data(benchmark_id: str, config: dict, seed: int) -> Tuple[str, str]:
     os.makedirs('data', exist_ok=True)
     data_path = f'data/benchmarking-experiment-{benchmark_id}-data.csv'
 
-    graph = generate_graph_with_at_least_one_edge(config)
+    graph = generate_graph_with_at_least_one_edge(config, seed)
 
     logging.info('Starting graph sampling...')
     dfs = graph.sample(num_observations=config['num_samples'], num_processes=1)
@@ -464,36 +465,46 @@ def generate_pcalg_data(benchmark_id, dataset_num_samples: int, graph_path: str)
     ls_output.communicate()
     return dataset_path, log_file
 
-def run_with_config(config: dict, num_samples_list: List[int], dataset_num_samples: int):
+
+
+def run_with_config(config: dict, num_samples_list: List[int], dataset_num_samples: int, num_graphs_per_config: int):
     assert dataset_num_samples >= max(num_samples_list), f"dataset_num_samples {dataset_num_samples} should be >= max {max(num_samples_list)}"
-    benchmark_id = hashlib.md5(uuid4().__str__().encode()).hexdigest()
+
     config["num_samples"] = dataset_num_samples
-    # Mpci-dag experiments
-    data_path, graph_path = generate_data(benchmark_id=benchmark_id, config=config)
-    data_table_name = upload_data(benchmark_id=benchmark_id,
-                                  data_path=data_path)
-    dataset_id = create_dataset(benchmark_id=benchmark_id, data_table_name=data_table_name,
-                                graph_path=graph_path)
-    mpci_config = copy.deepcopy(config)
-    mpci_config["generator"] = "mpci-dag"
-    run_experiments_for_config(mpci_config, dataset_id, num_samples_list, dataset_num_samples)
 
-    # pcalg experiments
-    pcalg_benchmark_id = f"pcalg_{benchmark_id}"
-    pcalg_data_path, pcalg_log_path = generate_pcalg_data(pcalg_benchmark_id, dataset_num_samples, graph_path)
-    pcalg_data_table_name = upload_data(benchmark_id=pcalg_benchmark_id,
-                                  data_path=pcalg_data_path)
-    pcalg_dataset_id = create_dataset(benchmark_id=pcalg_benchmark_id, data_table_name=pcalg_data_table_name,
-                                graph_path=graph_path)
-    pcalg_config = copy.deepcopy(config)
-    pcalg_config["generator"] = "pcalg"
-    run_experiments_for_config(pcalg_config, pcalg_dataset_id, num_samples_list, dataset_num_samples)
+    seeds = [i * 1000 for i in range(num_graphs_per_config)]
 
-    # cleanup
-    rename_file_with_dataset_id(data_path, dataset_id)
-    rename_file_with_dataset_id(graph_path, dataset_id)
-    rename_file_with_dataset_id(pcalg_data_path, pcalg_dataset_id)
-    rename_file_with_dataset_id(pcalg_log_path, pcalg_dataset_id)
+    for seed in seeds:
+        benchmark_id = hashlib.md5(uuid4().__str__().encode()).hexdigest()
+        data_path, graph_path = generate_data(benchmark_id=benchmark_id, config=config, seed=seed)
+        data_table_name = upload_data(benchmark_id=benchmark_id,
+                                      data_path=data_path)
+        dataset_id = create_dataset(benchmark_id=benchmark_id, data_table_name=data_table_name,
+                                    graph_path=graph_path)
+        mpci_config = copy.deepcopy(config)
+        mpci_config["seed"] = seed
+        mpci_config["generator"] = "mpci-dag"
+        run_experiments_for_config(mpci_config, dataset_id, num_samples_list, dataset_num_samples)
+
+        # pcalg experiments
+        pcalg_benchmark_id = f"pcalg_{benchmark_id}"
+        pcalg_data_path, pcalg_log_path = generate_pcalg_data(pcalg_benchmark_id, dataset_num_samples, graph_path)
+        pcalg_data_table_name = upload_data(benchmark_id=pcalg_benchmark_id,
+                                            data_path=pcalg_data_path)
+        pcalg_dataset_id = create_dataset(benchmark_id=pcalg_benchmark_id, data_table_name=pcalg_data_table_name,
+                                          graph_path=graph_path)
+        pcalg_config = copy.deepcopy(config)
+        pcalg_config["generator"] = "pcalg"
+        pcalg_config["seed"] = seed
+        run_experiments_for_config(pcalg_config, pcalg_dataset_id, num_samples_list, dataset_num_samples)
+
+        # cleanup
+        rename_file_with_dataset_id(data_path, dataset_id)
+        rename_file_with_dataset_id(graph_path, dataset_id)
+        rename_file_with_dataset_id(pcalg_data_path, pcalg_dataset_id)
+        rename_file_with_dataset_id(pcalg_log_path, pcalg_dataset_id)
+
+
 
 
 def run():
@@ -507,6 +518,7 @@ def run():
     num_samples_list = [100, 1000, 10000, 100000]
     variable_params = [num_nodes_list, edge_density_list, discrete_node_ratio_list]
     dataset_num_samples = 200000
+    num_graphs_per_config = 5
 
     for num_nodes, edge_density, discrete_node_ratio in list(itertools.product(*variable_params)):
         config = dict()
@@ -522,7 +534,7 @@ def run():
         config['cores'] = 80
         config['node'] = "galileo"
 
-        run_with_config(config=config, num_samples_list=num_samples_list, dataset_num_samples=dataset_num_samples)
+        run_with_config(config=config, num_samples_list=num_samples_list, dataset_num_samples=dataset_num_samples, num_graphs_per_config=num_graphs_per_config)
 
 
 if __name__ == '__main__':
