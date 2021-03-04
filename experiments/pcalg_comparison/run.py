@@ -501,10 +501,10 @@ def run():
     # edge_density_list = [0.2, 0.4, 0.6]
     # discrete_node_ratio_list = [0.0, 0.4, 0.6, 1.0]
     # num_samples_list = [100, 500, 1000, 5000, 10000, 50000, 100000]
-    num_nodes_list = [5, 7, 10, 12]
-    edge_density_list = [0.2, 0.4, 0.6]
+    num_nodes_list = [7, 10, 12]
+    edge_density_list = [0.6]
     discrete_node_ratio_list = [0.0]
-    num_samples_list = [100, 500, 1000, 5000, 10000, 50000, 100000]
+    num_samples_list = [100, 1000, 10000, 100000]
     variable_params = [num_nodes_list, edge_density_list, discrete_node_ratio_list]
     dataset_num_samples = 200000
 
