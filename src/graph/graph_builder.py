@@ -130,7 +130,7 @@ class GraphBuilder:
                     .sample(num_observations=num_continuous_parents)
                 betas = [1 for _ in range(num_continuous_parents)]
                 # TODO set this back to betas after exeriment
-                variable = ContinuousVariable(idx=node_idx, parents=parents, betas=betas_dist1,
+                variable = ContinuousVariable(idx=node_idx, parents=parents, betas=betas,
                                               noise=noise)
 
             variables_by_idx[node_idx] = variable
