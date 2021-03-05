@@ -128,6 +128,7 @@ class GraphBuilder:
                                                    sigma=self.continuous_beta_std)
                 betas = BimodalDistribution(prob_dist1=betas_dist1, prob_dist2=betas_dist2) \
                     .sample(num_observations=num_continuous_parents)
+                betas = [1 for _ in range(num_continuous_parents)]
                 # TODO set this back to betas after exeriment
                 variable = ContinuousVariable(idx=node_idx, parents=parents, betas=betas_dist1,
                                               noise=noise)
