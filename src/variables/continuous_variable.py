@@ -12,14 +12,11 @@ class ContinuousVariable(Variable):
     continuous_mapper_func: Callable[..., float]
 
     def __init__(self, idx: int, noise: ContinuousNoise, parents: Optional[List[Variable]] = None,
-                 betas: Optional[List[float]] = None,
-                 mapping: Optional[Dict[Tuple[int], int]] = None):
+                 betas: Optional[List[float]] = None):
         parents = [] if parents is None else parents
         betas = [] if betas is None else betas
-        mapping = {} if mapping is None else mapping
         super(ContinuousVariable, self).__init__(idx=idx, parents=parents, noise=noise)
         self.continuous_mapper_func = self.__create_continuous_mapper_func(betas=betas)
-        self.mapping = mapping
 
         # Input parameter validation
         if len(betas) != len(self._get_continuous_parents()):
@@ -32,7 +29,7 @@ class ContinuousVariable(Variable):
         """
 
         def func(parent_values: pd.Series):
-            return np.sum([x * betas[i] for i, x in enumerate(parent_values)])
+            return np.sum([value * betas[i] for i, value in enumerate(parent_values)])
 
         return func
 

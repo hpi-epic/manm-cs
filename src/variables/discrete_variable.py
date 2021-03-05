@@ -33,7 +33,7 @@ class DiscreteVariable(Variable):
             # If the variable is a root variable, the sampling is determined by the noise term only
             props = [1] + list(np.zeros(self.num_values - 1))
             signal = pd.Series(CustomDiscreteDistribution(props).sample(
-                num_observations=num_observations))
+                num_observations=num_observations)) # This will return a list of zeros
         else:
             # If the variable has one or more parent variables, the sampling is driven 
             # by a combination of signal and noise term
