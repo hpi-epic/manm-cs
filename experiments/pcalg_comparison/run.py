@@ -518,7 +518,7 @@ def run():
     num_samples_list = [100, 1000, 10000, 100000]
     variable_params = [num_nodes_list, edge_density_list, discrete_node_ratio_list]
     dataset_num_samples = 200000
-    num_graphs_per_config = 5
+    num_graphs_per_config = 1
 
     for num_nodes, edge_density, discrete_node_ratio in list(itertools.product(*variable_params)):
         config = dict()
