@@ -242,7 +242,7 @@ def generate_data(benchmark_id: str, config: dict, seed: int) -> Tuple[str, str]
     graph = generate_graph_with_at_least_one_edge(config, seed)
 
     logging.info('Starting graph sampling...')
-    dfs = graph.sample(num_observations=config['num_samples'], num_processes=1)
+    dfs = graph.sample(num_observations=config['num_samples'])
 
     logging.info('Writing samples...')
     write_single_csv(dataframes=dfs, target_path=data_path)
