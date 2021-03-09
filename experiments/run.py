@@ -40,7 +40,7 @@ CSV__RESULT_OUTPUT = "job_results.csv"
 
 # TODO
 ALPHA_VALUES = [0.05]
-NUM_JOBS = 5
+NUM_JOBS = 10
 DOCKER_PROCESS_TIMEOUT_SEC = 30 * 60
 
 ALL_EXPERIMENTS_STARTED = False
@@ -488,15 +488,15 @@ def run_with_config(config: dict, num_samples_list: List[int], dataset_num_sampl
 
 
 def run():
-    num_nodes_list = [10]
+    num_nodes_list = [10, 15, 20]
     edge_density_list = [0.6]  # [0.2, 0.4, 0.6]
     discrete_node_ratio_list = [0.0]
     continuous_noise_std_list = [1.0]
-    num_samples_list = [100]
+    num_samples_list = [100, 1000, 10000, 100000]
     discrete_signal_to_noise_ratio_list = [0.9]
     discrete_value_classes_list = [(2, 3)]
-    dataset_num_samples = 2000
-    num_graphs_per_config = 1
+    dataset_num_samples = 200000
+    num_graphs_per_config = 5
 
     variable_params = [
         num_nodes_list,
