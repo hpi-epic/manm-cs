@@ -176,7 +176,7 @@ def generate_experiment_settings(dataset_id: int, max_discrete_value_classes: in
                 'alpha': alpha,
                 'cores': cores,
                 'discrete_limit': max_discrete_value_classes,
-                'independence_test': "cor",
+                'independence_test': "x2",
                 'subset_size': -1,
                 'verbose': 0,
                 "sampling_factor": sampling_factor
@@ -293,7 +293,7 @@ def add_experiment(dataset_id: int, max_discrete_value_classes: int, cores: int,
             max_discrete_value_classes=max_discrete_value_classes,
             cores=cores,
             alpha=alpha,
-            discrete_node_ratio=0.0,
+            discrete_node_ratio=1.0,
             sampling_factor=sampling_factor
         ), generate_experiment_settings(
             dataset_id=dataset_id,
@@ -490,9 +490,9 @@ def run_with_config(config: dict, num_samples_list: List[int], dataset_num_sampl
 def run():
     num_nodes_list = [10]
     edge_density_list = [0.6]  # [0.2, 0.4, 0.6]
-    discrete_node_ratio_list = [0.0]
+    discrete_node_ratio_list = [1.0]
     continuous_noise_std_list = [1.0]
-    num_samples_list = [100]
+    num_samples_list = [2000]
     discrete_signal_to_noise_ratio_list = [0.9]
     discrete_value_classes_list = [(2, 3)]
     dataset_num_samples = 2000
