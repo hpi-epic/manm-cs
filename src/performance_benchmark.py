@@ -11,23 +11,24 @@ import numpy as np
 import pandas as pd
 
 from src.graph import Graph, GraphBuilder
-from src.utils import write_single_hdf
+from src.utils import write_single_csv
 
 FOLDER_PATH = "../datasets/"
-DATA_EXTENSION = ".hd5"
+DATA_EXTENSION = ".csv"
 GROUND_TRUTH_EXTENSION = ".gml"
 
 PARAMS = {}
-PARAMS['num_nodes'] = [25, 100, 500, 1000, 5000]
-PARAMS['edge_density'] = [0.2, 0.4, 0.6, 0.8, 1.0]
-PARAMS['discrete_node_ratio'] = [0.0, 0.25, 0.5, 0.75, 1.0]
-PARAMS['discrete_signal_to_noise_ratio'] = [0.5]
-PARAMS['min_discrete_value_classes'] = [10]
-PARAMS['max_discrete_value_classes'] = [20]
-PARAMS['continuous_noise_std'] = [2.0]
-PARAMS['continuous_beta_mean'] = [6.0]
+PARAMS['num_nodes'] = [10, 100, 1000, 10000]
+PARAMS['edge_density'] = [0.5]
+PARAMS['discrete_node_ratio'] = [0.5]
+PARAMS['discrete_signal_to_noise_ratio'] = [0.95]
+PARAMS['min_discrete_value_classes'] = [3]
+PARAMS['max_discrete_value_classes'] = [4]
+PARAMS['continuous_noise_std'] = [1.0]
+PARAMS['continuous_beta_mean'] = [0.0]
 PARAMS['continuous_beta_std'] = [0.5]
 PARAMS['num_samples'] = [10000, 100000, 1000000]
+PARAMS['num_processes'] = [16, 32, 64]
 
 logging.getLogger().setLevel(logging.INFO)
 
@@ -57,12 +58,12 @@ def execute_benchmark(args):
     try:
         # graph generation
         graph = graph_from_args(args)
-        dfs = graph.sample(num_observations=args['num_samples'])
+        dfs = graph.sample(num_observations=args['num_samples'], num_processes=args['num_processes'])
         end_generation = time.time()
 
         # write csv file
         data_file_path = file_path + DATA_EXTENSION
-        write_single_hdf(dataframes=dfs, target_path=data_file_path)
+        write_single_csv(dataframes=dfs, target_path=data_file_path)
         end_csv = time.time()
 
         nx_graph = graph.to_networkx_graph()
@@ -116,6 +117,8 @@ if __name__ == '__main__':
     measurements = []
     start_time_global = time.time()
 
+    #for num_nodes, edge_density, discrete_node_ratio, discrete_signal_to_noise_ratio, min_discrete_value_classes, max_discrete_value_classes, continuous_noise_std, continuous_beta_mean, continuous_beta_std, num_samples
+
     for num_nodes in PARAMS['num_nodes']:
         for edge_density in PARAMS['edge_density']:
             for discrete_node_ratio in PARAMS['discrete_node_ratio']:
@@ -126,36 +129,39 @@ if __name__ == '__main__':
                                 for continuous_beta_mean in PARAMS['continuous_beta_mean']:
                                     for continuous_beta_std in PARAMS['continuous_beta_std']:
                                         for num_samples in PARAMS['num_samples']:
+                                            for num_processes in PARAMS['num_processes']:
+                                                args = dict()
+                                                args['num_nodes'] = num_nodes
+                                                args['edge_density'] = edge_density
+                                                args['discrete_node_ratio'] = discrete_node_ratio
+                                                args[
+                                                    'discrete_signal_to_noise_ratio'] = discrete_signal_to_noise_ratio
+                                                args[
+                                                    'min_discrete_value_classes'] = min_discrete_value_classes
+                                                args[
+                                                    'max_discrete_value_classes'] = max_discrete_value_classes
+                                                args['continuous_noise_std'] = continuous_noise_std
+                                                args['continuous_beta_mean'] = continuous_beta_mean
+                                                args['continuous_beta_std'] = continuous_beta_std
+                                                args['num_samples'] = num_samples
+                                                args['num_processes'] = num_processes
+                                                args['keep_data'] = False
 
-                                            args = dict()
-                                            args['num_nodes'] = num_nodes
-                                            args['edge_density'] = edge_density
-                                            args['discrete_node_ratio'] = discrete_node_ratio
-                                            args[
-                                                'discrete_signal_to_noise_ratio'] = discrete_signal_to_noise_ratio
-                                            args[
-                                                'min_discrete_value_classes'] = min_discrete_value_classes
-                                            args[
-                                                'max_discrete_value_classes'] = max_discrete_value_classes
-                                            args['continuous_noise_std'] = continuous_noise_std
-                                            args['continuous_beta_mean'] = continuous_beta_mean
-                                            args['continuous_beta_std'] = continuous_beta_std
-                                            args['num_samples'] = num_samples
-                                            args['keep_data'] = False
+                                                if is_valid(args):
+                                                    measurement = execute_benchmark(args)
+                                                    measurements.append(measurement)
 
-                                            if is_valid(args):
-                                                measurement = execute_benchmark(args)
-                                                measurements.append(measurement)
+                                                    df_measurements = pd.DataFrame(measurements)
+                                                    df_measurements.to_csv(FOLDER_PATH + "metadata.csv")
+                                                    current_number += 1
+                                                    current_time_delta_global = timedelta(
+                                                        seconds=time.time() - start_time_global) / timedelta(
+                                                        milliseconds=1) / 1000
 
-                                                df_measurements = pd.DataFrame(measurements)
-                                                df_measurements.to_csv(FOLDER_PATH + "metadata.csv")
-                                                current_number += 1
-                                                current_time_delta_global = timedelta(
-                                                    seconds=time.time() - start_time_global) / timedelta(
-                                                    milliseconds=1) / 1000
+                                                    avg_time_per_iteration = current_time_delta_global / current_number
+                                                    logging.info(
+                                                        f" {current_number} / {number_iterations}"
+                                                        f" Avg: {round(avg_time_per_iteration, 3)}s"
+                                                        f" Est: {round((number_iterations - current_number) * avg_time_per_iteration, 3)}s")
 
-                                                avg_time_per_iteration = current_time_delta_global / current_number
-                                                logging.info(
-                                                    f" {current_number} / {number_iterations}"
-                                                    f" Avg: {round(avg_time_per_iteration, 3)}s"
-                                                    f" Est: {round((number_iterations - current_number) * avg_time_per_iteration, 3)}s")
+    logging.info("\nFinished all experiments.\n")
