@@ -97,7 +97,8 @@ class GraphBuilder:
         dag.add_edges_from([(u, v, {}) for (u, v) in G.edges() if u < v])
         assert nx.is_directed_acyclic_graph(dag)
 
-        # Create list of topologically sorted nodes 
+        # Create list of topologically sorted nodes
+        # TODO check if this can be removed, because the nodes are already ordered as there can be edge u,v such that v > u
         top_sort_idx = list(nx.topological_sort(dag))
         num_discrete_nodes = int(self.discrete_node_ratio * self.num_nodes)
 
