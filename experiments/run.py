@@ -131,7 +131,6 @@ def get_gtcompare(result_id: int):
 
     return gt_compare.json()
 
-
 def generate_experiment_settings(dataset_id: int, max_discrete_value_classes: int, cores: int,
                                  alpha: float, discrete_node_ratio: float, sampling_factor: float) -> Dict:
     if discrete_node_ratio == 1:
@@ -168,17 +167,17 @@ def generate_experiment_settings(dataset_id: int, max_discrete_value_classes: in
         }
     else:
         return {
-            'algorithm_id': 3,
-            'dataset_id': dataset_id,
-            'description': f"{max_discrete_value_classes} {alpha}",
-            'name': "BNLEARN MI-CG",
-            'parameters': {
-                'alpha': alpha,
-                'cores': cores,
-                'discrete_limit': max_discrete_value_classes,
-                'independence_test': "mi-cg",
-                'subset_size': -1,
-                'verbose': 0,
+            "algorithm_id": 1,
+            "dataset_id": dataset_id,
+            "description": f"{alpha}",
+            "name": "PC GAUSS",
+            "parameters": {
+                "alpha": alpha,
+                "cores": cores,
+                "independence_test": "micg",
+                "skeleton_method": "stable.fast",
+                "subset_size": -1,
+                "verbose": 0,
                 "sampling_factor": sampling_factor
             }
         }
@@ -481,14 +480,14 @@ def run_with_config(config: dict, num_samples_list: List[int], dataset_num_sampl
 
 
 def run():
-    num_nodes_list = [5]
-    edge_density_list = [0.6]  # [0.2, 0.4, 0.6]
-    discrete_node_ratio_list = [0.0]
-    continuous_noise_std_list = [0.2]
-    num_samples_list = [100]
+    num_nodes_list = [7, 10, 15, 20]
+    edge_density_list = [0.6]
+    discrete_node_ratio_list = [0.25, 0.5, 0.75]
+    continuous_noise_std_list = [1.0]
+    num_samples_list = [1000, 10000, 100000]
     discrete_signal_to_noise_ratio_list = [0.9]
-    discrete_value_classes_list = [(2, 3)]
-    dataset_num_samples = 2000
+    discrete_value_classes_list = [(3, 4)]
+    dataset_num_samples = 200000
     num_graphs_per_config = 1
 
     variable_params = [
@@ -517,7 +516,7 @@ def run():
         config['continuous_noise_std'] = continuous_noise_std
         config['continuous_beta_mean'] = 1.0
         config['continuous_beta_std'] = 0.0
-        config['cores'] = 1
+        config['cores'] = 10
         config['node'] = "galileo"
 
         run_with_config(config=config, num_samples_list=num_samples_list, dataset_num_samples=dataset_num_samples,
