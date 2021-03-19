@@ -255,24 +255,24 @@ def add_experiment(dataset_id: int, max_discrete_value_classes: int, cores: int,
                 "num_discrete_clusters": num_discrete_clusters
             }
         }]
-        # experiments += [{
-        #     "algorithm_id": 2,
-        #     "dataset_id": dataset_id,
-        #     'description': f"{alpha}",
-        #     "name": "pcalg micg",
-        #     "parameters": {
-        #         "alpha": alpha,
-        #         "cores": cores,
-        #         "independence_test": "micg",
-        #         "skeleton_method": "stable.fast",
-        #         "subset_size": -1,
-        #         "verbose": 0,
-        #         "sampling_factor": sampling_factor,
-        #         "discrete_node_limit": 50,
-        #         "use_discretization": 0,
-        #         "num_discrete_clusters": num_discrete_clusters
-        #     }
-        # }]
+        experiments += [{
+            "algorithm_id": 2,
+            "dataset_id": dataset_id,
+            'description': f"{alpha}",
+            "name": "pcalg micg",
+            "parameters": {
+                "alpha": alpha,
+                "cores": cores,
+                "independence_test": "micg",
+                "skeleton_method": "stable.fast",
+                "subset_size": -1,
+                "verbose": 0,
+                "sampling_factor": sampling_factor,
+                "discrete_node_limit": 50,
+                "use_discretization": 0,
+                "num_discrete_clusters": num_discrete_clusters
+            }
+        }]
         # experiments += [{
         #     'algorithm_id': 4,
         #     'dataset_id': dataset_id,
