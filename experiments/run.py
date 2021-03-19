@@ -234,7 +234,7 @@ def upload_data(benchmark_id: str, data_path: str) -> Tuple[int, str]:
 
 
 def add_experiment(dataset_id: int, max_discrete_value_classes: int, cores: int,
-                   discrete_node_ratio: float, sampling_factor: float, min_bins: int):
+                   discrete_node_ratio: float, sampling_factor: float, num_discrete_clusters: int):
     experiments = []
     for alpha in ALPHA_VALUES:
         experiments += [{
@@ -252,27 +252,27 @@ def add_experiment(dataset_id: int, max_discrete_value_classes: int, cores: int,
                 "sampling_factor": sampling_factor,
                 "discrete_node_limit": 50,
                 "use_discretization": 1,
-                "discretization_min_bins": min_bins
+                "num_discrete_clusters": num_discrete_clusters
             }
         }]
-        experiments += [{
-            "algorithm_id": 2,
-            "dataset_id": dataset_id,
-            'description': f"{alpha}",
-            "name": "pcalg micg",
-            "parameters": {
-                "alpha": alpha,
-                "cores": cores,
-                "independence_test": "micg",
-                "skeleton_method": "stable.fast",
-                "subset_size": -1,
-                "verbose": 0,
-                "sampling_factor": sampling_factor,
-                "discrete_node_limit": 50,
-                "use_discretization": 0,
-                "discretization_min_bins": min_bins
-            }
-        }]
+        # experiments += [{
+        #     "algorithm_id": 2,
+        #     "dataset_id": dataset_id,
+        #     'description': f"{alpha}",
+        #     "name": "pcalg micg",
+        #     "parameters": {
+        #         "alpha": alpha,
+        #         "cores": cores,
+        #         "independence_test": "micg",
+        #         "skeleton_method": "stable.fast",
+        #         "subset_size": -1,
+        #         "verbose": 0,
+        #         "sampling_factor": sampling_factor,
+        #         "discrete_node_limit": 50,
+        #         "use_discretization": 0,
+        #         "num_discrete_clusters": num_discrete_clusters
+        #     }
+        # }]
         # experiments += [{
         #     'algorithm_id': 4,
         #     'dataset_id': dataset_id,
@@ -415,7 +415,7 @@ def run_experiments_for_config(config: dict, dataset_id: int, num_samples_list: 
             discrete_node_ratio=config['discrete_node_ratio'],
             cores=config["cores"],
             sampling_factor=num_samples / dataset_num_samples,
-            min_bins=config["min_bins"]
+            num_discrete_clusters=config["num_discrete_clusters"]
         )
         logging.info('Successfully added experiment')
 
@@ -498,7 +498,7 @@ def run():
     discrete_value_classes_list = [(3, 4)]
     dataset_num_samples = 200_000
     num_graphs_per_config = 1
-    min_bins_list = [2, 4]
+    num_discrete_clusters_list = [5, 10, 20]
 
     variable_params = [
         num_nodes_list,
@@ -507,7 +507,7 @@ def run():
         continuous_noise_std_list,
         discrete_signal_to_noise_ratio_list,
         discrete_value_classes_list,
-        min_bins_list
+        num_discrete_clusters_list
     ]
 
     for num_nodes, \
@@ -516,7 +516,7 @@ def run():
             continuous_noise_std, \
             discrete_signal_to_noise_ratio, \
             discrete_value_classes,\
-            min_bins in list(itertools.product(*variable_params)):
+            num_discrete_clusters in list(itertools.product(*variable_params)):
         min_discrete_value_classes, max_discrete_value_classes = discrete_value_classes
         config = dict()
         config['num_nodes'] = num_nodes
@@ -526,10 +526,10 @@ def run():
         config['min_discrete_value_classes'] = min_discrete_value_classes
         config['max_discrete_value_classes'] = max_discrete_value_classes
         config['continuous_noise_std'] = continuous_noise_std
-        config['min_bins'] = min_bins
+        config['num_discrete_clusters'] = num_discrete_clusters
         config['continuous_beta_mean'] = 1.0
         config['continuous_beta_std'] = 0.0
-        config['cores'] = 10
+        config['cores'] = 1
         config['node'] = "galileo"
 
         run_with_config(config=config, num_samples_list=num_samples_list, dataset_num_samples=dataset_num_samples,
