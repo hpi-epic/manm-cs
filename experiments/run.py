@@ -168,7 +168,7 @@ def generate_experiment_settings(dataset_id: int, max_discrete_value_classes: in
         }
     else:
         return {
-            'algorithm_id': 1,
+            'algorithm_id': 2,
             'dataset_id': dataset_id,
             'description': f"{max_discrete_value_classes} {alpha}",
             'name': "PCALG with MI-CG",
