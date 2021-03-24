@@ -168,17 +168,18 @@ def generate_experiment_settings(dataset_id: int, max_discrete_value_classes: in
         }
     else:
         return {
-            'algorithm_id': 3,
+            'algorithm_id': 1,
             'dataset_id': dataset_id,
             'description': f"{max_discrete_value_classes} {alpha}",
-            'name': "BNLEARN MI-CG",
-            'parameters': {
-                'alpha': alpha,
-                'cores': cores,
-                'discrete_limit': max_discrete_value_classes,
-                'independence_test': "mi-cg",
-                'subset_size': -1,
-                'verbose': 0,
+            'name': "PCALG with MI-CG",
+            "parameters": {
+                "alpha": alpha,
+                "cores": cores,
+                "independence_test": "micg",
+                "skeleton_method": "stable.fast",
+                'discrete_node_limit': max_discrete_value_classes,
+                "subset_size": -1,
+                "verbose": 0,
                 "sampling_factor": sampling_factor
             }
         }
@@ -481,15 +482,15 @@ def run_with_config(config: dict, num_samples_list: List[int], dataset_num_sampl
 
 
 def run():
-    num_nodes_list = [5]
-    edge_density_list = [0.6]  # [0.2, 0.4, 0.6]
-    discrete_node_ratio_list = [0.0]
-    continuous_noise_std_list = [0.2]
-    num_samples_list = [100]
+    num_nodes_list = [10, 15, 20]
+    edge_density_list = [0.6]
+    discrete_node_ratio_list = [0.25, 0.5, 0.75]
+    continuous_noise_std_list = [1.0]
+    num_samples_list = [10_000, 100_000, 1_000_000]
     discrete_signal_to_noise_ratio_list = [0.9]
-    discrete_value_classes_list = [(2, 3)]
-    dataset_num_samples = 2000
-    num_graphs_per_config = 1
+    discrete_value_classes_list = [(4, 5)]
+    dataset_num_samples = 2000000
+    num_graphs_per_config = 5
 
     variable_params = [
         num_nodes_list,
