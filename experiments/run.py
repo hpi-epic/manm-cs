@@ -490,7 +490,7 @@ def run():
     discrete_signal_to_noise_ratio_list = [0.9]
     discrete_value_classes_list = [(4, 5)]
     dataset_num_samples = 2000000
-    num_graphs_per_config = 5
+    num_graphs_per_config = 1
 
     variable_params = [
         num_nodes_list,
