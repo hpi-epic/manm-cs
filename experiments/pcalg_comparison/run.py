@@ -508,17 +508,13 @@ def run_with_config(config: dict, num_samples_list: List[int], dataset_num_sampl
 
 
 def run():
-    # num_nodes_list = [5, 10, 20, 50]
-    # edge_density_list = [0.2, 0.4, 0.6]
-    # discrete_node_ratio_list = [0.0, 0.4, 0.6, 1.0]
-    # num_samples_list = [100, 500, 1000, 5000, 10000, 50000, 100000]
-    num_nodes_list = [7, 10, 12]
-    edge_density_list = [0.6]
+    num_nodes_list = [5, 10, 20]
+    edge_density_list = [0.4]
     discrete_node_ratio_list = [0.0]
-    num_samples_list = [100, 1000, 10000, 100000]
+    num_samples_list = [1000, 10000, 100000]
     variable_params = [num_nodes_list, edge_density_list, discrete_node_ratio_list]
     dataset_num_samples = 200000
-    num_graphs_per_config = 1
+    num_graphs_per_config = 5
 
     for num_nodes, edge_density, discrete_node_ratio in list(itertools.product(*variable_params)):
         config = dict()
@@ -526,12 +522,12 @@ def run():
         config['edge_density'] = edge_density
         config['discrete_node_ratio'] = discrete_node_ratio
         config['discrete_signal_to_noise_ratio'] = 0.9
-        config['min_discrete_value_classes'] = 2
-        config['max_discrete_value_classes'] = 3
+        config['min_discrete_value_classes'] = 3
+        config['max_discrete_value_classes'] = 4
         config['continuous_noise_std'] = 1.0
         config['continuous_beta_mean'] = 1.0
         config['continuous_beta_std'] = 0.0
-        config['cores'] = 80
+        config['cores'] = 1
         config['node'] = "galileo"
 
         run_with_config(config=config, num_samples_list=num_samples_list, dataset_num_samples=dataset_num_samples, num_graphs_per_config=num_graphs_per_config)
