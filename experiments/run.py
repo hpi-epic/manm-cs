@@ -484,11 +484,11 @@ def run_with_config(config: dict, num_samples_list: List[int], dataset_num_sampl
 def run():
     num_nodes_list = [5, 10, 20]
     edge_density_list = [0.4]
-    discrete_node_ratio_list = [1.0]
+    discrete_node_ratio_list = [0.25, 0.5, 0.75]
     continuous_noise_std_list = [1.0]
     num_samples_list = [1000, 10000, 100000]
     discrete_signal_to_noise_ratio_list = [0.9]
-    discrete_value_classes_list = [(3, 4), (6, 7), (10, 11)]
+    discrete_value_classes_list = [(3, 4)]
     dataset_num_samples = 200000
     num_graphs_per_config = 5
 
