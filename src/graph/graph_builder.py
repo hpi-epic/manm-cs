@@ -90,7 +90,7 @@ class GraphBuilder:
 
     def build(self, seed: int = 0) -> Graph:
         # Generate graph using networkx package
-        G = nx.gnp_random_graph(n=self.num_nodes, p=self.edge_density, seed=seed, directed=True)
+        G = nx.readwrite.gml.read_gml('/home/jonas/Code/mpci-dag/experiments/mehra/mehra.gml')
         # Convert generated graph to DAG
         dag = nx.DiGraph()
         dag.add_nodes_from(G)
@@ -103,10 +103,11 @@ class GraphBuilder:
         num_discrete_nodes = int(self.discrete_node_ratio * self.num_nodes)
 
         variables_by_idx: Dict[int, Variable] = {}
+        discrete = ['Region', 'Zone', 'Type', 'Year', 'Season', 'Month', 'Day', 'Hour']
         for i, node_idx in enumerate(top_sort_idx):
             parents = [variables_by_idx[idx] for idx in sorted(list(dag.predecessors(node_idx)))]
 
-            if i < num_discrete_nodes:
+            if node_idx in discrete:
                 # Consider the first num_discrete_nodes nodes to be of discrete type
                 num_values = np.random.randint(low=self.min_discrete_value_classes, high=self.max_discrete_value_classes, size=1)[0]
                 noise = DiscreteNoiseBuilder() \

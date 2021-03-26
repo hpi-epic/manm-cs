@@ -466,7 +466,8 @@ def run_with_config(config: dict, num_samples_list: List[int], dataset_num_sampl
 
     for seed in seeds:
         benchmark_id = hashlib.md5(uuid4().__str__().encode()).hexdigest()
-        data_path, graph_path = generate_data(benchmark_id=benchmark_id, config=config, seed=seed)
+        data_path = "/home/jonas/Code/mpci-dag/experiments/mehra/mehra_200k.csv"
+        graph_path = "/home/jonas/Code/mpci-dag/experiments/mehra/mehra.gml"
         data_table_name = upload_data(benchmark_id=benchmark_id,
                                       data_path=data_path)
         dataset_id = create_dataset(benchmark_id=benchmark_id, data_table_name=data_table_name,
@@ -482,15 +483,15 @@ def run_with_config(config: dict, num_samples_list: List[int], dataset_num_sampl
 
 
 def run():
-    num_nodes_list = [5, 10, 20]
+    num_nodes_list = [5]
     edge_density_list = [0.4]
-    discrete_node_ratio_list = [0.25, 0.5, 0.75]
+    discrete_node_ratio_list = [0.5]
     continuous_noise_std_list = [1.0]
-    num_samples_list = [1000, 10000, 100000]
+    num_samples_list = [100, 1000, 10000, 100000]
     discrete_signal_to_noise_ratio_list = [0.9]
     discrete_value_classes_list = [(3, 4)]
     dataset_num_samples = 200000
-    num_graphs_per_config = 5
+    num_graphs_per_config = 1
 
     variable_params = [
         num_nodes_list,

@@ -1,7 +1,8 @@
-from src.graph import Graph
+from src.graph import Graph, GraphBuilder
 from src.noise import DiscreteNoise, ContinuousNoise
 from src.prob_distributions import BinomialDistribution, UniformDiscreteDistribution, \
     CustomDiscreteDistribution, GaussianDistribution
+from src.utils import write_single_csv
 from src.variables.continuous_variable import ContinuousVariable
 from src.variables.discrete_variable import DiscreteVariable
 
@@ -73,20 +74,19 @@ def create_simple_conditional_model2():
 
 
 if __name__ == '__main__':
-    def print_observations(graph: Graph, num_observations: int = 10):
-        df = graph.sample(num_observations=num_observations)
-        print(df)
-        print()
+    graph = GraphBuilder() \
+        .with_num_nodes(1) \
+        .with_edge_density(0.001) \
+        .with_discrete_node_ratio(0.0001) \
+        .with_discrete_signal_to_noise_ratio(0.9) \
+        .with_min_discrete_value_classes(3) \
+        .with_max_discrete_value_classes(20) \
+        .with_continuous_noise_std(1.0) \
+        .with_continuous_beta_mean(0.0001) \
+        .with_continuous_beta_std(0.0001) \
+        .build(seed=42)
+    nx_graph = graph.to_networkx_graph()
+    dfs = graph.sample(num_observations=200000)
 
-
-    print('Exemplary discrete models:')
-    print_observations(graph=create_simple_discrete_model1())
-    print_observations(graph=create_simple_discrete_model2())
-
-    print('\nExemplary continuous models:')
-    print_observations(graph=create_simple_continuous_model1())
-    print_observations(graph=create_simple_continuous_model2())
-
-    print('\nExemplary conditional models:')
-    print_observations(graph=create_simple_conditional_model1())
-    print_observations(graph=create_simple_conditional_model2())
+    write_single_csv(dataframes=dfs, target_path="/home/jonas/Code/mpci-dag/src/mehra_mpci.csv")
+    print(nx_graph.nodes)
