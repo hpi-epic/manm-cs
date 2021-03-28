@@ -117,8 +117,6 @@ if __name__ == '__main__':
     measurements = []
     start_time_global = time.time()
 
-    #for num_nodes, edge_density, discrete_node_ratio, discrete_signal_to_noise_ratio, min_discrete_value_classes, max_discrete_value_classes, continuous_noise_std, continuous_beta_mean, continuous_beta_std, num_samples
-
     for num_nodes in PARAMS['num_nodes']:
         for edge_density in PARAMS['edge_density']:
             for discrete_node_ratio in PARAMS['discrete_node_ratio']:
