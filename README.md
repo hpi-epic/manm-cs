@@ -1,3 +1,4 @@
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 # mpci-dag
 Data generation module for MPCI
 
@@ -73,5 +74,8 @@ python3 -m src \
 | continuous_beta_mean            | (-Inf, Inf) | 1.0 | Defines the mean of the beta values (edge weights) for continuous parent nodes. |
 | continuous_beta_std             | \[0, Inf)   | 0.0 | Defines the standard deviation of the beta values (edge weights) for continuous parent nodes. |
 | continuous_noise_std            | \[0, Inf)   | 1.0 | Defines the standard deviation of gaussian noise added to continuous variables. |
-| num_processes | \ [1, Inf)   | 1 | Number of processes used for data sampling |
+| num_processes | [1, Inf) | 1 | Number of processes used for data sampling |
 
+## License
+
+MIT
