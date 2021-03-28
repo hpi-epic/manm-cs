@@ -482,8 +482,8 @@ def run_with_config(config: dict, num_samples_list: List[int], dataset_num_sampl
 
 
 def run():
-    num_nodes_list = [5, 10, 20]
-    edge_density_list = [0.25]
+    num_nodes_list = [5, 10, 15]
+    edge_density_list = [0.2]
     discrete_node_ratio_list = [0.25, 0.5, 0.75]
     continuous_noise_std_list = [1.0]
     num_samples_list = [100, 1000, 10000, 100000]
