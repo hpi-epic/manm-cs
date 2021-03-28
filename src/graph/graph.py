@@ -3,6 +3,7 @@ from typing import List, Optional
 
 import networkx as nx
 import pandas as pd
+import numpy as np
 from pathos.multiprocessing import ProcessingPool
 
 from src.variables.variable import Variable
@@ -25,6 +26,8 @@ class Graph:
         """
 
         def fn(chunk_size: int):
+            np.random.seed() # reseed thread to ensure independence
+
             df = pd.DataFrame()
             for variable in self.variables:
                 df[variable.idx] = variable.sample(df=df, num_observations=chunk_size)
