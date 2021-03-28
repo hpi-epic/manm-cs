@@ -1,5 +1,5 @@
-![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 # mpci-dag
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 Data generation module for MPCI
 
 ## Getting started
