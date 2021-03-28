@@ -4,7 +4,7 @@
 - Docker
 - Running PostgresSQL instance
 
-If you do not have a running PostgreSQL database, you can start one by executing the following docker-compose.yml with ```docker-compose up````
+If you do not have a running PostgreSQL database, you can start one by executing the following docker-compose.yml with ```docker-compose up```
 
 ```
 version: '3'
@@ -58,4 +58,3 @@ The experiment script executes following steps for each permutation of the setti
 - Collect results from each experiment / job
 
 Results are written to ```job_results.csv```
-``` 
