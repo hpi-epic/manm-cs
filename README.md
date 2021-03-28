@@ -11,23 +11,60 @@ cd mpci-dag
 git checkout feature/data-generation-anm
 ```
 ### Install requirements within venv
-Please make sure you have Python 3 installed.
-We recommend installing the requirements defined in [requirements.txt](requirements.txt) using [venv](https://docs.python.org/3/library/venv.html).
-```
-# Create a virtual environment
-python -m venv venv
 
-# Activate your virtual environment
-source venv/bin/activate
+https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
 
-# Install all requirements
-python -m pip install -r requirements.txt
+Please make sure you have Python 3 installed. We tested the execution of our data generation with Python 3.9.
+We recommend installing the requirements defined in [requirements.txt](requirements.txt) using [virtualenv](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/).
+
+MacOS / Linux
+
+```
+# Install virtualenv 
+python3 -m pip install --user virtualenv
+
+# Create a new virtual environment
+python3 -m venv env
+
+# Activate the virtual environment
+source env/bin/activate
 ```
 
-### Start data generation
-We defined several exemplary models. You can generate observations from them by executing the following command
+Windows
+
 ```
-python -m src
+# Install virtualenv 
+py -m pip install --user virtualenv
+
+# Create a new virtual environment
+py -m venv env
+
+# Activate the virtual environment
+.\env\Scripts\activate
+```
+
+After the creation of a new virtual enviroment, we can install the project dependencies defined in [requirements.txt](requirements.txt) for both platforms.
+
+```
+python3 -m pip install -r requirements.txt 
+```
+
+### Execute data generation
+
+You can start the data generation with following command. The generated graph and the dataset are saved as ground_truth.gml and samples.csv in the current working directory. All available parameters for data generation can be seen with ```python3 -m src --help```
+
+```
+python3 -m src \
+    --num_nodes 10 \
+    --edge_density 0.5 \
+    --num_samples 10000 \
+    --discrete_node_ratio 0.5 \
+    --discrete_signal_to_noise_ratio 0.5 \
+    --min_discrete_value_classes 3 \
+    --max_discrete_value_classes 4 \
+    --continuous_noise_std 1 \
+    --continuous_beta_mean 1 \
+    --continuous_beta_std 0
 ```
 
 ## Parameters
