@@ -2,7 +2,6 @@ import argparse
 from typing import Type, Callable, Optional, Any
 
 import networkx as nx
-import requests
 
 from src.graph import Graph, GraphBuilder
 from src.utils import write_single_csv
@@ -42,30 +41,26 @@ def parse_args():
     parser.add_argument('--num_samples', type=type_in_range(int, 1, None), required=True,
                         help='Defines the number of samples that shall be generated from the DAG.')
     parser.add_argument('--discrete_signal_to_noise_ratio', type=type_in_range(float, 0.0, 1.0),
-                        required=True,
+                        required=False, default=0.9,
                         help='Defines the probability that no noise is added within the additive noise model.')
-    parser.add_argument('--min_discrete_value_classes', type=type_in_range(int, 2, None),
-                        required=True,
+    parser.add_argument('--min_discrete_value_classes', type=type_in_range(int, 2, None), default=3, 
+                        required=False,
                         help='Defines the minimum number of discrete classes a discrete variable shall have.')
-    parser.add_argument('--max_discrete_value_classes', type=type_in_range(int, 2, None),
-                        required=True,
+    parser.add_argument('--max_discrete_value_classes', type=type_in_range(int, 2, None), default=4,
+                        required=False,
                         help='Defines the maximum number of discrete classes a discrete variable shall have.')
     parser.add_argument('--continuous_noise_std', type=type_in_range(float, 0.0, None),
-                        required=True,
+                        required=False, default=1, 
                         help='Defines the standard deviation of gaussian noise added to continuous variables.')
     parser.add_argument('--continuous_beta_mean', type=type_in_range(float, None, None),
-                        required=True,
+                        required=False, default=1,
                         help='Defines the mean of the beta values (edge weights) for continuous parent nodes.')
     parser.add_argument('--continuous_beta_std', type=type_in_range(float, 0.0, None),
-                        required=True,
+                        required=False, default=0,
                         help='Defines the standard deviation of the beta values (edge weights) for continuous parent '
                              'nodes.')
-    parser.add_argument('--num_processes', type=type_in_range(int, 1, None), required=False,
+    parser.add_argument('--num_processes', type=type_in_range(int, 1, None), required=False, default=1,
                         help='Defines the number of processes used to sample data from the created graph.')
-    # parser.add_argument('--uploadEndpoint', type=str, required=True,
-    #                     help='Endpoint to upload the dataset')
-    # parser.add_argument('--apiHost', type=str, required=True,
-    #                     help='Url of backend')
     args = parser.parse_args()
 
     assert args.min_discrete_value_classes < args.max_discrete_value_classes, \
@@ -76,22 +71,6 @@ def parse_args():
 
 
 # python src --num_nodes=5 --edge_density=0.6 --discrete_node_ratio=0.0 --num_samples=1000 --discrete_signal_to_noise_ratio=0.0 --min_discrete_value_classes=2 --max_discrete_value_classes=3 --continuous_noise_std=0.2 --continuous_beta_mean=1.0 --continuous_beta_std=0.0
-
-
-def upload_results(dataset_upload_url: str, api_host: str):
-    samples_files = {"file": open(SAMPLES_FILE, "rb")}
-    response = requests.put(url=dataset_upload_url, files=samples_files)
-    response.raise_for_status()
-    json = response.json()
-    print(json)
-    assert "id" in json, f"id was not found in json {json}"
-    dataset_id = json["id"]
-
-    ground_truth_upload_url = f"http://{api_host}/api/dataset/{dataset_id}/upload"
-    ground_truth_files = {"graph_file": open(GROUND_TRUTH_FILE, "rb")}
-    response = requests.post(url=ground_truth_upload_url, files=ground_truth_files)
-    print(response.json())
-    response.raise_for_status()
 
 
 def graph_from_args(args) -> Graph:
@@ -116,4 +95,3 @@ if __name__ == '__main__':
 
     nx_graph = graph.to_networkx_graph()
     nx.write_gml(nx_graph, GROUND_TRUTH_FILE)
-    #upload_results(args.uploadEndpoint, args.apiHost)

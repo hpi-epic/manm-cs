@@ -49,3 +49,4 @@ class Graph:
             for parent in var.parents:
                 nx_graph.add_edge(parent.idx, var.idx)
         return nx_graph
+    
