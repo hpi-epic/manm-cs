@@ -27,7 +27,6 @@ class Graph:
 
         def fn(chunk_size: int):
             np.random.seed() # reseed thread to ensure independence
-
             df = pd.DataFrame()
             for variable in self.variables:
                 df[variable.idx] = variable.sample(df=df, num_observations=chunk_size)
@@ -50,3 +49,4 @@ class Graph:
             for parent in var.parents:
                 nx_graph.add_edge(parent.idx, var.idx)
         return nx_graph
+    
