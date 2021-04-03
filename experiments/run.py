@@ -234,7 +234,7 @@ def upload_data(benchmark_id: str, data_path: str) -> Tuple[int, str]:
 
 
 def add_experiment(dataset_id: int, max_discrete_value_classes: int, cores: int,
-                   discrete_node_ratio: float, sampling_factor: float, num_discrete_clusters: int):
+                   discrete_node_ratio: float, sampling_factor: float):
     experiments = []
     for alpha in ALPHA_VALUES:
         experiments += [{
@@ -251,26 +251,7 @@ def add_experiment(dataset_id: int, max_discrete_value_classes: int, cores: int,
                 "verbose": 0,
                 "sampling_factor": sampling_factor,
                 "discrete_node_limit": 50,
-                "use_discretization": 1,
-                "num_discrete_clusters": num_discrete_clusters
-            }
-        }]
-        experiments += [{
-            "algorithm_id": 2,
-            "dataset_id": dataset_id,
-            'description': f"{alpha}",
-            "name": "pcalg micg",
-            "parameters": {
-                "alpha": alpha,
-                "cores": cores,
-                "independence_test": "micg",
-                "skeleton_method": "stable.fast",
-                "subset_size": -1,
-                "verbose": 0,
-                "sampling_factor": sampling_factor,
-                "discrete_node_limit": 50,
-                "use_discretization": 0,
-                "num_discrete_clusters": num_discrete_clusters
+                "use_discretization": 0
             }
         }]
         # experiments += [{
@@ -414,8 +395,7 @@ def run_experiments_for_config(config: dict, dataset_id: int, num_samples_list: 
             max_discrete_value_classes=config['max_discrete_value_classes'],
             discrete_node_ratio=config['discrete_node_ratio'],
             cores=config["cores"],
-            sampling_factor=num_samples / dataset_num_samples,
-            num_discrete_clusters=config["num_discrete_clusters"]
+            sampling_factor=num_samples / dataset_num_samples
         )
         logging.info('Successfully added experiment')
 
@@ -490,15 +470,14 @@ def run_with_config(config: dict, num_samples_list: List[int], dataset_num_sampl
 
 def run():
     num_nodes_list = [10, 15, 20]
-    edge_density_list = [0.1, 0.2]
-    discrete_node_ratio_list = [0.5]
+    edge_density_list = [0.2]
+    discrete_node_ratio_list = [0.25, 0.5, 0.75]
     continuous_noise_std_list = [1.0]
     num_samples_list = [100, 1000, 10_000, 100_000]
     discrete_signal_to_noise_ratio_list = [0.9]
     discrete_value_classes_list = [(3, 4)]
     dataset_num_samples = 200_000
     num_graphs_per_config = 5
-    num_discrete_clusters_list = [5, 10, 20]
 
     variable_params = [
         num_nodes_list,
@@ -506,8 +485,7 @@ def run():
         discrete_node_ratio_list,
         continuous_noise_std_list,
         discrete_signal_to_noise_ratio_list,
-        discrete_value_classes_list,
-        num_discrete_clusters_list
+        discrete_value_classes_list
     ]
 
     for num_nodes, \
@@ -515,8 +493,7 @@ def run():
             discrete_node_ratio, \
             continuous_noise_std, \
             discrete_signal_to_noise_ratio, \
-            discrete_value_classes,\
-            num_discrete_clusters in list(itertools.product(*variable_params)):
+            discrete_value_classes in list(itertools.product(*variable_params)):
         min_discrete_value_classes, max_discrete_value_classes = discrete_value_classes
         config = dict()
         config['num_nodes'] = num_nodes
@@ -526,7 +503,6 @@ def run():
         config['min_discrete_value_classes'] = min_discrete_value_classes
         config['max_discrete_value_classes'] = max_discrete_value_classes
         config['continuous_noise_std'] = continuous_noise_std
-        config['num_discrete_clusters'] = num_discrete_clusters
         config['continuous_beta_mean'] = 1.0
         config['continuous_beta_std'] = 0.0
         config['cores'] = 1
