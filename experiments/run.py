@@ -471,7 +471,7 @@ def run_with_config(config: dict, num_samples_list: List[int], dataset_num_sampl
 def run():
     num_nodes_list = [10, 15, 20]
     edge_density_list = [0.2]
-    discrete_node_ratio_list = [0.25, 0.5, 0.75]
+    discrete_node_ratio_list = [0.3, 0.4, 0.6]
     continuous_noise_std_list = [1.0]
     num_samples_list = [100, 1000, 10_000, 100_000]
     discrete_signal_to_noise_ratio_list = [0.9]
