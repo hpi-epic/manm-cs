@@ -254,6 +254,24 @@ def add_experiment(dataset_id: int, max_discrete_value_classes: int, cores: int,
                 "use_discretization": 0
             }
         }]
+        experiments += [{
+            "algorithm_id": 2,
+            "dataset_id": dataset_id,
+            'description': f"{alpha}",
+            "name": "pcalg micg",
+            "parameters": {
+                "alpha": alpha,
+                "cores": cores,
+                "independence_test": "micg",
+                "skeleton_method": "stable.fast",
+                "subset_size": -1,
+                "verbose": 0,
+                "sampling_factor": sampling_factor,
+                "discrete_node_limit": 50,
+                "use_discretization": 1,
+                "num_discrete_clusters": 5
+            }
+        }]
         # experiments += [{
         #     'algorithm_id': 4,
         #     'dataset_id': dataset_id,
@@ -470,14 +488,14 @@ def run_with_config(config: dict, num_samples_list: List[int], dataset_num_sampl
 
 def run():
     num_nodes_list = [10, 15, 20]
-    edge_density_list = [0.2]
-    discrete_node_ratio_list = [0.3, 0.4, 0.6]
+    edge_density_list = [0.2, 0.4, 0.6]
+    discrete_node_ratio_list = [0.25, 0.5, 0.75]
     continuous_noise_std_list = [1.0]
-    num_samples_list = [100, 1000, 10_000, 100_000]
+    num_samples_list = [10_000]
     discrete_signal_to_noise_ratio_list = [0.9]
     discrete_value_classes_list = [(3, 4)]
-    dataset_num_samples = 200_000
-    num_graphs_per_config = 5
+    dataset_num_samples = 20_000
+    num_graphs_per_config = 1
 
     variable_params = [
         num_nodes_list,
