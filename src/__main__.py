@@ -50,20 +50,20 @@ def parse_args():
                         required=False,
                         help='Defines the maximum number of discrete classes a discrete variable shall have.')
     parser.add_argument('--continuous_noise_std', type=type_in_range(float, 0.0, None),
-                        required=False, default=1, 
+                        required=False, default=1.0,
                         help='Defines the standard deviation of gaussian noise added to continuous variables.')
     parser.add_argument('--continuous_beta_mean', type=type_in_range(float, None, None),
-                        required=False, default=1,
+                        required=False, default=1.0,
                         help='Defines the mean of the beta values (edge weights) for continuous parent nodes.')
     parser.add_argument('--continuous_beta_std', type=type_in_range(float, 0.0, None),
-                        required=False, default=0,
+                        required=False, default=0.0,
                         help='Defines the standard deviation of the beta values (edge weights) for continuous parent '
                              'nodes.')
     parser.add_argument('--num_processes', type=type_in_range(int, 1, None), required=False, default=1,
                         help='Defines the number of processes used to sample data from the created graph.')
     args = parser.parse_args()
 
-    assert args.min_discrete_value_classes < args.max_discrete_value_classes, \
+    assert args.min_discrete_value_classes <= args.max_discrete_value_classes, \
         f"Expected min_discrete_value_classes <= max_discrete_value_classes but got min: " \
         f"{args.min_discrete_value_classes}, max: {args.max_discrete_value_classes} "
 

@@ -108,7 +108,10 @@ class GraphBuilder:
 
             if i < num_discrete_nodes:
                 # Consider the first num_discrete_nodes nodes to be of discrete type
-                num_values = np.random.randint(low=self.min_discrete_value_classes, high=self.max_discrete_value_classes, size=1)[0]
+                num_values = np.random.randint(
+                    low=self.min_discrete_value_classes,
+                    high=self.max_discrete_value_classes + 1,
+                    size=1)[0]
                 noise = DiscreteNoiseBuilder() \
                     .with_signal_to_noise_ratio(
                     signal_to_noise_ratio=self.discrete_signal_to_noise_ratio) \
