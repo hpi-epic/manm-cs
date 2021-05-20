@@ -1,14 +1,14 @@
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
-# mpci-dag
-Data generation module for MPCI
+# MANM-CS
+Data generation module for causal structure learning
 
 ## Getting started
 
 ### Get the code
 Start by cloning this repository and switching to the correct branch.
 ```
-git clone git@github.com:hpi-epic/mpci-dag.git
-cd mpci-dag
+git clone git@github.com:hpi-epic/MANM-CS.git
+cd MANM-CS
 git checkout feature/data-generation-anm
 ```
 ### Install requirements within venv
