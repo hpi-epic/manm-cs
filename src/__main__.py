@@ -50,13 +50,13 @@ def parse_args():
                         required=False,
                         help='Defines the maximum number of discrete classes a discrete variable shall have.')
     parser.add_argument('--continuous_noise_std', type=type_in_range(float, 0.0, None),
-                        required=False, default=1, 
+                        required=False, default=1.0,
                         help='Defines the standard deviation of gaussian noise added to continuous variables.')
     parser.add_argument('--continuous_beta_mean', type=type_in_range(float, None, None),
-                        required=False, default=1,
+                        required=False, default=1.0,
                         help='Defines the mean of the beta values (edge weights) for continuous parent nodes.')
     parser.add_argument('--continuous_beta_std', type=type_in_range(float, 0.0, None),
-                        required=False, default=0,
+                        required=False, default=0.0,
                         help='Defines the standard deviation of the beta values (edge weights) for continuous parent '
                              'nodes.')
     parser.add_argument('--num_processes', type=type_in_range(int, 1, None), required=False, default=1,
