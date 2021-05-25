@@ -30,7 +30,7 @@ def type_in_range(type_: Type, lower_bound: Optional[float], upper_bound: Option
 def parse_args():
     parser = argparse.ArgumentParser(
         description='Generate a dataset for benchmarking causal structure learning using '
-                    'the additive noise model')
+                    'the mixed additive noise model')
     parser.add_argument('--num_nodes', type=type_in_range(int, 1, None), required=True,
                         help='Defines the number of nodes to be in the generated DAG.')
     parser.add_argument('--edge_density', type=type_in_range(float, 0.0, 1.0), required=True,
@@ -42,7 +42,7 @@ def parse_args():
                         help='Defines the number of samples that shall be generated from the DAG.')
     parser.add_argument('--discrete_signal_to_noise_ratio', type=type_in_range(float, 0.0, 1.0),
                         required=False, default=0.9,
-                        help='Defines the probability that no noise is added within the additive noise model.')
+                        help='Defines the probability that no noise is added within the mixed additive noise model.')
     parser.add_argument('--min_discrete_value_classes', type=type_in_range(int, 2, None), default=3, 
                         required=False,
                         help='Defines the minimum number of discrete classes a discrete variable shall have.')
