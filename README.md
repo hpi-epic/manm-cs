@@ -1,6 +1,7 @@
 # MANM-CS
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
-Data generation module for causal structure learning based upon the mixed additive noise model (MANM), corresponding publication currently under review.
+Data generation module for benchmarking methods for causal structure learning (CSL) from heterogeneous observational data based upon the mixed additive noise model (MANM).
+Note: corresponding publication currently under review.
 
 ## Getting started
 
