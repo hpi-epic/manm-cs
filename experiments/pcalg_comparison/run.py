@@ -219,7 +219,6 @@ def generate_graph_with_at_least_one_edge(config: dict, seed: int) -> Graph:
     max_retries = 100
     for retry_id in range(seed, seed + max_retries):
         logging.info('Starting graph builder...')
-        ### TODO add function list with_functions(self, function_tuples: List[Tuple[float, Callable[...,float]]]) -> 'GraphBuilder':
         graph = GraphBuilder() \
             .with_num_nodes(config['num_nodes']) \
             .with_edge_density(config['edge_density']) \
@@ -228,6 +227,7 @@ def generate_graph_with_at_least_one_edge(config: dict, seed: int) -> Graph:
             .with_min_discrete_value_classes(config['min_discrete_value_classes']) \
             .with_max_discrete_value_classes(config['max_discrete_value_classes']) \
             .with_continuous_noise_std(config['continuous_noise_std']) \
+            .with_functions(config['functions']) \
             .build(seed=retry_id)
         nx_graph = graph.to_networkx_graph()
         if nx_graph.edges:
@@ -518,6 +518,8 @@ def run():
     variable_params = [num_nodes_list, edge_density_list, discrete_node_ratio_list]
     dataset_num_samples = 200000
     num_graphs_per_config = 5
+    def identical(value):
+        return value
 
     for num_nodes, edge_density, discrete_node_ratio in list(itertools.product(*variable_params)):
         config = dict()
@@ -530,7 +532,7 @@ def run():
         config['continuous_noise_std'] = 1.0
         config['cores'] = 80
         config['node'] = "galileo"
-        #### TODO add function list to config
+        config['functions'] = [(1.0,identical)]
 
         run_with_config(config=config, num_samples_list=num_samples_list, dataset_num_samples=dataset_num_samples, num_graphs_per_config=num_graphs_per_config)
 

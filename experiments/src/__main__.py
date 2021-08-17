@@ -14,6 +14,8 @@ if __name__ == '__main__':
     discrete_node_ratio_list: [float] = [0.0, 0.4, 0.6, 1.0]
     discrete_class_ranges: [(int, int)] = [(2, 3)]
     max_samples: int = 200
+    def identical(value):
+        return value
 
     # Experiment Settings
     num_samples_list: [int] = [100]
@@ -25,7 +27,6 @@ if __name__ == '__main__':
     experiment_variables = [num_samples_list, alphas]
 
     root_node = RootNode()
-    #### TODO ADD function list
     for num_nodes, edge_density, discrete_node_ratio, discrete_class_range in list(itertools.product(*dataset_variables)):
         dataset_node = DatasetNode(DatasetConfig(
             num_nodes=num_nodes,
@@ -35,7 +36,8 @@ if __name__ == '__main__':
             max_discrete_value_classes=discrete_class_range[1],
             discrete_signal_to_noise_ratio=0.95,
             continuous_noise_std=0.2,
-            max_samples=max_samples
+            max_samples=max_samples,
+            functions=[(1.0,identical)]
         ), parent=root_node)
 
         for num_samples, alpha in list(itertools.product(*experiment_variables)):

@@ -27,9 +27,31 @@ def type_in_range(type_: Type, lower_bound: Optional[float], upper_bound: Option
 
     return assert_float_in_range
 
+def lin_func(x):
+    return x
+
+def quad_func(x):
+    return math.pow(x,2)
+
+def cube_func(x):
+    return math.pow(x,3)
+
+FUNCTION_DICTIONARY = {'linear':lin_func,
+                       'quadratic':quad_func,
+                       'cubic':cube_func,
+                       'tanh':math.tanh,
+                       'sin':math.sin,
+                       'cos':math.cos}
+
+def funcs(function_str: str):
+    try:
+        val,func = function_str.split(',')
+        return(float(val),FUNCTION_DICTIONARY[func])
+    except:
+        raise argparse.ArgumentTypeError(f"{function_str} has wrong format or not supported")
+
 
 def parse_args():
-    ### TODO add function list two paramters a list of functions as string, we support some cases and a list of probs
     parser = argparse.ArgumentParser(
         description='Generate a dataset for benchmarking causal structure learning using '
                     'the mixed additive noise model')
@@ -56,6 +78,11 @@ def parse_args():
                         help='Defines the standard deviation of gaussian noise added to continuous variables.')
     parser.add_argument('--num_processes', type=type_in_range(int, 1, None), required=False, default=1,
                         help='Defines the number of processes used to sample data from the created graph.')
+    parser.add_argument('--functions', type=funcs, required=False, default=[(1.0,lin_func)], nargs='*',
+                        help='Defines the probability and functions for relationships between continuous variables '
+                             'probabilities have to sum up to 1, supported functions are '
+                             'linear, quadratic, cubic, tanh, sin, cos '
+                             'format is probabilityF1,F1 probabilityF2,F2 ... .')
     args = parser.parse_args()
 
     assert args.min_discrete_value_classes <= args.max_discrete_value_classes, \
@@ -65,16 +92,10 @@ def parse_args():
     return args
 
 
-# python src --num_nodes=5 --edge_density=0.6 --discrete_node_ratio=0.0 --num_samples=1000 --discrete_signal_to_noise_ratio=0.0 --min_discrete_value_classes=2 --max_discrete_value_classes=3 --continuous_noise_std=0.2
+# python src --num_nodes=5 --edge_density=0.6 --discrete_node_ratio=0.0 --num_samples=1000 --discrete_signal_to_noise_ratio=0.0 --min_discrete_value_classes=2 --max_discrete_value_classes=3 --continuous_noise_std=0.2 --functions 0.7,linear 0.3,quadratic
 
 
 def graph_from_args(args) -> Graph:
-    ### TODO add function list with_functions
-    ### tmp testing
-    def sq(x):
-        return x * x
-    def identical(x):
-        return x
     return GraphBuilder() \
         .with_num_nodes(args.num_nodes) \
         .with_edge_density(args.edge_density) \
@@ -83,13 +104,14 @@ def graph_from_args(args) -> Graph:
         .with_min_discrete_value_classes(args.min_discrete_value_classes) \
         .with_max_discrete_value_classes(args.max_discrete_value_classes) \
         .with_continuous_noise_std(args.continuous_noise_std) \
-        .with_functions([(1.0,sq)]) \
+        .with_functions(args.functions) \
         .build()
 
 
 if __name__ == '__main__':
     args = parse_args()
     graph = graph_from_args(args)
+    print(args.functions)
     dfs = graph.sample(num_observations=args.num_samples, num_processes=args.num_processes)
     write_single_csv(dataframes=dfs, target_path=SAMPLES_FILE)
 

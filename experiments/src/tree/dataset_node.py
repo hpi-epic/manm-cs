@@ -4,6 +4,7 @@ import os
 from abc import ABC
 from dataclasses import dataclass
 from uuid import uuid4
+from typing import List, Tuple, Callable
 
 import networkx as nx
 
@@ -30,6 +31,7 @@ class DatasetConfig:
     discrete_signal_to_noise_ratio: float
     max_samples: int
     continuous_noise_std: float
+    functions: List[Tuple[float, Callable[...,float]]]
 
 @dataclass
 class ResolvedDataset:
@@ -59,7 +61,6 @@ class DatasetNode(BaseNode):
 
     def _generate_graph_with_at_least_one_edge(self) -> Graph:
         max_retries = 100
-        ### TODO add function list with_functions(self, function_tuples: List[Tuple[float, Callable[...,float]]]) -> 'GraphBuilder':
         for retry_id in range(max_retries):
             graph = GraphBuilder() \
                 .with_num_nodes(self.config.num_nodes) \
@@ -69,6 +70,7 @@ class DatasetNode(BaseNode):
                 .with_min_discrete_value_classes(self.config.min_discrete_value_classes) \
                 .with_max_discrete_value_classes(self.config.max_discrete_value_classes) \
                 .with_continuous_noise_std(self.config.continuous_noise_std) \
+                .with_functions(self.config.functions) \
                 .build(seed=retry_id)
             nx_graph = graph.to_networkx_graph()
             if nx_graph.edges:

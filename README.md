@@ -72,7 +72,8 @@ python3 -m src \
 | discrete_signal_to_noise_ratio | \[0, 1\]    | 0.9 | Defines the probability that no noise is added within the mixed additive noise model. |
 | min_discrete_value_classes     | \[2, Inf)  | 3 | Defines the minimum number of discrete classes a discrete variable shall have. |
 | max_discrete_value_classes     | \[2, Inf)  | 4 | Defines the maximum number of discrete classes a discrete variable shall have. |
-| continuous_noise_std            | \[0, Inf)   | 1.0 | Defines the standard deviation of gaussian noise added to continuous variables. |
+| continuous_noise_std           | \[0, Inf)   | 1.0 | Defines the standard deviation of gaussian noise added to continuous variables. |
+| functions           			 | (\[0, 1\], func)   | id | A list of probabilities and mathmatical functions for relationships between two continuous nodes. Note, the input are tuples (probability, function), where the sum of all probabilities has to equal 1. Command line supported functions are: [linear, quadratic, cubic, tanh, sin, cos] |
 | num_processes | [1, Inf) | 1 | Number of processes used for data sampling |
 
 ## License
