@@ -98,7 +98,7 @@ class GraphBuilder:
         assert nx.is_directed_acyclic_graph(dag)
 
         # Create list of topologically sorted nodes
-        # TODO check if this can be removed, because the nodes are already ordered as there can be edge u,v such that v > u
+        # Note, nodes are ordered already, sorting step may become relevant, if graph generation above is changed
         top_sort_idx = list(nx.topological_sort(dag))
         num_discrete_nodes = int(self.discrete_node_ratio * self.num_nodes)
 
@@ -126,15 +126,15 @@ class GraphBuilder:
                 num_continuous_parents = sum(
                     [1 for p in parents if p.type == VariableType.CONTINUOUS])
 
-                # TODO: Removed for testing
-                # betas_dist1 = GaussianDistribution(mu=self.continuous_beta_mean,
-                #                                    sigma=self.continuous_beta_std)
-                # betas_dist2 = GaussianDistribution(mu=-1 * self.continuous_beta_mean,
-                #                                    sigma=self.continuous_beta_std)
-                # betas = BimodalDistribution(prob_dist1=betas_dist1, prob_dist2=betas_dist2) \
-                #     .sample(num_observations=num_continuous_parents)
+                # Note: For experiments betas have been fixed to 1, uncomment and comment the following
+                # betas = list(np.ones(num_continuous_parents))
+                betas_dist1 = GaussianDistribution(mu=self.continuous_beta_mean,
+                                                   sigma=self.continuous_beta_std)
+                betas_dist2 = GaussianDistribution(mu=-1 * self.continuous_beta_mean,
+                                                   sigma=self.continuous_beta_std)
+                betas = BimodalDistribution(prob_dist1=betas_dist1, prob_dist2=betas_dist2) \
+                    .sample(num_observations=num_continuous_parents)
 
-                betas = list(np.ones(num_continuous_parents))
                 variable = ContinuousVariable(idx=node_idx, parents=parents, betas=betas,
                                               noise=noise)
 
