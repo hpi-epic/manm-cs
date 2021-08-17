@@ -43,6 +43,7 @@ def parse_args():
     parser.add_argument('--discrete_signal_to_noise_ratio', type=type_in_range(float, 0.0, 1.0),
                         required=False, default=0.9,
                         help='Defines the probability that no noise is added within the mixed additive noise model.')
+>>>>>>> master
     parser.add_argument('--min_discrete_value_classes', type=type_in_range(int, 2, None), default=3, 
                         required=False,
                         help='Defines the minimum number of discrete classes a discrete variable shall have.')
@@ -63,7 +64,7 @@ def parse_args():
                         help='Defines the number of processes used to sample data from the created graph.')
     args = parser.parse_args()
 
-    assert args.min_discrete_value_classes < args.max_discrete_value_classes, \
+    assert args.min_discrete_value_classes <= args.max_discrete_value_classes, \
         f"Expected min_discrete_value_classes <= max_discrete_value_classes but got min: " \
         f"{args.min_discrete_value_classes}, max: {args.max_discrete_value_classes} "
 
