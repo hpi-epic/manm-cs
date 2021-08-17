@@ -22,7 +22,6 @@ from src.utils import write_single_csv
 
 @dataclass
 class DatasetConfig:
-    ### TODO add function list with_functions
     num_nodes: int
     edge_density: float
     discrete_node_ratio: float
