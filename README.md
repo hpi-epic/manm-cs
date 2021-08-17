@@ -72,8 +72,6 @@ python3 -m src \
 | discrete_signal_to_noise_ratio | \[0, 1\]    | 0.9 | Defines the probability that no noise is added within the mixed additive noise model. |
 | min_discrete_value_classes     | \[2, Inf)  | 3 | Defines the minimum number of discrete classes a discrete variable shall have. |
 | max_discrete_value_classes     | \[2, Inf)  | 4 | Defines the maximum number of discrete classes a discrete variable shall have. |
-| continuous_beta_mean            | (-Inf, Inf) | 1.0 | Defines the mean of the beta values (edge weights) for continuous parent nodes. |
-| continuous_beta_std             | \[0, Inf)   | 0.0 | Defines the standard deviation of the beta values (edge weights) for continuous parent nodes. |
 | continuous_noise_std            | \[0, Inf)   | 1.0 | Defines the standard deviation of gaussian noise added to continuous variables. |
 | num_processes | [1, Inf) | 1 | Number of processes used for data sampling |
 

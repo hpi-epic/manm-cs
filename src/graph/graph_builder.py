@@ -25,8 +25,6 @@ class GraphBuilder:
     min_discrete_value_classes: Optional[int] = None
     max_discrete_value_classes: Optional[int] = None
     continuous_noise_std: float
-    continuous_beta_mean: float
-    continuous_beta_std: float
 
     functions: List[Tuple[float, Callable[...,float]]]
 
@@ -79,16 +77,6 @@ class GraphBuilder:
     def with_continuous_noise_std(self, continuous_noise_std: float) -> 'GraphBuilder':
         validate_float(continuous_noise_std, min_value=0.0)
         self.continuous_noise_std = continuous_noise_std
-        return self
-
-    def with_continuous_beta_mean(self, continuous_beta_mean: float) -> 'GraphBuilder':
-        validate_float(continuous_beta_mean)
-        self.continuous_beta_mean = continuous_beta_mean
-        return self
-
-    def with_continuous_beta_std(self, continuous_beta_std: float) -> 'GraphBuilder':
-        validate_float(continuous_beta_std, min_value=0.0)
-        self.continuous_beta_std = continuous_beta_std
         return self
 
     def with_functions(self, function_tuples: List[Tuple[float, Callable[...,float]]]) -> 'GraphBuilder':
@@ -157,7 +145,6 @@ class GraphBuilder:
                 num_continuous_parents = sum(
                     [1 for p in parents if p.type == VariableType.CONTINUOUS])
 
-                #### TODO remove betas globally
                 ### implementatoin idea
                 functions = [self.chose_function() for p in range(num_continuous_parents)]
                 variable = ContinuousVariable(idx=node_idx, parents=parents, functions=functions,

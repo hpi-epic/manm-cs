@@ -29,7 +29,7 @@ def type_in_range(type_: Type, lower_bound: Optional[float], upper_bound: Option
 
 
 def parse_args():
-    ### TODO remove beta and add function list two paramters a list of functions as string, we support some cases and a list of probs
+    ### TODO add function list two paramters a list of functions as string, we support some cases and a list of probs
     parser = argparse.ArgumentParser(
         description='Generate a dataset for benchmarking causal structure learning using '
                     'the mixed additive noise model')
@@ -54,13 +54,6 @@ def parse_args():
     parser.add_argument('--continuous_noise_std', type=type_in_range(float, 0.0, None),
                         required=False, default=1.0,
                         help='Defines the standard deviation of gaussian noise added to continuous variables.')
-    parser.add_argument('--continuous_beta_mean', type=type_in_range(float, None, None),
-                        required=False, default=1.0,
-                        help='Defines the mean of the beta values (edge weights) for continuous parent nodes.')
-    parser.add_argument('--continuous_beta_std', type=type_in_range(float, 0.0, None),
-                        required=False, default=0.0,
-                        help='Defines the standard deviation of the beta values (edge weights) for continuous parent '
-                             'nodes.')
     parser.add_argument('--num_processes', type=type_in_range(int, 1, None), required=False, default=1,
                         help='Defines the number of processes used to sample data from the created graph.')
     args = parser.parse_args()
@@ -72,11 +65,11 @@ def parse_args():
     return args
 
 
-# python src --num_nodes=5 --edge_density=0.6 --discrete_node_ratio=0.0 --num_samples=1000 --discrete_signal_to_noise_ratio=0.0 --min_discrete_value_classes=2 --max_discrete_value_classes=3 --continuous_noise_std=0.2 --continuous_beta_mean=1.0 --continuous_beta_std=0.0
+# python src --num_nodes=5 --edge_density=0.6 --discrete_node_ratio=0.0 --num_samples=1000 --discrete_signal_to_noise_ratio=0.0 --min_discrete_value_classes=2 --max_discrete_value_classes=3 --continuous_noise_std=0.2
 
 
 def graph_from_args(args) -> Graph:
-    ### TODO remove beta and add function list with_functions
+    ### TODO add function list with_functions
     ### tmp testing
     def sq(x):
         return x * x
@@ -90,8 +83,6 @@ def graph_from_args(args) -> Graph:
         .with_min_discrete_value_classes(args.min_discrete_value_classes) \
         .with_max_discrete_value_classes(args.max_discrete_value_classes) \
         .with_continuous_noise_std(args.continuous_noise_std) \
-        .with_continuous_beta_mean(args.continuous_beta_mean) \
-        .with_continuous_beta_std(args.continuous_beta_std) \
         .with_functions([(1.0,sq)]) \
         .build()
 
