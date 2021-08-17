@@ -1,4 +1,5 @@
 import argparse
+import math
 from typing import Type, Callable, Optional, Any
 
 import networkx as nx
@@ -76,6 +77,11 @@ def parse_args():
 
 def graph_from_args(args) -> Graph:
     ### TODO remove beta and add function list with_functions
+    ### tmp testing
+    def sq(x):
+        return x * x
+    def identical(x):
+        return x
     return GraphBuilder() \
         .with_num_nodes(args.num_nodes) \
         .with_edge_density(args.edge_density) \
@@ -86,6 +92,7 @@ def graph_from_args(args) -> Graph:
         .with_continuous_noise_std(args.continuous_noise_std) \
         .with_continuous_beta_mean(args.continuous_beta_mean) \
         .with_continuous_beta_std(args.continuous_beta_std) \
+        .with_functions([(1.0,sq)]) \
         .build()
 
 

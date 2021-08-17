@@ -2,6 +2,7 @@ from typing import Dict, Optional, Callable, List, Tuple
 
 import networkx as nx
 import numpy as np
+import random
 from validation import validate_int, validate_float
 
 from src.graph import Graph
@@ -158,7 +159,7 @@ class GraphBuilder:
 
                 #### TODO remove betas globally
                 ### implementatoin idea
-                functions = [chose_function() for p in parent]
+                functions = [self.chose_function() for p in range(num_continuous_parents)]
                 variable = ContinuousVariable(idx=node_idx, parents=parents, functions=functions,
                                                noise=noise)
 

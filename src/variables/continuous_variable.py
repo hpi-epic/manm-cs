@@ -19,7 +19,7 @@ class ContinuousVariable(Variable):
 
         # Input parameter validation
         if len(functions) != len(self._get_continuous_parents()):
-            raise ValueError(f'There must be one beta value for each continuous parent. Expected '
+            raise ValueError(f'There must be one function for each continuous parent. Expected '
                              f'{len(self._get_continuous_parents())}, but were {len(functions)}')
 
     def __create_continuous_mapper_func(self, functions: List[Callable[..., float]]) -> Callable[[pd.Series], float]:
