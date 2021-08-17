@@ -18,6 +18,7 @@ class GraphBuilder:
     num_nodes: int
     edge_density: float
     discrete_node_ratio: float
+    conditional_gaussian: bool
     num_samples: int
 
     discrete_signal_to_noise_ratio: float
@@ -40,6 +41,11 @@ class GraphBuilder:
     def with_discrete_node_ratio(self, discrete_node_ratio: float) -> 'GraphBuilder':
         validate_float(discrete_node_ratio, min_value=0.0, max_value=1.0)
         self.discrete_node_ratio = discrete_node_ratio
+        return self
+
+    def with_conditional_gaussian(self, conditional_gaussian: bool) -> 'GraphBuilder':
+        validate_float(conditional_gaussian)
+        self.conditional_gaussian = conditional_gaussian
         return self
 
     def with_num_samples(self, num_samples: int) -> 'GraphBuilder':
@@ -101,43 +107,75 @@ class GraphBuilder:
         # Note, nodes are ordered already, sorting step may become relevant, if graph generation above is changed
         top_sort_idx = list(nx.topological_sort(dag))
         num_discrete_nodes = int(self.discrete_node_ratio * self.num_nodes)
-
+    
         variables_by_idx: Dict[int, Variable] = {}
         for i, node_idx in enumerate(top_sort_idx):
             parents = [variables_by_idx[idx] for idx in sorted(list(dag.predecessors(node_idx)))]
+            
+            if self.conditional_gaussian == TRUE
+                if i < num_discrete_nodes:
+                    # Consider the first num_discrete_nodes nodes to be of discrete type
+                    num_values = np.random.randint(
+                        low=self.min_discrete_value_classes,
+                        high=self.max_discrete_value_classes + 1,
+                        size=1)[0]
+                    noise = DiscreteNoiseBuilder() \
+                        .with_signal_to_noise_ratio(
+                        signal_to_noise_ratio=self.discrete_signal_to_noise_ratio) \
+                        .with_num_discrete_values(num_discrete_values=num_values) \
+                        .build()
+                    variable = DiscreteVariable(idx=node_idx, num_values=num_values,
+                                                parents=parents, noise=noise)
+                else:
+                    noise = GaussianNoiseBuilder() \
+                        .with_sigma(sigma=self.continuous_noise_std) \
+                        .build()
+                    num_continuous_parents = sum(
+                        [1 for p in parents if p.type == VariableType.CONTINUOUS])
 
-            if i < num_discrete_nodes:
-                # Consider the first num_discrete_nodes nodes to be of discrete type
-                num_values = np.random.randint(
-                    low=self.min_discrete_value_classes,
-                    high=self.max_discrete_value_classes + 1,
-                    size=1)[0]
-                noise = DiscreteNoiseBuilder() \
-                    .with_signal_to_noise_ratio(
-                    signal_to_noise_ratio=self.discrete_signal_to_noise_ratio) \
-                    .with_num_discrete_values(num_discrete_values=num_values) \
-                    .build()
-                variable = DiscreteVariable(idx=node_idx, num_values=num_values,
-                                            parents=parents, noise=noise)
+                    # Note: For experiments betas have been fixed to 1, uncomment and comment the following
+                    # betas = list(np.ones(num_continuous_parents))
+                    betas_dist1 = GaussianDistribution(mu=self.continuous_beta_mean,
+                                                       sigma=self.continuous_beta_std)
+                    betas_dist2 = GaussianDistribution(mu=-1 * self.continuous_beta_mean,
+                                                       sigma=self.continuous_beta_std)
+                    betas = BimodalDistribution(prob_dist1=betas_dist1, prob_dist2=betas_dist2) \
+                        .sample(num_observations=num_continuous_parents)
+
+                    variable = ContinuousVariable(idx=node_idx, parents=parents, betas=betas,
+                                                  noise=noise)
             else:
-                noise = GaussianNoiseBuilder() \
-                    .with_sigma(sigma=self.continuous_noise_std) \
-                    .build()
-                num_continuous_parents = sum(
-                    [1 for p in parents if p.type == VariableType.CONTINUOUS])
+                # For each node: decide for discrete or conintuous given probability of self.discrete_node_ratio
+                if np.random(1, self.discrete_node_ratio, 1) == 1 #i.e., discrete
+                    num_values = np.random.randint(
+                        low=self.min_discrete_value_classes,
+                        high=self.max_discrete_value_classes + 1,
+                        size=1)[0]
+                    noise = DiscreteNoiseBuilder() \
+                        .with_signal_to_noise_ratio(
+                        signal_to_noise_ratio=self.discrete_signal_to_noise_ratio) \
+                        .with_num_discrete_values(num_discrete_values=num_values) \
+                        .build()
+                    variable = DiscreteVariable(idx=node_idx, num_values=num_values,
+                                                parents=parents, noise=noise)
+                else: #i.e., continuous
+                    noise = GaussianNoiseBuilder() \
+                        .with_sigma(sigma=self.continuous_noise_std) \
+                        .build()
+                    num_continuous_parents = sum(
+                        [1 for p in parents if p.type == VariableType.CONTINUOUS])
 
-                # Note: For experiments betas have been fixed to 1, uncomment and comment the following
-                # betas = list(np.ones(num_continuous_parents))
-                betas_dist1 = GaussianDistribution(mu=self.continuous_beta_mean,
-                                                   sigma=self.continuous_beta_std)
-                betas_dist2 = GaussianDistribution(mu=-1 * self.continuous_beta_mean,
-                                                   sigma=self.continuous_beta_std)
-                betas = BimodalDistribution(prob_dist1=betas_dist1, prob_dist2=betas_dist2) \
-                    .sample(num_observations=num_continuous_parents)
+                    # Note: For experiments betas have been fixed to 1, uncomment and comment the following
+                    # betas = list(np.ones(num_continuous_parents))
+                    betas_dist1 = GaussianDistribution(mu=self.continuous_beta_mean,
+                                                       sigma=self.continuous_beta_std)
+                    betas_dist2 = GaussianDistribution(mu=-1 * self.continuous_beta_mean,
+                                                       sigma=self.continuous_beta_std)
+                    betas = BimodalDistribution(prob_dist1=betas_dist1, prob_dist2=betas_dist2) \
+                        .sample(num_observations=num_continuous_parents)
 
-                variable = ContinuousVariable(idx=node_idx, parents=parents, betas=betas,
-                                              noise=noise)
-
+                    variable = ContinuousVariable(idx=node_idx, parents=parents, betas=betas,
+                                                  noise=noise)
             variables_by_idx[node_idx] = variable
 
         variables = [variables_by_idx[idx] for idx in top_sort_idx]
