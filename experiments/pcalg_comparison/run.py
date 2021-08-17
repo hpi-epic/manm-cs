@@ -219,6 +219,7 @@ def generate_graph_with_at_least_one_edge(config: dict, seed: int) -> Graph:
     max_retries = 100
     for retry_id in range(seed, seed + max_retries):
         logging.info('Starting graph builder...')
+        ### TODO remove beta and add function list with_functions(self, function_tuples: List[Tuple[float, Callable[...,float]]]) -> 'GraphBuilder':
         graph = GraphBuilder() \
             .with_num_nodes(config['num_nodes']) \
             .with_edge_density(config['edge_density']) \
@@ -533,6 +534,7 @@ def run():
         config['continuous_beta_std'] = 0.0
         config['cores'] = 80
         config['node'] = "galileo"
+        #### TODO change beta and add function list to config
 
         run_with_config(config=config, num_samples_list=num_samples_list, dataset_num_samples=dataset_num_samples, num_graphs_per_config=num_graphs_per_config)
 

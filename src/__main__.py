@@ -28,6 +28,7 @@ def type_in_range(type_: Type, lower_bound: Optional[float], upper_bound: Option
 
 
 def parse_args():
+    ### TODO remove beta and add function list two paramters a list of functions as string, we support some cases and a list of probs
     parser = argparse.ArgumentParser(
         description='Generate a dataset for benchmarking causal structure learning using '
                     'the mixed additive noise model')
@@ -74,6 +75,7 @@ def parse_args():
 
 
 def graph_from_args(args) -> Graph:
+    ### TODO remove beta and add function list with_functions
     return GraphBuilder() \
         .with_num_nodes(args.num_nodes) \
         .with_edge_density(args.edge_density) \

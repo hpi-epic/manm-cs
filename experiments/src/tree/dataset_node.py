@@ -21,6 +21,7 @@ from src.utils import write_single_csv
 
 @dataclass
 class DatasetConfig:
+    ### TODO remove beta and add function list with_functions
     num_nodes: int
     edge_density: float
     discrete_node_ratio: float
@@ -60,6 +61,7 @@ class DatasetNode(BaseNode):
 
     def _generate_graph_with_at_least_one_edge(self) -> Graph:
         max_retries = 100
+        ### TODO remove beta and add function list with_functions(self, function_tuples: List[Tuple[float, Callable[...,float]]]) -> 'GraphBuilder':
         for retry_id in range(max_retries):
             graph = GraphBuilder() \
                 .with_num_nodes(self.config.num_nodes) \
