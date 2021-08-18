@@ -1,7 +1,8 @@
-from typing import Dict, Optional
+from typing import Dict, Optional, Callable, List, Tuple
 
 import networkx as nx
 import numpy as np
+import random
 from validation import validate_int, validate_float
 
 from src.graph import Graph
@@ -24,8 +25,8 @@ class GraphBuilder:
     min_discrete_value_classes: Optional[int] = None
     max_discrete_value_classes: Optional[int] = None
     continuous_noise_std: float
-    continuous_beta_mean: float
-    continuous_beta_std: float
+
+    functions: List[Tuple[float, Callable[...,float]]]
 
     def with_num_nodes(self, num_nodes: int) -> 'GraphBuilder':
         validate_int(num_nodes, min_value=1)
@@ -78,15 +79,33 @@ class GraphBuilder:
         self.continuous_noise_std = continuous_noise_std
         return self
 
-    def with_continuous_beta_mean(self, continuous_beta_mean: float) -> 'GraphBuilder':
-        validate_float(continuous_beta_mean)
-        self.continuous_beta_mean = continuous_beta_mean
+    def with_functions(self, function_tuples: List[Tuple[float, Callable[...,float]]]) -> 'GraphBuilder':
+        ### Transform input in form of
+        # [(0.5 F1), (0.3 F2), (0.2 F3)]
+        # into, to allow drawing later on using random number between 0 and 1
+        # [(0.5 F1), (0.8 F2), (1.0 F3)]
+        #TODO validation
+        self.functions = []
+        cur_range = 0.0
+        for function_tuple in function_tuples:
+            cur_range += function_tuple[0]
+            if cur_range > 1.0:
+                raise ValueError(f'Ranges of functions should not exceeed 1.0')
+            self.functions.append((cur_range,function_tuple[1]))
+        if cur_range < 1.0:
+            raise ValueError(f'Ranges of functions should sum up to 1.0 but are ' +
+                             f'{cur_range}')
         return self
 
-    def with_continuous_beta_std(self, continuous_beta_std: float) -> 'GraphBuilder':
-        validate_float(continuous_beta_std, min_value=0.0)
-        self.continuous_beta_std = continuous_beta_std
-        return self
+    def chose_function(self):
+        rand_val = random.random()
+        for function_tuple in sorted(self.functions):
+            if rand_val <= function_tuple[0]:
+                return function_tuple[1]
+        ### use last entry as default
+        def identical(value):
+            return value
+        return identical
 
     def build(self, seed: int = 0) -> Graph:
         # Generate graph using networkx package
@@ -126,17 +145,10 @@ class GraphBuilder:
                 num_continuous_parents = sum(
                     [1 for p in parents if p.type == VariableType.CONTINUOUS])
 
-                # Note: For experiments betas have been fixed to 1, uncomment and comment the following
-                # betas = list(np.ones(num_continuous_parents))
-                betas_dist1 = GaussianDistribution(mu=self.continuous_beta_mean,
-                                                   sigma=self.continuous_beta_std)
-                betas_dist2 = GaussianDistribution(mu=-1 * self.continuous_beta_mean,
-                                                   sigma=self.continuous_beta_std)
-                betas = BimodalDistribution(prob_dist1=betas_dist1, prob_dist2=betas_dist2) \
-                    .sample(num_observations=num_continuous_parents)
-
-                variable = ContinuousVariable(idx=node_idx, parents=parents, betas=betas,
-                                              noise=noise)
+                ### implementatoin idea
+                functions = [self.chose_function() for p in range(num_continuous_parents)]
+                variable = ContinuousVariable(idx=node_idx, parents=parents, functions=functions,
+                                               noise=noise)
 
             variables_by_idx[node_idx] = variable
 

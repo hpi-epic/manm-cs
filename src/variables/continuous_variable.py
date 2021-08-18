@@ -10,26 +10,25 @@ from src.variables.variable import Variable, VariableType
 class ContinuousVariable(Variable):
     type = VariableType.CONTINUOUS
     continuous_mapper_func: Callable[..., float]
-
     def __init__(self, idx: int, noise: ContinuousNoise, parents: Optional[List[Variable]] = None,
-                 betas: Optional[List[float]] = None):
+                 functions: Optional[List[Callable[..., float]]] = None):
         parents = [] if parents is None else parents
-        betas = [] if betas is None else betas
+        functions = [] if functions is None else functions
         super(ContinuousVariable, self).__init__(idx=idx, parents=parents, noise=noise)
-        self.continuous_mapper_func = self.__create_continuous_mapper_func(betas=betas)
+        self.continuous_mapper_func = self.__create_continuous_mapper_func(functions=functions)
 
         # Input parameter validation
-        if len(betas) != len(self._get_continuous_parents()):
-            raise ValueError(f'There must be one beta value for each continuous parent. Expected '
-                             f'{len(self._get_continuous_parents())}, but were {len(betas)}')
+        if len(functions) != len(self._get_continuous_parents()):
+            raise ValueError(f'There must be one function for each continuous parent. Expected '
+                             f'{len(self._get_continuous_parents())}, but were {len(functions)}')
 
-    def __create_continuous_mapper_func(self, betas: List[float]) -> Callable[[pd.Series], float]:
+    def __create_continuous_mapper_func(self, functions: List[Callable[..., float]]) -> Callable[[pd.Series], float]:
         """Creates the mapper function for continuous parents
 
         """
 
         def func(parent_values: pd.Series):
-            return np.sum([value * betas[i] for i, value in enumerate(parent_values)])
+            return np.sum([functions[i](value) for i, value in enumerate(parent_values)])
 
         return func
 
