@@ -131,6 +131,7 @@ class GraphBuilder:
         for i, node_idx in enumerate(top_sort_idx):
             parents = [variables_by_idx[idx] for idx in sorted(list(dag.predecessors(node_idx)))]
             
+            # Conditional Gaussian:
             if self.conditional_gaussian == TRUE
                 if i < num_discrete_nodes:
                     # Consider the first num_discrete_nodes nodes to be of discrete type
@@ -155,9 +156,11 @@ class GraphBuilder:
                     functions = [self.chose_function() for p in range(num_continuous_parents)]
                     variable = ContinuousVariable(idx=node_idx, parents=parents, functions=functions,
                                                noise=noise)
+            # Mixed:
             else:
                 # For each node: decide for discrete or conintuous given probability of self.discrete_node_ratio
-                if np.random(1, self.discrete_node_ratio, 1) == 1 #i.e., discrete
+                # Discrete:
+                if np.random(1, self.discrete_node_ratio, 1) == 1 
                     num_values = np.random.randint(
                         low=self.min_discrete_value_classes,
                         high=self.max_discrete_value_classes + 1,
@@ -169,7 +172,8 @@ class GraphBuilder:
                         .build()
                     variable = DiscreteVariable(idx=node_idx, num_values=num_values,
                                                 parents=parents, noise=noise)
-                else: #i.e., continuous
+                # Continuous:                               
+                else: 
                     noise = GaussianNoiseBuilder() \
                         .with_sigma(sigma=self.continuous_noise_std) \
                         .build()
