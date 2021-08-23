@@ -37,7 +37,8 @@ if __name__ == '__main__':
             discrete_signal_to_noise_ratio=0.95,
             continuous_noise_std=0.2,
             max_samples=max_samples,
-            functions=[(1.0,identical)]
+            functions=[(1.0,identical)],
+            conditional_gaussian=True,
         ), parent=root_node)
 
         for num_samples, alpha in list(itertools.product(*experiment_variables)):

@@ -83,6 +83,8 @@ def parse_args():
                              'probabilities have to sum up to 1, supported functions are '
                              'linear, quadratic, cubic, tanh, sin, cos '
                              'format is probabilityF1,F1 probabilityF2,F2 ... .')
+    parser.add_argument('--conditional_gaussian', type=bool, required=False, default=True,
+                        help='Defines if conditional gaussian model is assumed for a mixture of variables.')
     args = parser.parse_args()
 
     assert args.min_discrete_value_classes <= args.max_discrete_value_classes, \
@@ -105,6 +107,7 @@ def graph_from_args(args) -> Graph:
         .with_max_discrete_value_classes(args.max_discrete_value_classes) \
         .with_continuous_noise_std(args.continuous_noise_std) \
         .with_functions(args.functions) \
+        .with_conditional_gaussian(args.conditional_gaussian) \
         .build()
 
 
