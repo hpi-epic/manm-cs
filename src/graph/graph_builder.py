@@ -166,7 +166,7 @@ class GraphBuilder:
             else:
                 # For each node: decide for discrete or conintuous given probability of self.discrete_node_ratio
                 # Discrete:
-                if np.random(1, self.discrete_node_ratio, 1) == 1 
+                if np.random(1, self.discrete_node_ratio, 1) == 1:
                     variable = self.generate_discrete_variable()
                 # Continuous:                               
                 else: 
