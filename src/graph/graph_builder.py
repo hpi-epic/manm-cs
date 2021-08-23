@@ -156,7 +156,7 @@ class GraphBuilder:
             parents = [variables_by_idx[idx] for idx in sorted(list(dag.predecessors(node_idx)))]
             
             # Conditional Gaussian:
-            if self.conditional_gaussian == True
+            if self.conditional_gaussian == True:
                 if i < num_discrete_nodes:
                     # Consider the first num_discrete_nodes nodes to be of discrete type
                     variable = self.generate_discrete_variable()
