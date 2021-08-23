@@ -3,7 +3,7 @@ from typing import Dict, Optional, Callable, List, Tuple
 import networkx as nx
 import numpy as np
 import random
-from validation import validate_int, validate_float
+from validation import validate_int, validate_float, validate_bool
 
 from src.graph import Graph
 from src.noise import GaussianNoiseBuilder, DiscreteNoiseBuilder
@@ -45,7 +45,7 @@ class GraphBuilder:
         return self
 
     def with_conditional_gaussian(self, conditional_gaussian: bool) -> 'GraphBuilder':
-        validate_float(conditional_gaussian)
+        validate_bool(conditional_gaussian)
         self.conditional_gaussian = conditional_gaussian
         return self
 
@@ -126,7 +126,7 @@ class GraphBuilder:
         # Note, nodes are ordered already, sorting step may become relevant, if graph generation above is changed
         top_sort_idx = list(nx.topological_sort(dag))
         num_discrete_nodes = int(self.discrete_node_ratio * self.num_nodes)
-    
+
         variables_by_idx: Dict[int, Variable] = {}
         for i, node_idx in enumerate(top_sort_idx):
             parents = [variables_by_idx[idx] for idx in sorted(list(dag.predecessors(node_idx)))]
