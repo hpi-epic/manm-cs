@@ -113,6 +113,30 @@ class GraphBuilder:
             return value
         return identical
 
+    def generate_discrete_variable(self) -> 'DiscreteVariable':
+        num_values = np.random.randint(
+            low=self.min_discrete_value_classes,
+            high=self.max_discrete_value_classes + 1,
+            size=1)[0]
+        noise = DiscreteNoiseBuilder() \
+            .with_signal_to_noise_ratio(
+            signal_to_noise_ratio=self.discrete_signal_to_noise_ratio) \
+            .with_num_discrete_values(num_discrete_values=num_values) \
+            .build()
+        return DiscreteVariable(idx=node_idx, num_values=num_values,
+                                parents=parents, noise=noise)
+
+    def generate_continuous_variable(self) -> 'ContinuousVariable':
+        noise = GaussianNoiseBuilder() \
+            .with_sigma(sigma=self.continuous_noise_std) \
+            .build()
+        num_continuous_parents = sum(
+            [1 for p in parents if p.type == VariableType.CONTINUOUS])
+
+        functions = [self.chose_function() for p in range(num_continuous_parents)]
+        return ContinuousVariable(idx=node_idx, parents=parents, functions=functions,
+                                  noise=noise)
+
     def build(self, seed: int = 0) -> Graph:
         # Generate graph using networkx package
         G = nx.gnp_random_graph(n=self.num_nodes, p=self.edge_density, seed=seed, directed=True)
@@ -135,56 +159,18 @@ class GraphBuilder:
             if self.conditional_gaussian == TRUE
                 if i < num_discrete_nodes:
                     # Consider the first num_discrete_nodes nodes to be of discrete type
-                    num_values = np.random.randint(
-                        low=self.min_discrete_value_classes,
-                        high=self.max_discrete_value_classes + 1,
-                        size=1)[0]
-                    noise = DiscreteNoiseBuilder() \
-                        .with_signal_to_noise_ratio(
-                        signal_to_noise_ratio=self.discrete_signal_to_noise_ratio) \
-                        .with_num_discrete_values(num_discrete_values=num_values) \
-                        .build()
-                    variable = DiscreteVariable(idx=node_idx, num_values=num_values,
-                                                parents=parents, noise=noise)
+                    variable = self.generate_discrete_variable()
                 else:
-                    noise = GaussianNoiseBuilder() \
-                        .with_sigma(sigma=self.continuous_noise_std) \
-                        .build()
-                    num_continuous_parents = sum(
-                        [1 for p in parents if p.type == VariableType.CONTINUOUS])
-
-                    functions = [self.chose_function() for p in range(num_continuous_parents)]
-                    variable = ContinuousVariable(idx=node_idx, parents=parents, functions=functions,
-                                               noise=noise)
+                    variable = self.generate_continuous_variable()
             # Mixed:
             else:
                 # For each node: decide for discrete or conintuous given probability of self.discrete_node_ratio
                 # Discrete:
                 if np.random(1, self.discrete_node_ratio, 1) == 1 
-                    num_values = np.random.randint(
-                        low=self.min_discrete_value_classes,
-                        high=self.max_discrete_value_classes + 1,
-                        size=1)[0]
-                    noise = DiscreteNoiseBuilder() \
-                        .with_signal_to_noise_ratio(
-                        signal_to_noise_ratio=self.discrete_signal_to_noise_ratio) \
-                        .with_num_discrete_values(num_discrete_values=num_values) \
-                        .build()
-                    variable = DiscreteVariable(idx=node_idx, num_values=num_values,
-                                                parents=parents, noise=noise)
+                    variable = self.generate_discrete_variable()
                 # Continuous:                               
                 else: 
-                    noise = GaussianNoiseBuilder() \
-                        .with_sigma(sigma=self.continuous_noise_std) \
-                        .build()
-                    num_continuous_parents = sum(
-                        [1 for p in parents if p.type == VariableType.CONTINUOUS])
-
-                    functions = [self.chose_function() for p in range(num_continuous_parents)]
-                    variable = ContinuousVariable(idx=node_idx, parents=parents, functions=functions,
-                                               noise=noise)
-                    
-
+                    variable = self.generate_continuous_variable()
 
             variables_by_idx[node_idx] = variable
 
