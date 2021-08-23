@@ -39,7 +39,7 @@ class DiscreteVariable(Variable):
 
         """            
         def func(parent_values: pd.Series):
-            return np.sum([np.random.multinomial(1,mult_logit_function(value=value)) for  value in enumerate(parent_values)])
+            return np.sum([np.where(np.random.multinomial(1,mult_logit_function(value=value)) == 1)[0][0] for  value in enumerate(parent_values)])
 
         return func
 
