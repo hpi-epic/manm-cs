@@ -113,7 +113,7 @@ class GraphBuilder:
             return value
         return identical
 
-    def generate_discrete_variable(self) -> 'DiscreteVariable':
+    def generate_discrete_variable(self, parents, node_idx) -> 'DiscreteVariable':
         num_values = np.random.randint(
             low=self.min_discrete_value_classes,
             high=self.max_discrete_value_classes + 1,
@@ -126,7 +126,7 @@ class GraphBuilder:
         return DiscreteVariable(idx=node_idx, num_values=num_values,
                                 parents=parents, noise=noise)
 
-    def generate_continuous_variable(self) -> 'ContinuousVariable':
+    def generate_continuous_variable(self, parents, node_idx) -> 'ContinuousVariable':
         noise = GaussianNoiseBuilder() \
             .with_sigma(sigma=self.continuous_noise_std) \
             .build()
@@ -159,18 +159,18 @@ class GraphBuilder:
             if self.conditional_gaussian == True:
                 if i < num_discrete_nodes:
                     # Consider the first num_discrete_nodes nodes to be of discrete type
-                    variable = self.generate_discrete_variable()
+                    variable = self.generate_discrete_variable(parents, node_idx)
                 else:
-                    variable = self.generate_continuous_variable()
+                    variable = self.generate_continuous_variable(parents, node_idx)
             # Mixed:
             else:
                 # For each node: decide for discrete or conintuous given probability of self.discrete_node_ratio
                 # Discrete:
                 if np.random(1, self.discrete_node_ratio, 1) == 1:
-                    variable = self.generate_discrete_variable()
+                    variable = self.generate_discrete_variable(parents, node_idx)
                 # Continuous:                               
                 else: 
-                    variable = self.generate_continuous_variable()
+                    variable = self.generate_continuous_variable(parents, node_idx)
 
             variables_by_idx[node_idx] = variable
 
