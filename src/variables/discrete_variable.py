@@ -28,9 +28,9 @@ class DiscreteVariable(Variable):
     
     def mult_logit_function(self, value) -> pd.Series:
         categories =  list(range(1, self.num_values))
-                
-        e_sum = np.sum([np.exp(k*value) for  k in enumerate(categories)])
-        softmax = [np.exp(k*value) / e_sum for  k in enumerate(categories)]
+
+        e_sum = np.sum([np.exp(k*value) for  k in categories])
+        softmax = [np.exp(k*value) / e_sum for  k in categories]
         
         return softmax
      
@@ -39,7 +39,7 @@ class DiscreteVariable(Variable):
 
         """            
         def func(parent_values: pd.Series):
-            return np.sum([np.where(np.random.multinomial(1,mult_logit_function(value=value)) == 1)[0][0] for  value in enumerate(parent_values)])
+            return np.sum([np.where(np.random.multinomial(1,self.mult_logit_function(value=value)) == 1)[0][0] for  value in parent_values])
 
         return func
 
