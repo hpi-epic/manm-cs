@@ -18,7 +18,7 @@ class DiscreteVariable(Variable):
         parents = [] if parents is None else parents
         super(DiscreteVariable, self).__init__(idx=idx, parents=parents, noise=noise)
         self.num_values = num_values
-        self.logit_mapper_func = self.__create_logit_mapper_func(functions=functions)
+        self.logit_mapper_func = self.__create_logit_mapper_func()
 
         # Input parameter validation
         if self.noise.get_num_values() != self.num_values:
