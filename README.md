@@ -1,6 +1,6 @@
 # MANM-CS
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
-Data generation module for benchmarking methods for causal structure learning (CSL) from heterogeneous observational data based upon the mixed additive noise model (MANM).
+Data generation module for benchmarking methods for causal structure learning (CSL) from mixed discrete-continuous and nonlinear observational data based upon the mixed additive noise model (MANM).
 
 
 ## Getting started
