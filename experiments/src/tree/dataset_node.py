@@ -31,6 +31,7 @@ class DatasetConfig:
     max_samples: int
     continuous_noise_std: float
     functions: List[Tuple[float, Callable[...,float]]]
+    conditional_gaussian: bool
 
 @dataclass
 class ResolvedDataset:
@@ -70,6 +71,7 @@ class DatasetNode(BaseNode):
                 .with_max_discrete_value_classes(self.config.max_discrete_value_classes) \
                 .with_continuous_noise_std(self.config.continuous_noise_std) \
                 .with_functions(self.config.functions) \
+                .conditional_gaussian(self.config.conditional_gaussian) \
                 .build(seed=retry_id)
             nx_graph = graph.to_networkx_graph()
             if nx_graph.edges:

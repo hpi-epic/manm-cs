@@ -1,6 +1,6 @@
 # MANM-CS
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
-Data generation module for benchmarking methods for causal structure learning (CSL) from heterogeneous observational data based upon the mixed additive noise model (MANM).
+Data generation module for benchmarking methods for causal structure learning (CSL) from mixed discrete-continuous and nonlinear observational data based upon the mixed additive noise model (MANM).
 
 
 ## Getting started
@@ -75,6 +75,7 @@ python3 -m src \
 | continuous_noise_std           | \[0, Inf)   | 1.0 | Defines the standard deviation of gaussian noise added to continuous variables. |
 | functions           			 | (\[0, 1\], func)   | id | A list of probabilities and mathmatical functions for relationships between two continuous nodes. Note, the input are tuples (probability, function), where the sum of all probabilities has to equal 1. Command line supported functions are: [linear, quadratic, cubic, tanh, sin, cos] |
 | num_processes | [1, Inf) | 1 | Number of processes used for data sampling |
+| conditional_gaussian | 0 or 1 | 1 | '1' Defines that conditional gaussian model is assumed for a mixture of variables. Otherwise '0', discrete variables can have continuous parents. |
 
 ## License
 
