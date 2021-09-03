@@ -27,7 +27,7 @@ class DiscreteVariable(Variable):
                 f'Expected num_values equal to {self.num_values}, but received {self.noise.get_num_values()}')
     
     def mult_logit_function(self, value) -> pd.Series:
-        categories =  list(range(1, self.num_values))
+        categories =  list(range(0, self.num_values))
 
         e_sum = np.sum([np.exp(k*value) for  k in categories])
         softmax = [np.exp(k*value) / e_sum for  k in categories]
