@@ -118,7 +118,7 @@ def graph_from_args(args) -> Graph:
 if __name__ == '__main__':
     args = parse_args()
     graph = graph_from_args(args)
-    print(args.functions)
+
     dfs = graph.sample(num_observations=args.num_samples, num_processes=args.num_processes)
     write_single_csv(dataframes=dfs, target_path=SAMPLES_FILE)
 
