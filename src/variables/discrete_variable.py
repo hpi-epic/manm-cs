@@ -31,7 +31,11 @@ class DiscreteVariable(Variable):
 
         e_sum = np.sum([np.exp(k*value) for  k in categories])
         softmax = [np.exp(k*value) / e_sum for  k in categories]
-        
+        if np.any(np.isnan(softmax)):
+            ### check for overflow in np.exp, if large values are given tendency towards last category,
+            ### hence we fix last category to 1
+            softmax = [0 for k in categories]
+            softmax[-1] = 1
         return softmax
      
     def __create_logit_mapper_func(self) -> Callable[[pd.Series], int]:
