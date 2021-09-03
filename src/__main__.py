@@ -86,7 +86,7 @@ def parse_args():
                              'probabilities have to sum up to 1, supported functions are '
                              'linear, quadratic, cubic, tanh, sin, cos '
                              'format is probabilityF1,F1 probabilityF2,F2 ... .')
-    parser.add_argument('--conditional_gaussian', type=to_bool, required=False, default=1,
+    parser.add_argument('--conditional_gaussian', type=to_bool, required=False, default=True,
                         help='Defines if conditional gaussian model is assumed for a mixture of variables. '
                              'possible values are 0 for False and 1 for True.')
     args = parser.parse_args()
