@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import List
+from typing import List, Callable, Optional
 
 import pandas as pd
 
@@ -12,11 +12,13 @@ class Variable(ABC):
     type: VariableType
     parents: List['Variable']
     noise: Noise
+    functions: List[Callable[..., float]]
 
-    def __init__(self, idx: int, parents: List['Variable'], noise: Noise):
+    def __init__(self, idx: int, parents: List['Variable'], noise: Noise, functions: Optional[List[Callable[..., float]]] = None):
         self.idx = idx
         self.parents = parents
         self.noise = noise
+        self.functions = functions
 
         # Input parameter validation
         if noise.get_type() != self.type:
