@@ -14,7 +14,7 @@ class ContinuousVariable(Variable):
                  functions: Optional[List[Callable[..., float]]] = None):
         parents = [] if parents is None else parents
         functions = [] if functions is None else functions
-        super(ContinuousVariable, self).__init__(idx=idx, parents=parents, noise=noise)
+        super(ContinuousVariable, self).__init__(idx=idx, parents=parents, noise=noise, functions=functions)
         self.continuous_mapper_func = self.__create_continuous_mapper_func(functions=functions)
 
         # Input parameter validation
