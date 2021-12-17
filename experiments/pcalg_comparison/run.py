@@ -229,6 +229,7 @@ def generate_graph_with_at_least_one_edge(config: dict, seed: int) -> Graph:
             .with_continuous_noise_std(config['continuous_noise_std']) \
             .with_functions(config['functions']) \
             .with_conditional_gaussian(config['conditional_gaussian']) \
+            .with_betas(config['beta_lower_limit'], config['beta_upper_limit']) \
             .build(seed=retry_id)
         nx_graph = graph.to_networkx_graph()
         if nx_graph.edges:
@@ -535,6 +536,8 @@ def run():
         config['node'] = "galileo"
         config['functions'] = [(1.0,identical)]
         config['conditional_gaussian'] = True
+        config['beta_lower_limit'] = 0.0
+        config['beta_upper_limit'] = 1.0
 
         run_with_config(config=config, num_samples_list=num_samples_list, dataset_num_samples=dataset_num_samples, num_graphs_per_config=num_graphs_per_config)
 

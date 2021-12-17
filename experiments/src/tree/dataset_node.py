@@ -32,6 +32,8 @@ class DatasetConfig:
     continuous_noise_std: float
     functions: List[Tuple[float, Callable[...,float]]]
     conditional_gaussian: bool
+    beta_lower_limit: float
+    beta_upper_limit: float
 
 @dataclass
 class ResolvedDataset:
@@ -72,6 +74,7 @@ class DatasetNode(BaseNode):
                 .with_continuous_noise_std(self.config.continuous_noise_std) \
                 .with_functions(self.config.functions) \
                 .conditional_gaussian(self.config.conditional_gaussian) \
+                .with_betas(self.beta_lower_limit, self.beta_upper_limit) \
                 .build(seed=retry_id)
             nx_graph = graph.to_networkx_graph()
             if nx_graph.edges:
