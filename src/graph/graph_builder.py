@@ -27,6 +27,9 @@ class GraphBuilder:
     max_discrete_value_classes: Optional[int] = None
     continuous_noise_std: float
 
+    beta_lower_limit: float
+    beta_upper_limit: float
+
     functions: List[Tuple[float, Callable[...,float]]]
 
     def with_num_nodes(self, num_nodes: int) -> 'GraphBuilder':
@@ -103,6 +106,13 @@ class GraphBuilder:
                              f'{cur_range}')
         return self
 
+    def with_betas(self, lower_limit: float, upper_limit: float) -> 'GraphBuilder':
+        validate_float(lower_limit, min_value=0)
+        validate_float(upper_limit, min_value=lower_limit)
+        self.lower_limit = lower_limit
+        self.upper_limit = upper_limit
+        return self
+
     def chose_function(self):
         rand_val = random.random()
         for function_tuple in sorted(self.functions):
@@ -112,6 +122,14 @@ class GraphBuilder:
         def identical(value):
             return value
         return identical
+
+    def sample_beta(self) -> List[float]:
+        if np.random.randint(0,2) == 0:
+            # we sample beta from [-upper, -lower]
+            return random.uniform(-self.upper, -self.lower)
+        else:
+            # we sample beta from [lower, upper]
+            return random.uniform(self.lower, self.upper)
 
     def generate_discrete_variable(self, parents, node_idx) -> 'DiscreteVariable':
         num_values = np.random.randint(
@@ -134,6 +152,7 @@ class GraphBuilder:
             [1 for p in parents if p.type == VariableType.CONTINUOUS])
 
         functions = [self.chose_function() for p in range(num_continuous_parents)]
+        betas = [self.sample_beta() for p in range(num_continuous_parents)]
         return ContinuousVariable(idx=node_idx, parents=parents, functions=functions,
                                   noise=noise)
 
