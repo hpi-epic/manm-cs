@@ -107,6 +107,12 @@ class GraphBuilder:
         return self
 
     def with_betas(self, lower_limit: float, upper_limit: float) -> 'GraphBuilder':
+        # Switch limits if lower is larger than upper
+        if lower_limit > upper_limit:
+            tmp = upper_limit
+            upper_limit = lower_limit
+            lower_limit = tmp
+
         validate_float(lower_limit, min_value=0)
         validate_float(upper_limit, min_value=lower_limit)
         self.lower_limit = lower_limit
