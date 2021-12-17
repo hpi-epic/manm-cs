@@ -93,7 +93,7 @@ def parse_args():
                         required=False, default=0.0,
                         help='Defines the lower limit for beta values used for continuous parents. '
                         'Should be smaller than upper_limit. Note that we sample from the union of [-upper,-lower] and [lower,upper]')
-    parser.add_argument('--beta_upper_limit', type=type_in_range(float, 0.0, 1.0),
+    parser.add_argument('--beta_upper_limit', type=type_in_range(float, 0.0, None),
                         required=False, default=1.0,
                         help='Defines the upper limit for beta values used for continuous parents. '
                         'Should be larger than lower_limit. Note that we sample from the union of [-upper,-lower] and [lower,upper]')
