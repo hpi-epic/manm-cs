@@ -115,8 +115,8 @@ class GraphBuilder:
 
         validate_float(lower_limit, min_value=0.0)
         validate_float(upper_limit, min_value=lower_limit)
-        self.lower_limit = lower_limit
-        self.upper_limit = upper_limit
+        self.beta_lower_limit = lower_limit
+        self.beta_upper_limit = upper_limit
         return self
 
     def chose_function(self):
@@ -132,10 +132,10 @@ class GraphBuilder:
     def sample_beta(self) -> List[float]:
         if np.random.randint(0,2) == 0:
             # we sample beta from [-upper, -lower]
-            return random.uniform(-self.upper, -self.lower)
+            return random.uniform(-self.beta_upper_limit, -self.beta_lower_limit)
         else:
             # we sample beta from [lower, upper]
-            return random.uniform(self.lower, self.upper)
+            return random.uniform(self.beta_lower_limit, self.beta_upper_limit)
 
     def generate_discrete_variable(self, parents, node_idx) -> 'DiscreteVariable':
         num_values = np.random.randint(
