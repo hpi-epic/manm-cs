@@ -154,7 +154,7 @@ class GraphBuilder:
         functions = [self.chose_function() for p in range(num_continuous_parents)]
         betas = [self.sample_beta() for p in range(num_continuous_parents)]
         return ContinuousVariable(idx=node_idx, parents=parents, functions=functions,
-                                  noise=noise)
+                                  noise=noise, betas=betas)
 
     def build(self, seed: int = 0) -> Graph:
         # Generate graph using networkx package
