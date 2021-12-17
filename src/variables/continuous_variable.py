@@ -16,7 +16,7 @@ class ContinuousVariable(Variable):
         functions = [] if functions is None else functions
         super(ContinuousVariable, self).__init__(idx=idx, parents=parents, noise=noise, functions=functions)
         self.betas = betas
-        self.continuous_mapper_func = self.__create_continuous_mapper_func(functions=functions)
+        self.continuous_mapper_func = self.__create_continuous_mapper_func(functions=functions, betas=betas)
 
         # Input parameter validation
         if len(functions) != len(self._get_continuous_parents()):
