@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 from pathos.multiprocessing import ProcessingPool
 
-from src.variables.variable import Variable
+from ..variables.variable import Variable
 
 
 class Graph:

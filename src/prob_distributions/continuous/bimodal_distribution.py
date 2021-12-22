@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.prob_distributions.continuous import ContinuousDistribution, GaussianDistribution
+from ..continuous import ContinuousDistribution, GaussianDistribution
 
 
 class BimodalDistribution(ContinuousDistribution):

@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.prob_distributions.discrete.discrete_distribution import DiscreteDistribution
+from .discrete_distribution import DiscreteDistribution
 
 
 class BinomialDistribution(DiscreteDistribution):

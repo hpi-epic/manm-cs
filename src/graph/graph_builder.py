@@ -5,14 +5,14 @@ import numpy as np
 import random
 from validation import validate_int, validate_float, validate_bool
 
-from src.graph import Graph
-from src.noise import GaussianNoiseBuilder, DiscreteNoiseBuilder
-from src.prob_distributions.continuous.bimodal_distribution import BimodalDistribution
-from src.prob_distributions.continuous.gaussian_distribution import GaussianDistribution
-from src.variables.continuous_variable import ContinuousVariable
-from src.variables.discrete_variable import DiscreteVariable
-from src.variables.variable import Variable
-from src.variables.variable_type import VariableType
+from ..graph import Graph
+from ..noise import GaussianNoiseBuilder, DiscreteNoiseBuilder
+from ..prob_distributions.continuous.bimodal_distribution import BimodalDistribution
+from ..prob_distributions.continuous.gaussian_distribution import GaussianDistribution
+from ..variables.continuous_variable import ContinuousVariable
+from ..variables.discrete_variable import DiscreteVariable
+from ..variables.variable import Variable
+from ..variables.variable_type import VariableType
 
 
 class GraphBuilder:

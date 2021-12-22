@@ -1,5 +1,5 @@
-from src.noise.noise import Noise
-from src.prob_distributions.discrete import DiscreteDistribution
+from ..noise.noise import Noise
+from ..prob_distributions.discrete import DiscreteDistribution
 
 
 class DiscreteNoise(Noise):

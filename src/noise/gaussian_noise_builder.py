@@ -1,5 +1,5 @@
-from src.noise import ContinuousNoise
-from src.prob_distributions.continuous import GaussianDistribution
+from ..noise import ContinuousNoise
+from ..prob_distributions.continuous import GaussianDistribution
 
 
 class GaussianNoiseBuilder:

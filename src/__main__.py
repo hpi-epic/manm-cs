@@ -4,8 +4,8 @@ from typing import Type, Callable, Optional, Any
 
 import networkx as nx
 
-from src.graph import Graph, GraphBuilder
-from src.utils import write_single_csv
+from graph import Graph, GraphBuilder
+from utils import write_single_csv
 
 GROUND_TRUTH_FILE = "ground_truth.gml"
 SAMPLES_FILE = "samples.csv"

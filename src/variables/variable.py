@@ -3,8 +3,8 @@ from typing import List, Callable, Optional
 
 import pandas as pd
 
-from src.noise.noise import Noise
-from src.variables import VariableType
+from ..noise.noise import Noise
+from ..variables import VariableType
 
 
 class Variable(ABC):
