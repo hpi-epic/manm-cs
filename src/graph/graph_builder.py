@@ -112,8 +112,10 @@ class GraphBuilder:
             tmp = upper_limit
             upper_limit = lower_limit
             lower_limit = tmp
-
         validate_float(lower_limit, min_value=0.0)
+        if lower_limit <= 0.0:
+            raise ValueError(f'Range of beta has to be within (0, Inf), ' +
+                             f'but is {lower_limit} and {upper_limit}')
         validate_float(upper_limit, min_value=lower_limit)
         self.beta_lower_limit = lower_limit
         self.beta_upper_limit = upper_limit
