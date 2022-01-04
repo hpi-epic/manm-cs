@@ -39,7 +39,7 @@ if __name__ == '__main__':
             max_samples=max_samples,
             functions=[(1.0,identical)],
             conditional_gaussian=True,
-            beta_lower_limit=0.0,
+            beta_lower_limit=0.5,
             beta_upper_limit=1.0,
         ), parent=root_node)
 
