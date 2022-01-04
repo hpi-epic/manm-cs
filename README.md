@@ -76,6 +76,8 @@ python3 -m src \
 | functions           			 | (\[0, 1\], func)   | id | A list of probabilities and mathmatical functions for relationships between two continuous nodes. Note, the input are tuples (probability, function), where the sum of all probabilities has to equal 1. Command line supported functions are: [linear, quadratic, cubic, tanh, sin, cos] |
 | num_processes | [1, Inf) | 1 | Number of processes used for data sampling |
 | conditional_gaussian | 0 or 1 | 1 | '1' Defines that conditional gaussian model is assumed for a mixture of variables. Otherwise '0', discrete variables can have continuous parents. |
+| beta_lower_limit | (0, Inf) | 0.5 | Lower limit for beta values for influence of continuous parents. Betas are sampled uniform from the union of [-upper,-lower] and [lower,upper]. Upper limit see below. |
+| beta_upper_limit | (0, Inf) | 1 | Upper limit for beta values for influence of continuous parents. Betas are sampled uniform from the union of [-upper,-lower] and [lower,upper]. Lower limit see above. |
 
 ## License
 

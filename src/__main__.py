@@ -27,6 +27,22 @@ def type_in_range(type_: Type, lower_bound: Optional[float], upper_bound: Option
 
     return assert_float_in_range
 
+def type_in_range_exclusive(type_: Type, lower_bound: Optional[float], upper_bound: Optional[float]) -> \
+        Callable[[str], Any]:
+    def assert_float_in_range(x: str):
+        try:
+            x = type_(x)
+        except ValueError:
+            raise argparse.ArgumentTypeError(f"Cannot convert {x} to type {type_}")
+
+        if lower_bound is not None and x <= lower_bound:
+            raise argparse.ArgumentTypeError(f"{x} not in range ({lower_bound}, {upper_bound})")
+        if upper_bound is not None and x > upper_bound:
+            raise argparse.ArgumentTypeError(f"{x} not in range ({lower_bound}, {upper_bound})")
+        return x
+
+    return assert_float_in_range
+
 def to_bool(bool_str: str):
     return bool(int(bool_str))
 
@@ -89,6 +105,14 @@ def parse_args():
     parser.add_argument('--conditional_gaussian', type=to_bool, required=False, default=True,
                         help='Defines if conditional gaussian model is assumed for a mixture of variables. '
                              'possible values are 0 for False and 1 for True.')
+    parser.add_argument('--beta_lower_limit', type=type_in_range_exclusive(float, 0.0, None),
+                        required=False, default=0.5,
+                        help='Defines the lower limit for beta values used for continuous parents. '
+                        'Should be greater than 0 and smaller than upper_limit. Note that we sample from the union of [-upper,-lower] and [lower,upper]')
+    parser.add_argument('--beta_upper_limit', type=type_in_range_exclusive(float, 0.0, None),
+                        required=False, default=1.0,
+                        help='Defines the upper limit for beta values used for continuous parents. '
+                        'Should be larger than lower_limit. Note that we sample from the union of [-upper,-lower] and [lower,upper]')
     args = parser.parse_args()
 
     assert args.min_discrete_value_classes <= args.max_discrete_value_classes, \
@@ -112,6 +136,7 @@ def graph_from_args(args) -> Graph:
         .with_continuous_noise_std(args.continuous_noise_std) \
         .with_functions(args.functions) \
         .with_conditional_gaussian(args.conditional_gaussian) \
+        .with_betas(args.beta_lower_limit, args.beta_upper_limit) \
         .build()
 
 
