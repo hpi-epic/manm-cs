@@ -536,7 +536,7 @@ def run():
         config['node'] = "galileo"
         config['functions'] = [(1.0,identical)]
         config['conditional_gaussian'] = True
-        config['beta_lower_limit'] = 0.0
+        config['beta_lower_limit'] = 0.5
         config['beta_upper_limit'] = 1.0
 
         run_with_config(config=config, num_samples_list=num_samples_list, dataset_num_samples=dataset_num_samples, num_graphs_per_config=num_graphs_per_config)
