@@ -90,9 +90,9 @@ def parse_args():
                         help='Defines if conditional gaussian model is assumed for a mixture of variables. '
                              'possible values are 0 for False and 1 for True.')
     parser.add_argument('--beta_lower_limit', type=type_in_range(float, 0.0, None),
-                        required=False, default=0.0,
+                        required=False, default=0.5,
                         help='Defines the lower limit for beta values used for continuous parents. '
-                        'Should be smaller than upper_limit. Note that we sample from the union of [-upper,-lower] and [lower,upper]')
+                        'Should be greater than 0 and smaller than upper_limit. Note that we sample from the union of [-upper,-lower] and [lower,upper]')
     parser.add_argument('--beta_upper_limit', type=type_in_range(float, 0.0, None),
                         required=False, default=1.0,
                         help='Defines the upper limit for beta values used for continuous parents. '
