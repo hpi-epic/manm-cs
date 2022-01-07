@@ -6,11 +6,9 @@ Data generation module for benchmarking methods for causal structure learning (C
 ## Getting started
 
 ### Get the code
-Start by cloning this repository and switching to the correct branch.
+Start by cloning this repository.
 ```
 git clone git@github.com:hpi-epic/manm-cs.git
-cd manm-cs 
-git checkout feature/data-generation-anm
 ```
 ### Install requirements within venv
 
