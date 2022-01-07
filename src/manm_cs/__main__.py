@@ -4,8 +4,8 @@ from typing import Type, Callable, Optional, Any
 
 import networkx as nx
 
-from src.graph import Graph, GraphBuilder
-from src.utils import write_single_csv
+from src.manm_cs.graph import Graph, GraphBuilder
+from src.manm_cs.utils import write_single_csv
 
 GROUND_TRUTH_FILE = "ground_truth.gml"
 SAMPLES_FILE = "samples.csv"
@@ -86,7 +86,7 @@ def parse_args():
     parser.add_argument('--discrete_signal_to_noise_ratio', type=type_in_range(float, 0.0, 1.0),
                         required=False, default=0.9,
                         help='Defines the probability that no noise is added within the mixed additive noise model.')
-    parser.add_argument('--min_discrete_value_classes', type=type_in_range(int, 2, None), default=3, 
+    parser.add_argument('--min_discrete_value_classes', type=type_in_range(int, 2, None), default=3,
                         required=False,
                         help='Defines the minimum number of discrete classes a discrete variable shall have.')
     parser.add_argument('--max_discrete_value_classes', type=type_in_range(int, 2, None), default=4,

@@ -1,7 +1,7 @@
 # MANM-CS
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 Data generation module for benchmarking methods for causal structure learning (CSL) from mixed discrete-continuous and nonlinear observational data based upon the mixed additive noise model (MANM).
-The related paper ["MANM-CS: Data Generation for Benchmarking Causal Structure Learning from Mixed Discrete-Continuous and Nonlinear Data"](https://why21.causalai.net/papers/WHY21_16.pdf) was published at the NeurIPS-21 Workshop ["Causal Inference & Machine Learning: Why now?"](https://why21.causalai.net/index.html). 
+The related paper ["MANM-CS: Data Generation for Benchmarking Causal Structure Learning from Mixed Discrete-Continuous and Nonlinear Data"](https://why21.causalai.net/papers/WHY21_16.pdf) was published at the NeurIPS-21 Workshop ["Causal Inference & Machine Learning: Why now?"](https://why21.causalai.net/index.html).
 
 
 ## Getting started
@@ -10,6 +10,8 @@ The related paper ["MANM-CS: Data Generation for Benchmarking Causal Structure L
 Start by cloning this repository.
 ```
 git clone git@github.com:hpi-epic/manm-cs.git
+cd manm-cs
+git checkout master
 ```
 ### Install requirements within venv
 
@@ -19,7 +21,7 @@ We recommend installing the requirements defined in [requirements.txt](requireme
 MacOS / Linux
 
 ```
-# Install virtualenv 
+# Install virtualenv
 python3 -m pip install --user virtualenv
 
 # Create a new virtual environment
@@ -32,7 +34,7 @@ source env/bin/activate
 Windows
 
 ```
-# Install virtualenv 
+# Install virtualenv
 py -m pip install --user virtualenv
 
 # Create a new virtual environment
@@ -45,7 +47,7 @@ py -m venv env
 After the creation of a new virtual enviroment, we can install the project dependencies defined in [requirements.txt](requirements.txt) for both platforms.
 
 ```
-python3 -m pip install -r requirements.txt 
+python3 -m pip install -r requirements.txt
 ```
 
 ### Execute data generation
@@ -58,6 +60,14 @@ python3 -m src \
     --edge_density 0.5 \
     --num_samples 10000 \
     --discrete_node_ratio 0.5
+```
+
+### Build Release
+```
+python3 -m pip install --upgrade build twine
+python3 -m build
+# use __token__ as username and the pypi token as password
+python3 -m twine upload --repository testpypi dist/*
 ```
 
 ## Parameters
