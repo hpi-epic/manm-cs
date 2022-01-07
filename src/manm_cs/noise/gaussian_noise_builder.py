@@ -1,12 +1,12 @@
-from src.noise import ContinuousNoise
-from src.prob_distributions.continuous import GaussianDistribution
+from src.manm_cs.noise import ContinuousNoise
+from src.manm_cs.prob_distributions.continuous import GaussianDistribution
 
 
 class GaussianNoiseBuilder:
-    mu: float = .0
+    mu: float = 0.0
     sigma: float
 
-    def with_sigma(self, sigma: float) -> 'GaussianNoiseBuilder':
+    def with_sigma(self, sigma: float) -> "GaussianNoiseBuilder":
         self.sigma = sigma
         return self
 

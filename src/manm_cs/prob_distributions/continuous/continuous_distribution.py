@@ -1,7 +1,7 @@
 from abc import ABC
 
-from src.prob_distributions.prob_distribution import ProbDistribution
-from src.variables import VariableType
+from src.manm_cs.prob_distributions.prob_distribution import ProbDistribution
+from src.manm_cs.variables import VariableType
 
 
 class ContinuousDistribution(ProbDistribution, ABC):

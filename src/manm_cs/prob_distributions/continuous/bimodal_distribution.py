@@ -1,13 +1,18 @@
 import numpy as np
 
-from src.prob_distributions.continuous import ContinuousDistribution, GaussianDistribution
+from src.manm_cs.prob_distributions.continuous import (
+    ContinuousDistribution,
+    GaussianDistribution,
+)
 
 
 class BimodalDistribution(ContinuousDistribution):
     prob_dist1: GaussianDistribution
     prob_dist2: GaussianDistribution
 
-    def __init__(self, prob_dist1: GaussianDistribution, prob_dist2: GaussianDistribution):
+    def __init__(
+        self, prob_dist1: GaussianDistribution, prob_dist2: GaussianDistribution
+    ):
         super(BimodalDistribution, self).__init__()
         self.prob_dist1 = prob_dist1
         self.prob_dist2 = prob_dist2

@@ -5,14 +5,14 @@ import numpy as np
 import random
 from validation import validate_int, validate_float, validate_bool
 
-from src.graph import Graph
-from src.noise import GaussianNoiseBuilder, DiscreteNoiseBuilder
-from src.prob_distributions.continuous.bimodal_distribution import BimodalDistribution
-from src.prob_distributions.continuous.gaussian_distribution import GaussianDistribution
-from src.variables.continuous_variable import ContinuousVariable
-from src.variables.discrete_variable import DiscreteVariable
-from src.variables.variable import Variable
-from src.variables.variable_type import VariableType
+from src.manm_cs.graph import Graph
+from src.manm_cs.noise import GaussianNoiseBuilder, DiscreteNoiseBuilder
+from src.manm_cs.prob_distributions.continuous.bimodal_distribution import BimodalDistribution
+from src.manm_cs.prob_distributions.continuous.gaussian_distribution import GaussianDistribution
+from src.manm_cs.variables.continuous_variable import ContinuousVariable
+from src.manm_cs.variables.discrete_variable import DiscreteVariable
+from src.manm_cs.variables.variable import Variable
+from src.manm_cs.variables.variable_type import VariableType
 
 
 class GraphBuilder:
@@ -181,7 +181,7 @@ class GraphBuilder:
         variables_by_idx: Dict[int, Variable] = {}
         for i, node_idx in enumerate(top_sort_idx):
             parents = [variables_by_idx[idx] for idx in sorted(list(dag.predecessors(node_idx)))]
-            
+
             # Conditional Gaussian:
             if self.conditional_gaussian == True:
                 if i < num_discrete_nodes:
@@ -195,8 +195,8 @@ class GraphBuilder:
                 # Discrete:
                 if random.random() < self.discrete_node_ratio:
                     variable = self.generate_discrete_variable(parents, node_idx)
-                # Continuous:                               
-                else: 
+                # Continuous:
+                else:
                     variable = self.generate_continuous_variable(parents, node_idx)
 
             variables_by_idx[node_idx] = variable

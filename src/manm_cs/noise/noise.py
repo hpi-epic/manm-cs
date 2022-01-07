@@ -3,16 +3,16 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pandas as pd
 
-from src.variables import VariableType
+from src.manm_cs.variables import VariableType
 
 if TYPE_CHECKING:
-    from src.prob_distributions.prob_distribution import ProbDistribution
+    from src.manm_cs.prob_distributions.prob_distribution import ProbDistribution
 
 
 class Noise:
-    prob_distribution: 'ProbDistribution'
+    prob_distribution: "ProbDistribution"
 
-    def __init__(self, prob_distribution: 'ProbDistribution'):
+    def __init__(self, prob_distribution: "ProbDistribution"):
         self.prob_distribution = prob_distribution
 
     def get_type(self) -> VariableType:
@@ -23,6 +23,6 @@ class Noise:
 
     def __add__(self, other) -> pd.Series:
         if not isinstance(other, pd.Series):
-            raise ValueError(f'Cannot add other to Noise')
+            raise ValueError(f"Cannot add other to Noise")
 
         return other.apply(lambda x: x + self.__sample(num=1)[0])
