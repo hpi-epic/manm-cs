@@ -1,6 +1,7 @@
 # MANM-CS
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 Data generation module for benchmarking methods for causal structure learning (CSL) from mixed discrete-continuous and nonlinear observational data based upon the mixed additive noise model (MANM).
+The related paper ["MANM-CS: Data Generation for Benchmarking Causal Structure Learning from Mixed Discrete-Continuous and Nonlinear Data"](https://why21.causalai.net/papers/WHY21_16.pdf) was published at the NeurIPS-21 Workshop ["Causal Inference & Machine Learning: Why now?"](https://why21.causalai.net/index.html). 
 
 
 ## Getting started
