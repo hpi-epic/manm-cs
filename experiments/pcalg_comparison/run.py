@@ -19,8 +19,8 @@ from requests.packages.urllib3.util.retry import Retry
 import subprocess
 import copy
 
-from src.manm_cs.graph.graph_builder import GraphBuilder, Graph
-from src.manm_cs.utils import write_single_csv
+from src.graph.graph_builder import GraphBuilder, Graph
+from src.utils import write_single_csv
 
 logging.getLogger().setLevel(logging.INFO)
 
@@ -43,21 +43,21 @@ CSV__RESULT_OUTPUT = "job_results.csv"
 # TODO
 ALPHA_VALUES = [0.05]
 NUM_JOBS = 10
-DOCKER_PROCESS_TIMEOUT_SEC = 30 * 60
+DOCKER_PROCESS_TIMEOUT_SEC=30*60
 
 ALL_EXPERIMENTS_STARTED = False
 RUNNING_JOBS = []
 write_file_lock = threading.Lock()
 
 MEASUREMENTS_CONFIGS = {}
-MEASUREMENTS = []  # {"config", "experiment_config", "result"}
+MEASUREMENTS = [] # {"config", "experiment_config", "result"}
 
 # Setup retry strategy
 retry_strategy = Retry(
     total=3,
     status_forcelist=[429, 500, 502, 503, 504],
     method_whitelist=["GET", "PUT", "DELETE", "OPTIONS"],
-    backoff_factor=10,
+    backoff_factor=10
 )
 adapter = HTTPAdapter(max_retries=retry_strategy)
 http = requests.Session()
@@ -73,7 +73,6 @@ os.makedirs(pcalg_dataset_dir, exist_ok=True)
 sio = socketio.Client()
 sio.connect(API_HOST)
 
-
 def check_job_for_completion(job_id):
     if job_id in RUNNING_JOBS:
         job = get_job(job_id)
@@ -84,13 +83,13 @@ def check_job_for_completion(job_id):
 
             job_result = job["result"]
 
-            if job["status"] != "error":  # or if job_result:
+            if job["status"] != "error": # or if job_result:
                 gd_compare = get_gtcompare(job_result["id"])
                 row_properties["result"] = job_result
                 row_properties["gd_compare"] = gd_compare
             with write_file_lock:
                 if job_id in RUNNING_JOBS:
-                    MEASUREMENTS.append(flatten(row_properties, reducer="path"))
+                    MEASUREMENTS.append(flatten(row_properties, reducer='path'))
                     RUNNING_JOBS.remove(job_id)
 
                     pd.DataFrame(MEASUREMENTS).to_csv(CSV__RESULT_OUTPUT)
@@ -99,10 +98,7 @@ def check_job_for_completion(job_id):
                 logging.info("No more jobs are running")
                 sio.disconnect()
         else:
-            logging.info(
-                f"Job with id {job_id} is not finished, its status is {job['status']}"
-            )
-
+            logging.info(f"Job with id {job_id} is not finished, its status is {job['status']}")
 
 def check_all_jobs_for_completion():
     # sometimes the job message from socketio comes in when the job status is not yet done, so we need to recheck this.
@@ -110,8 +106,7 @@ def check_all_jobs_for_completion():
     for job_id in RUNNING_JOBS:
         check_job_for_completion(job_id)
 
-
-@sio.on("job")
+@sio.on('job')
 def on_job_update(job):
 
     job_id = job["id"]
@@ -128,7 +123,6 @@ def get_job(job_id: int):
 
     return response_job.json()
 
-
 def get_gtcompare(result_id: int):
     gt_compare = http.get(API_RESULT_GTCOMPARE(result_id))
 
@@ -140,19 +134,13 @@ def get_gtcompare(result_id: int):
     return gt_compare.json()
 
 
-def generate_experiment_settings(
-    dataset_id: int,
-    max_discrete_value_classes: int,
-    cores: int,
-    alpha: float,
-    discrete_node_ratio: float,
-    sampling_factor: float,
-) -> Dict:
+def generate_experiment_settings(dataset_id: int, max_discrete_value_classes: int, cores: int,
+                                 alpha: float, discrete_node_ratio: float, sampling_factor: float) -> Dict:
     if discrete_node_ratio == 1:
         return {
             "algorithm_id": 1,
             "dataset_id": dataset_id,
-            "description": f"{alpha}",
+            'description': f"{alpha}",
             "name": "pcalg DISCRETE",
             "parameters": {
                 "alpha": alpha,
@@ -161,8 +149,8 @@ def generate_experiment_settings(
                 "skeleton_method": "stable.fast",
                 "subset_size": -1,
                 "verbose": 0,
-                "sampling_factor": sampling_factor,
-            },
+                "sampling_factor": sampling_factor
+            }
         }
     elif discrete_node_ratio == 0:
         return {
@@ -177,29 +165,34 @@ def generate_experiment_settings(
                 "skeleton_method": "stable.fast",
                 "subset_size": -1,
                 "verbose": 0,
-                "sampling_factor": sampling_factor,
-            },
+                "sampling_factor": sampling_factor
+            }
         }
     else:
         return {
-            "algorithm_id": 3,
-            "dataset_id": dataset_id,
-            "description": f"{max_discrete_value_classes} {alpha}",
-            "name": "BNLEARN MI-CG",
-            "parameters": {
-                "alpha": alpha,
-                "cores": cores,
-                "discrete_limit": max_discrete_value_classes,
-                "independence_test": "mi-cg",
-                "subset_size": -1,
-                "verbose": 0,
-                "sampling_factor": sampling_factor,
-            },
+            'algorithm_id': 3,
+            'dataset_id': dataset_id,
+            'description': f"{max_discrete_value_classes} {alpha}",
+            'name': "BNLEARN MI-CG",
+            'parameters': {
+                'alpha': alpha,
+                'cores': cores,
+                'discrete_limit': max_discrete_value_classes,
+                'independence_test': "mi-cg",
+                'subset_size': -1,
+                'verbose': 0,
+                "sampling_factor": sampling_factor
+            }
         }
 
 
 def generate_job_config(node: str, runs: int, enforce_cpus: int):
-    return {"node": node, "runs": runs, "parallel": True, "enforce_cpus": enforce_cpus}
+    return {
+        "node": node,
+        "runs": runs,
+        "parallel": True,
+        "enforce_cpus": enforce_cpus
+    }
 
 
 @contextlib.contextmanager
@@ -211,70 +204,61 @@ def execute_with_connection():
             port=POSTGRES_PORT,
             user=POSTGRES_USER,
             password=POSTGRES_PASSWORD,
-            dbname=POSTGRES_DBNAME,
+            dbname=POSTGRES_DBNAME
         )
         yield conn
     except (Exception, psycopg2.DatabaseError) as error:
-        logging.error(
-            f"Error occurred while trying to connect to the database. {error}"
-        )
+        logging.error(f'Error occurred while trying to connect to the database. {error}')
     finally:
         if conn is not None:
             conn.close()
-            logging.info(f"Database connection closed.")
+            logging.info(f'Database connection closed.')
 
 
 def generate_graph_with_at_least_one_edge(config: dict, seed: int) -> Graph:
     max_retries = 100
     for retry_id in range(seed, seed + max_retries):
-        logging.info("Starting graph builder...")
-        graph = (
-            GraphBuilder()
-            .with_num_nodes(config["num_nodes"])
-            .with_edge_density(config["edge_density"])
-            .with_discrete_node_ratio(config["discrete_node_ratio"])
-            .with_discrete_signal_to_noise_ratio(
-                config["discrete_signal_to_noise_ratio"]
-            )
-            .with_min_discrete_value_classes(config["min_discrete_value_classes"])
-            .with_max_discrete_value_classes(config["max_discrete_value_classes"])
-            .with_continuous_noise_std(config["continuous_noise_std"])
-            .with_functions(config["functions"])
-            .with_conditional_gaussian(config["conditional_gaussian"])
-            .with_betas(config["beta_lower_limit"], config["beta_upper_limit"])
+        logging.info('Starting graph builder...')
+        graph = GraphBuilder() \
+            .with_num_nodes(config['num_nodes']) \
+            .with_edge_density(config['edge_density']) \
+            .with_discrete_node_ratio(config['discrete_node_ratio']) \
+            .with_discrete_signal_to_noise_ratio(config['discrete_signal_to_noise_ratio']) \
+            .with_min_discrete_value_classes(config['min_discrete_value_classes']) \
+            .with_max_discrete_value_classes(config['max_discrete_value_classes']) \
+            .with_continuous_noise_std(config['continuous_noise_std']) \
+            .with_functions(config['functions']) \
+            .with_conditional_gaussian(config['conditional_gaussian']) \
+            .with_betas(config['beta_lower_limit'], config['beta_upper_limit']) \
             .build(seed=retry_id)
-        )
         nx_graph = graph.to_networkx_graph()
         if nx_graph.edges:
             return graph
-    raise Exception(
-        f"Retried {max_retries} times to generate a graph but no edge was generated Config: {config}"
-    )
-
+    raise Exception(f"Retried {max_retries} times to generate a graph but no edge was generated Config: {config}")
 
 def generate_data(benchmark_id: str, config: dict, seed: int) -> Tuple[str, str]:
-    os.makedirs("data", exist_ok=True)
-    data_path = f"data/benchmarking-experiment-{benchmark_id}-data.csv"
+    os.makedirs('data', exist_ok=True)
+    data_path = f'data/benchmarking-experiment-{benchmark_id}-data.csv'
 
     graph = generate_graph_with_at_least_one_edge(config, seed)
 
-    logging.info("Starting graph sampling...")
-    dfs = graph.sample(num_observations=config["num_samples"], num_processes=1)
+    logging.info('Starting graph sampling...')
+    dfs = graph.sample(num_observations=config['num_samples'], num_processes=1)
 
-    logging.info("Writing samples...")
+    logging.info('Writing samples...')
     write_single_csv(dataframes=dfs, target_path=data_path)
-    logging.info(f"Successfully written samples to {data_path}")
+    logging.info(f'Successfully written samples to {data_path}')
 
-    logging.info("Writing graph...")
-    os.makedirs("graph", exist_ok=True)
-    graph_path = f"graph/benchmarking-experiment-{benchmark_id}-graph.gml"
+    logging.info('Writing graph...')
+    os.makedirs('graph', exist_ok=True)
+    graph_path = f'graph/benchmarking-experiment-{benchmark_id}-graph.gml'
     nx.write_gml(graph.to_networkx_graph(), graph_path)
-    logging.info(f"successfully written graph to {graph_path}")
+    logging.info(f'successfully written graph to {graph_path}')
 
     return data_path, graph_path
 
 
-def sql_column_type_string(column_name: str, dtype: str) -> str:
+def sql_column_type_string(column_name:str, dtype: str) -> str:
     if dtype == "int64":
         return f'"{column_name}" INT'
     if dtype == "float64":
@@ -283,48 +267,37 @@ def sql_column_type_string(column_name: str, dtype: str) -> str:
 
 
 def upload_data(benchmark_id: str, data_path: str) -> Tuple[int, str]:
-    data_table_name = f"benchmarking_experiment_{benchmark_id}_data"
+    data_table_name = f'benchmarking_experiment_{benchmark_id}_data'
     df = pd.read_csv(data_path)
-    sql_columns = ", ".join(
-        [sql_column_type_string(name, df.dtypes[name]) for name in df.columns]
-    )
-    create_table_query = f"CREATE TABLE {data_table_name} ({sql_columns})"
+    sql_columns = ', '.join([sql_column_type_string(name, df.dtypes[name]) for name in df.columns])
+    create_table_query = f'CREATE TABLE {data_table_name} ({sql_columns})'
 
-    logging.info("Uploading data to database...")
-    with execute_with_connection() as conn, open(data_path, "r") as data_file:
+    logging.info('Uploading data to database...')
+    with execute_with_connection() as conn, open(data_path, 'r') as data_file:
         start = time.time()
         cur = conn.cursor()
         cur.execute(create_table_query)
-        next(data_file)  # Skip the header row.
-        cur.copy_from(data_file, data_table_name, sep=",")
+        next(data_file) # Skip the header row.
+        cur.copy_from(data_file, data_table_name, sep=',')
         conn.commit()
         end = time.time()
-    logging.info(
-        f"Successfully uploaded data to table {data_table_name} in {end - start}s"
-    )
+    logging.info(f'Successfully uploaded data to table {data_table_name} in {end - start}s')
 
     return data_table_name
 
 
-def add_experiment(
-    dataset_id: int,
-    max_discrete_value_classes: int,
-    cores: int,
-    discrete_node_ratio: float,
-    sampling_factor: float,
-):
+def add_experiment(dataset_id: int, max_discrete_value_classes: int, cores: int,
+                   discrete_node_ratio: float, sampling_factor: float):
     experiments = []
     for alpha in ALPHA_VALUES:
-        experiments += [
-            generate_experiment_settings(
-                dataset_id=dataset_id,
-                max_discrete_value_classes=max_discrete_value_classes,
-                cores=cores,
-                alpha=alpha,
-                discrete_node_ratio=discrete_node_ratio,
-                sampling_factor=sampling_factor,
-            )
-        ]
+        experiments += [generate_experiment_settings(
+            dataset_id=dataset_id,
+            max_discrete_value_classes=max_discrete_value_classes,
+            cores=cores,
+            alpha=alpha,
+            discrete_node_ratio=discrete_node_ratio,
+            sampling_factor=sampling_factor
+        )]
 
     responses = []
     for experiment_payload in experiments:
@@ -372,71 +345,50 @@ def delete_dataset_with_data(table_name: str, dataset_id: str, api_host: id):
 def create_dataset(benchmark_id: int, data_table_name: str, graph_path: str) -> int:
     # Create dataset metadata object
     json_data = {
-        "name": f"benchmarking-experiment-{benchmark_id}",
-        "description": f"Dataset containing the data for "
-        f"the benchmarking-experiment with id {benchmark_id}",
-        "load_query": f"SELECT * FROM {data_table_name}",
-        "data_source": "postgres",
+        'name': f'benchmarking-experiment-{benchmark_id}',
+        'description': f'Dataset containing the data for '
+                    f'the benchmarking-experiment with id {benchmark_id}',
+        'load_query': f'SELECT * FROM {data_table_name}',
+        'data_source': 'postgres'
     }
-    logging.info("Creating dataset...")
-    res = http.post(url=f"{API_HOST}/api/datasets", json=json_data)
+    logging.info('Creating dataset...')
+    res = http.post(url=f'{API_HOST}/api/datasets', json=json_data)
     res.raise_for_status()
     res = res.json()
-    dataset_id = res["id"]
-    logging.info("Successfully created dataset")
+    dataset_id = res['id']
+    logging.info('Successfully created dataset')
 
-    logging.info("Uploading ground truth...")
+    logging.info('Uploading ground truth...')
     files = {"graph_file": open(graph_path, "rb")}
-    res = http.post(
-        url=f"{API_HOST}/api/dataset/{dataset_id}/ground-truth", files=files
-    )
+    res = http.post(url=f'{API_HOST}/api/dataset/{dataset_id}/ground-truth', files=files)
     res.raise_for_status()
-    logging.info("Successfully uploaded ground truth")
+    logging.info('Successfully uploaded ground truth')
 
     return dataset_id
 
 
 def run_job_in_docker(job: dict, experiment: dict) -> subprocess.Popen:
     log_file = os.path.join(docker_run_logs_dir, f"{job['id']}.log")
-    command = [
-        "docker",
-        "run",
-        "--net=host",
-        "mpci/mpci_execution_r",
-        experiment["algorithm"]["script_filename"],
-        "-j",
-        str(job["id"]),
-        "-d",
-        str(experiment["dataset_id"]),
-        "--api_host",
-        "localhost:5000",
-        "--send_sepsets",
-        "0",
-    ]
-    for k, v in experiment["parameters"].items():
-        command.append("--" + k)
+    command = ["docker", "run", "--net=host", "mpci/mpci_execution_r", experiment['algorithm']['script_filename'], "-j",
+               str(job['id']), "-d", str(experiment['dataset_id']), "--api_host", "localhost:5000", "--send_sepsets", "0"]
+    for k, v in experiment['parameters'].items():
+        command.append('--' + k)
         command.append(str(v))
-    with open(log_file, "w") as log_file_handle:
+    with open(log_file, 'w') as log_file_handle:
         log_file_handle.write(" ".join(command))
         log_file_handle.write("\n")
-        ls_output = subprocess.Popen(
-            command, stdout=log_file_handle, stderr=log_file_handle
-        )
+        ls_output = subprocess.Popen(command, stdout=log_file_handle, stderr=log_file_handle)
     return ls_output
-
 
 def set_error_code_for_job(job_id: int):
     with execute_with_connection() as conn:
-        update_job_status_error = (
-            f"UPDATE job SET status = 'error', error_code = 'UNKNOWN' WHERE id={job_id}"
-        )
+        update_job_status_error = f"UPDATE job SET status = 'error', error_code = 'UNKNOWN' WHERE id={job_id}"
         cur = conn.cursor()
         cur.execute(update_job_status_error)
         conn.commit()
     failed_jobs_file = os.path.join(docker_run_logs_dir, "failed_jobs.log")
-    with open(failed_jobs_file, "a") as failed_jobs_file_handle:
+    with open(failed_jobs_file, 'a') as failed_jobs_file_handle:
         failed_jobs_file_handle.write(f"{job_id} \n")
-
 
 def rename_file_with_dataset_id(path: str, dataset_id: int) -> None:
     extension = os.path.splitext(path)[1]
@@ -446,21 +398,19 @@ def rename_file_with_dataset_id(path: str, dataset_id: int) -> None:
     os.rename(path, new_path)
 
 
-def run_experiments_for_config(
-    config: dict, dataset_id: int, num_samples_list: List[int], dataset_num_samples: int
-):
+def run_experiments_for_config(config: dict, dataset_id: int, num_samples_list: List[int], dataset_num_samples: int):
     for num_samples in num_samples_list:
-        logging.info("Adding experiment...")
+        logging.info('Adding experiment...')
         experiments = add_experiment(
             dataset_id=dataset_id,
-            max_discrete_value_classes=config["max_discrete_value_classes"],
-            discrete_node_ratio=config["discrete_node_ratio"],
+            max_discrete_value_classes=config['max_discrete_value_classes'],
+            discrete_node_ratio=config['discrete_node_ratio'],
             cores=config["cores"],
-            sampling_factor=num_samples / dataset_num_samples,
+            sampling_factor=num_samples / dataset_num_samples
         )
-        logging.info("Successfully added experiment")
+        logging.info('Successfully added experiment')
 
-        logging.info("Starting all experiments...")
+        logging.info('Starting all experiments...')
         experiment_ids = [experiment["id"] for experiment in experiments]
 
         for index, experiment_id in enumerate(experiment_ids):
@@ -468,9 +418,9 @@ def run_experiments_for_config(
                 experiment_id=experiment_id,
                 node=config["node"],
                 runs=NUM_JOBS,
-                enforce_cpus=0,
+                enforce_cpus=0
             )
-            logging.info(f"Getting jobs for experiment {experiment_id}")
+            logging.info(f'Getting jobs for experiment {experiment_id}')
 
             jobs = get_jobs(experiment_id)
 
@@ -481,7 +431,7 @@ def run_experiments_for_config(
                 RUNNING_JOBS.append(job_id)
                 MEASUREMENTS_CONFIGS[job_id] = {
                     "config": config,
-                    "experiment_config": experiments[index],
+                    "experiment_config": experiments[index]
                 }
                 subprocess_handle = run_job_in_docker(job, experiments[index])
                 docker_subprocess_handles.append((job_id, subprocess_handle))
@@ -495,50 +445,31 @@ def run_experiments_for_config(
 
                 except subprocess.TimeoutExpired:
                     process.kill()
-                    logging.info(
-                        "The process was killed commandline is {}".format(process.args)
-                    )
+                    logging.info("The process was killed commandline is {}".format(process.args))
                     set_error_code_for_job(job_id)
             # for job in jobs:
             #     job_id = job["id"]
             #     check_job_for_completion(job_id)
-        logging.info("Successfully started all experiments")
+        logging.info('Successfully started all experiments')
         check_all_jobs_for_completion()
 
 
 def generate_pcalg_data(benchmark_id, dataset_num_samples: int, graph_path: str):
     dataset_path = os.path.join(pcalg_dataset_dir, f"{benchmark_id}.csv")
-    command = [
-        "Rscript",
-        "data_from_graph.R",
-        "--inputFile",
-        graph_path,
-        "--outputFile",
-        dataset_path,
-        "--nSamples",
-        str(dataset_num_samples),
-    ]
+    command = ["Rscript", "data_from_graph.R", "--inputFile", graph_path, "--outputFile", dataset_path, "--nSamples", str(dataset_num_samples)]
     log_file = os.path.join(r_logs_dir, f"{benchmark_id}.log")
-    with open(log_file, "w") as log_file_handle:
+    with open(log_file, 'w') as log_file_handle:
         log_file_handle.write(" ".join(command))
         log_file_handle.write("\n")
-        ls_output = subprocess.Popen(
-            command, stdout=log_file_handle, stderr=log_file_handle
-        )
+        ls_output = subprocess.Popen(command, stdout=log_file_handle, stderr=log_file_handle)
     logging.info("Executing for pcalg rscript")
     ls_output.communicate()
     return dataset_path, log_file
 
 
-def run_with_config(
-    config: dict,
-    num_samples_list: List[int],
-    dataset_num_samples: int,
-    num_graphs_per_config: int,
-):
-    assert dataset_num_samples >= max(
-        num_samples_list
-    ), f"dataset_num_samples {dataset_num_samples} should be >= max {max(num_samples_list)}"
+
+def run_with_config(config: dict, num_samples_list: List[int], dataset_num_samples: int, num_graphs_per_config: int):
+    assert dataset_num_samples >= max(num_samples_list), f"dataset_num_samples {dataset_num_samples} should be >= max {max(num_samples_list)}"
 
     config["num_samples"] = dataset_num_samples
 
@@ -546,47 +477,35 @@ def run_with_config(
 
     for seed in seeds:
         benchmark_id = hashlib.md5(uuid4().__str__().encode()).hexdigest()
-        data_path, graph_path = generate_data(
-            benchmark_id=benchmark_id, config=config, seed=seed
-        )
-        data_table_name = upload_data(benchmark_id=benchmark_id, data_path=data_path)
-        dataset_id = create_dataset(
-            benchmark_id=benchmark_id,
-            data_table_name=data_table_name,
-            graph_path=graph_path,
-        )
+        data_path, graph_path = generate_data(benchmark_id=benchmark_id, config=config, seed=seed)
+        data_table_name = upload_data(benchmark_id=benchmark_id,
+                                      data_path=data_path)
+        dataset_id = create_dataset(benchmark_id=benchmark_id, data_table_name=data_table_name,
+                                    graph_path=graph_path)
         mpci_config = copy.deepcopy(config)
         mpci_config["seed"] = seed
         mpci_config["generator"] = "mpci-dag"
-        run_experiments_for_config(
-            mpci_config, dataset_id, num_samples_list, dataset_num_samples
-        )
+        run_experiments_for_config(mpci_config, dataset_id, num_samples_list, dataset_num_samples)
 
         # pcalg experiments
         pcalg_benchmark_id = f"pcalg_{benchmark_id}"
-        pcalg_data_path, pcalg_log_path = generate_pcalg_data(
-            pcalg_benchmark_id, dataset_num_samples, graph_path
-        )
-        pcalg_data_table_name = upload_data(
-            benchmark_id=pcalg_benchmark_id, data_path=pcalg_data_path
-        )
-        pcalg_dataset_id = create_dataset(
-            benchmark_id=pcalg_benchmark_id,
-            data_table_name=pcalg_data_table_name,
-            graph_path=graph_path,
-        )
+        pcalg_data_path, pcalg_log_path = generate_pcalg_data(pcalg_benchmark_id, dataset_num_samples, graph_path)
+        pcalg_data_table_name = upload_data(benchmark_id=pcalg_benchmark_id,
+                                            data_path=pcalg_data_path)
+        pcalg_dataset_id = create_dataset(benchmark_id=pcalg_benchmark_id, data_table_name=pcalg_data_table_name,
+                                          graph_path=graph_path)
         pcalg_config = copy.deepcopy(config)
         pcalg_config["generator"] = "pcalg"
         pcalg_config["seed"] = seed
-        run_experiments_for_config(
-            pcalg_config, pcalg_dataset_id, num_samples_list, dataset_num_samples
-        )
+        run_experiments_for_config(pcalg_config, pcalg_dataset_id, num_samples_list, dataset_num_samples)
 
         # cleanup
         rename_file_with_dataset_id(data_path, dataset_id)
         rename_file_with_dataset_id(graph_path, dataset_id)
         rename_file_with_dataset_id(pcalg_data_path, pcalg_dataset_id)
         rename_file_with_dataset_id(pcalg_log_path, pcalg_dataset_id)
+
+
 
 
 def run():
@@ -601,37 +520,29 @@ def run():
     variable_params = [num_nodes_list, edge_density_list, discrete_node_ratio_list]
     dataset_num_samples = 200000
     num_graphs_per_config = 5
-
     def identical(value):
         return value
 
-    for num_nodes, edge_density, discrete_node_ratio in list(
-        itertools.product(*variable_params)
-    ):
+    for num_nodes, edge_density, discrete_node_ratio in list(itertools.product(*variable_params)):
         config = dict()
-        config["num_nodes"] = num_nodes
-        config["edge_density"] = edge_density
-        config["discrete_node_ratio"] = discrete_node_ratio
-        config["discrete_signal_to_noise_ratio"] = 0.9
-        config["min_discrete_value_classes"] = 2
-        config["max_discrete_value_classes"] = 3
-        config["continuous_noise_std"] = 1.0
-        config["cores"] = 80
-        config["node"] = "galileo"
-        config["functions"] = [(1.0, identical)]
-        config["conditional_gaussian"] = True
-        config["beta_lower_limit"] = 0.5
-        config["beta_upper_limit"] = 1.0
+        config['num_nodes'] = num_nodes
+        config['edge_density'] = edge_density
+        config['discrete_node_ratio'] = discrete_node_ratio
+        config['discrete_signal_to_noise_ratio'] = 0.9
+        config['min_discrete_value_classes'] = 2
+        config['max_discrete_value_classes'] = 3
+        config['continuous_noise_std'] = 1.0
+        config['cores'] = 80
+        config['node'] = "galileo"
+        config['functions'] = [(1.0,identical)]
+        config['conditional_gaussian'] = True
+        config['beta_lower_limit'] = 0.5
+        config['beta_upper_limit'] = 1.0
 
-        run_with_config(
-            config=config,
-            num_samples_list=num_samples_list,
-            dataset_num_samples=dataset_num_samples,
-            num_graphs_per_config=num_graphs_per_config,
-        )
+        run_with_config(config=config, num_samples_list=num_samples_list, dataset_num_samples=dataset_num_samples, num_graphs_per_config=num_graphs_per_config)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     run()
     ALL_EXPERIMENTS_STARTED = True
 
