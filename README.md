@@ -3,17 +3,26 @@
 Data generation module for benchmarking methods for causal structure learning (CSL) from mixed discrete-continuous and nonlinear observational data based upon the mixed additive noise model (MANM).
 The related paper ["MANM-CS: Data Generation for Benchmarking Causal Structure Learning from Mixed Discrete-Continuous and Nonlinear Data"](https://why21.causalai.net/papers/WHY21_16.pdf) was published at the NeurIPS-21 Workshop ["Causal Inference & Machine Learning: Why now?"](https://why21.causalai.net/index.html).
 
-
 ## Getting started
 
-### Get the code
-Start by cloning this repository.
+
+
+### Installation / Usage via pip
+```
+python3 -m pip install manm_cs
+python3 -m manm_cs --num_nodes 10 --edge_density 0.5 --num_samples 10000 --discrete_node_ratio 0.5
+```
+
+### Installation from Source
+
+#### Get the code
+Start by cloning this repository and switching to the correct branch.
 ```
 git clone git@github.com:hpi-epic/manm-cs.git
 cd manm-cs
 git checkout master
 ```
-### Install requirements within venv
+#### Install requirements within venv
 
 Please make sure you have Python 3 installed. We tested the execution of our data generation with Python 3.9.
 We recommend installing the requirements defined in [requirements.txt](requirements.txt) using [virtualenv](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/).
@@ -44,13 +53,13 @@ py -m venv env
 .\env\Scripts\activate
 ```
 
-After the creation of a new virtual enviroment, we can install the project dependencies defined in [requirements.txt](requirements.txt) for both platforms.
+After the creation of a new virtual enviroment, we can install the project dependencies defined in [setup.cfg](setup.cfg) for both platforms.
 
 ```
-python3 -m pip install -r requirements.txt
+python3 -m pip install .
 ```
 
-### Execute data generation
+#### Execute data generation
 
 You can start the data generation with following command. The generated graph and the dataset are saved as ground_truth.gml and samples.csv in the current working directory. Available parameters for data generation can be seen with ```python3 -m src.manm_cs --help```.
 
