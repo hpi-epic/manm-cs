@@ -1,8 +1,6 @@
 import numpy as np
 
-from src.manm_cs.prob_distributions.discrete.discrete_distribution import (
-    DiscreteDistribution,
-)
+from src.prob_distributions.discrete.discrete_distribution import DiscreteDistribution
 
 
 class UniformDiscreteDistribution(DiscreteDistribution):

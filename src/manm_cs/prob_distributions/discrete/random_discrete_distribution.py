@@ -1,7 +1,7 @@
 import numpy as np
 
-from src.manm_cs.prob_distributions.discrete import CustomDiscreteDistribution
-from src.manm_cs.prob_distributions.discrete import DiscreteDistribution
+from src.prob_distributions.discrete import CustomDiscreteDistribution
+from src.prob_distributions.discrete import DiscreteDistribution
 
 
 class RandomDiscreteDistribution(DiscreteDistribution):

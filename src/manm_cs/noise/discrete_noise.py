@@ -1,8 +1,9 @@
-from src.manm_cs.noise.noise import Noise
-from src.manm_cs.prob_distributions.discrete import DiscreteDistribution
+from src.noise.noise import Noise
+from src.prob_distributions.discrete import DiscreteDistribution
 
 
 class DiscreteNoise(Noise):
+
     def __init__(self, prob_distribution: DiscreteDistribution):
         super(DiscreteNoise, self).__init__(prob_distribution=prob_distribution)
 
