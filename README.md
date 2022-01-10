@@ -52,7 +52,7 @@ py -m venv env
 .\env\Scripts\activate
 ```
 
-After the creation of a new virtual enviroment, we can install the project dependencies defined in [setup.cfg](setup.cfg) for both platforms.
+After the creation of a new virtual environment, we can install the project dependencies defined in [setup.cfg](setup.cfg) for both platforms.
 
 ```
 python3 -m pip install .
