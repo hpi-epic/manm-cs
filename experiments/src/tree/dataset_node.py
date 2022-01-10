@@ -14,10 +14,10 @@ from experiments.src.tree.base_node import BaseNode
 from experiments.src.tree.experiment_node import ExperimentConfig, ExperimentNode
 from experiments.src.tree.node_type import NodeType
 
-from src.graph import Graph, GraphBuilder
+from src.manm_cs.graph import Graph, GraphBuilder
 import pandas as pd
 
-from src.utils import write_single_csv
+from src.manm_cs.utils import write_single_csv
 
 
 @dataclass
@@ -43,7 +43,7 @@ class ResolvedDataset:
 class DatasetNode(BaseNode):
     type = NodeType.DATASET
     config: DatasetConfig
-    
+
     benchmark_id: str
     data_path: str
     graph_path: str

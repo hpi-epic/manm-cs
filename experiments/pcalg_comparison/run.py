@@ -19,8 +19,8 @@ from requests.packages.urllib3.util.retry import Retry
 import subprocess
 import copy
 
-from src.graph.graph_builder import GraphBuilder, Graph
-from src.utils import write_single_csv
+from src.manm_cs.graph.graph_builder import GraphBuilder, Graph
+from src.manm_cs.utils import write_single_csv
 
 logging.getLogger().setLevel(logging.INFO)
 
