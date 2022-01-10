@@ -1,5 +1,5 @@
-from src.noise.noise import Noise
-from src.prob_distributions.continuous import ContinuousDistribution
+from src.manm_cs.noise.noise import Noise
+from src.manm_cs.prob_distributions.continuous import ContinuousDistribution
 
 
 class ContinuousNoise(Noise):

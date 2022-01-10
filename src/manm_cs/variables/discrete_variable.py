@@ -3,9 +3,9 @@ from typing import List, Dict, Tuple, Callable
 import numpy as np
 import pandas as pd
 
-from src.noise.discrete_noise import DiscreteNoise
-from src.prob_distributions import CustomDiscreteDistribution
-from src.variables.variable import Variable, VariableType
+from src.manm_cs.noise.discrete_noise import DiscreteNoise
+from src.manm_cs.prob_distributions import CustomDiscreteDistribution
+from src.manm_cs.variables.variable import Variable, VariableType
 
 
 class DiscreteVariable(Variable):
@@ -25,7 +25,7 @@ class DiscreteVariable(Variable):
             raise ValueError(
                 f'The noise term must define a probability distribution over all possible values. '
                 f'Expected num_values equal to {self.num_values}, but received {self.noise.get_num_values()}')
-    
+
     def mult_logit_function(self, value) -> pd.Series:
         categories =  list(range(0, self.num_values))
 
@@ -37,11 +37,11 @@ class DiscreteVariable(Variable):
             softmax = [0 for k in categories]
             softmax[-1] = 1
         return softmax
-     
+
     def __create_logit_mapper_func(self) -> Callable[[pd.Series], int]:
         """Creates the a multinomial logit function for each of the continuous parents
 
-        """            
+        """
         def func(parent_values: pd.Series):
             return np.sum([np.where(np.random.multinomial(1,self.mult_logit_function(value=value)) == 1)[0][0] for  value in parent_values])
 
@@ -70,9 +70,9 @@ class DiscreteVariable(Variable):
             signal = pd.Series(CustomDiscreteDistribution(props).sample(
                 num_observations=num_observations)) # This will return a list of zeros
         else:
-            # If the variable has one or more parent variables, the sampling is driven 
+            # If the variable has one or more parent variables, the sampling is driven
             # by a combination of signal and noise term
             signal = self.get_non_root_signal(df=df)
-            
+
         # Combine noise and signal terms and apply ring transformation
         return (self.noise + signal) % self.num_values

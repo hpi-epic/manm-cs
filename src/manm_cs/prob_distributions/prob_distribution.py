@@ -2,7 +2,7 @@ from abc import ABC
 
 import numpy as np
 
-from src.variables import VariableType
+from src.manm_cs.variables import VariableType
 
 
 class ProbDistribution(ABC):

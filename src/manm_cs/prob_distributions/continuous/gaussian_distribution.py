@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.prob_distributions.continuous import ContinuousDistribution
+from src.manm_cs.prob_distributions.continuous import ContinuousDistribution
 
 
 class GaussianDistribution(ContinuousDistribution):

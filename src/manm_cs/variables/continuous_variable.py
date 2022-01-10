@@ -3,8 +3,8 @@ from typing import List, Optional, Callable, Dict, Tuple
 import numpy as np
 import pandas as pd
 
-from src.noise.continous_noise import ContinuousNoise
-from src.variables.variable import Variable, VariableType
+from src.manm_cs.noise.continous_noise import ContinuousNoise
+from src.manm_cs.variables.variable import Variable, VariableType
 
 
 class ContinuousVariable(Variable):
@@ -54,7 +54,7 @@ class ContinuousVariable(Variable):
             # If the variable is a root variable, the sampling is determined by the noise term only
             signal = pd.Series(np.zeros(num_observations, dtype=float))
         else:
-            # If the variable has one or more parent variables, the sampling is driven 
+            # If the variable has one or more parent variables, the sampling is driven
             # by a combination of signal and noise term
             signal = self.get_non_root_signal(df=df)
 
