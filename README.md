@@ -16,11 +16,10 @@ python3 -m manm_cs --num_nodes 10 --edge_density 0.5 --num_samples 10000 --discr
 ### Installation from Source
 
 #### Get the code
-Start by cloning this repository and switching to the correct branch.
+Start by cloning this repository.
 ```
 git clone git@github.com:hpi-epic/manm-cs.git
 cd manm-cs
-git checkout master
 ```
 #### Install requirements within venv
 
@@ -75,8 +74,13 @@ python3 -m src.manm_cs \
 ```
 python3 -m pip install --upgrade build twine
 python3 -m build
+
+# Upload to testPyPi
 # use __token__ as username and the pypi token as password
 python3 -m twine upload --repository testpypi dist/*
+
+# Upload to PyPi
+python3 -m twine upload dist/*
 ```
 
 ## Parameters
