@@ -138,3 +138,5 @@ data
 graph
 ground_truth*.gml
 samples*.csv
+data.csv
+graph.csv
