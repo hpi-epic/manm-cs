@@ -3,10 +3,10 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pandas as pd
 
-from src.manm_cs.variables import VariableType
+from manm_cs.variables import VariableType
 
 if TYPE_CHECKING:
-    from src.manm_cs.prob_distributions.prob_distribution import ProbDistribution
+    from manm_cs.prob_distributions.prob_distribution import ProbDistribution
 
 
 class Noise:

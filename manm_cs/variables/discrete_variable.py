@@ -3,9 +3,9 @@ from typing import List, Dict, Tuple, Callable
 import numpy as np
 import pandas as pd
 
-from src.manm_cs.noise.discrete_noise import DiscreteNoise
-from src.manm_cs.prob_distributions import CustomDiscreteDistribution
-from src.manm_cs.variables.variable import Variable, VariableType
+from manm_cs.noise.discrete_noise import DiscreteNoise
+from manm_cs.prob_distributions import CustomDiscreteDistribution
+from manm_cs.variables.variable import Variable, VariableType
 
 
 class DiscreteVariable(Variable):

@@ -1,7 +1,7 @@
 from abc import ABC
 
-from src.manm_cs.prob_distributions.prob_distribution import ProbDistribution
-from src.manm_cs.variables import VariableType
+from manm_cs.prob_distributions.prob_distribution import ProbDistribution
+from manm_cs.variables import VariableType
 
 
 class DiscreteDistribution(ProbDistribution, ABC):

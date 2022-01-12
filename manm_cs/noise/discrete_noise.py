@@ -1,5 +1,5 @@
-from src.manm_cs.noise.noise import Noise
-from src.manm_cs.prob_distributions.discrete import DiscreteDistribution
+from manm_cs.noise.noise import Noise
+from manm_cs.prob_distributions.discrete import DiscreteDistribution
 
 
 class DiscreteNoise(Noise):

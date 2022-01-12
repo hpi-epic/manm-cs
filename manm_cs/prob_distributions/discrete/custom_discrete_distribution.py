@@ -3,7 +3,7 @@ from typing import List
 import numpy as np
 from numpy.random import random_sample
 
-from src.manm_cs.prob_distributions.discrete.discrete_distribution import DiscreteDistribution
+from manm_cs.prob_distributions.discrete.discrete_distribution import DiscreteDistribution
 
 
 class CustomDiscreteDistribution(DiscreteDistribution):

@@ -3,8 +3,8 @@ from typing import List, Optional, Callable, Dict, Tuple
 import numpy as np
 import pandas as pd
 
-from src.manm_cs.noise.continous_noise import ContinuousNoise
-from src.manm_cs.variables.variable import Variable, VariableType
+from manm_cs.noise.continous_noise import ContinuousNoise
+from manm_cs.variables.variable import Variable, VariableType
 
 
 class ContinuousVariable(Variable):

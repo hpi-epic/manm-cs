@@ -4,8 +4,8 @@ from typing import Type, Callable, Optional, Any
 
 import networkx as nx
 
-from src.manm_cs.graph import Graph, GraphBuilder
-from src.manm_cs.utils import write_single_csv
+from manm_cs.graph import Graph, GraphBuilder
+from manm_cs.utils import write_single_csv
 
 GROUND_TRUTH_FILE = "ground_truth.gml"
 SAMPLES_FILE = "samples.csv"
