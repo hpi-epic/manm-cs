@@ -1,8 +1,8 @@
 import os
 import time
 
-ground_truth = "./ground_truth.gml"
-samples = "./samples.csv"
+ground_truth = "./graph.gml"
+samples = "./data.csv"
 
 def test_manm_cs_pypi():
 
@@ -15,7 +15,7 @@ def test_manm_cs_pypi():
         "python3 -m pip install . &&" + # install dependencies from actual pip because they are not on testpypi
         "python3 -m pip uninstall manm-cs" + # uninstall the package itself so we can install it from testpypi
         "python3 -m pip install -i https://test.pypi.org/simple/ manm-cs &&" + # install latest manm-cs from testpypi
-        "cd .. && python3 -m manm_cs --num_nodes 10 --edge_density 0.5 --num_samples 10000 --discrete_node_ratio 0.5")
+        f"cd .. && python3 -m manm_cs --num_nodes 10 --edge_density 0.5 --num_samples 10000 --discrete_node_ratio 0.5 --output_ground_truth_file \"{ground_truth}\" --output_samples_file \"{samples}\"")
 
     assert os.path.isfile(ground_truth)
     assert os.path.isfile(samples)
