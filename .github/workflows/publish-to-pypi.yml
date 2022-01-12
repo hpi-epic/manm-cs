@@ -3,6 +3,8 @@ name: Publish Python distributions to PyPI and TestPyPI
 on:
   release:
     types: [published]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   build-n-publish:
@@ -28,7 +30,3 @@ jobs:
     - name: Test pypi deployment
       run: |
         pytest test/test_manm_cs_pypi.py
-    - name: Publish distribution 📦 to PyPI if commit is tagged
-      uses: pypa/gh-action-pypi-publish@master
-      with:
-        password: ${{ secrets.PYPI_API_TOKEN }}
