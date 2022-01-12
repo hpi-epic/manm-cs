@@ -1,17 +1,27 @@
 # MANM-CS
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 Data generation module for benchmarking methods for causal structure learning (CSL) from mixed discrete-continuous and nonlinear observational data based upon the mixed additive noise model (MANM).
-The related paper ["MANM-CS: Data Generation for Benchmarking Causal Structure Learning from Mixed Discrete-Continuous and Nonlinear Data"](https://why21.causalai.net/papers/WHY21_16.pdf) was published at the NeurIPS-21 Workshop ["Causal Inference & Machine Learning: Why now?"](https://why21.causalai.net/index.html). 
-
+The related paper ["MANM-CS: Data Generation for Benchmarking Causal Structure Learning from Mixed Discrete-Continuous and Nonlinear Data"](https://why21.causalai.net/papers/WHY21_16.pdf) was published at the NeurIPS-21 Workshop ["Causal Inference & Machine Learning: Why now?"](https://why21.causalai.net/index.html).
 
 ## Getting started
 
-### Get the code
+
+
+### Installation / Usage via pip
+```
+python3 -m pip install manm_cs
+python3 -m manm_cs --num_nodes 10 --edge_density 0.5 --num_samples 10000 --discrete_node_ratio 0.5
+```
+
+### Installation from Source
+
+#### Get the code
 Start by cloning this repository.
 ```
 git clone git@github.com:hpi-epic/manm-cs.git
+cd manm-cs
 ```
-### Install requirements within venv
+#### Install requirements within venv
 
 Please make sure you have Python 3 installed. We tested the execution of our data generation with Python 3.9.
 We recommend installing the requirements defined in [requirements.txt](requirements.txt) using [virtualenv](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/).
@@ -19,7 +29,7 @@ We recommend installing the requirements defined in [requirements.txt](requireme
 MacOS / Linux
 
 ```
-# Install virtualenv 
+# Install virtualenv
 python3 -m pip install --user virtualenv
 
 # Create a new virtual environment
@@ -32,7 +42,7 @@ source env/bin/activate
 Windows
 
 ```
-# Install virtualenv 
+# Install virtualenv
 py -m pip install --user virtualenv
 
 # Create a new virtual environment
@@ -42,22 +52,35 @@ py -m venv env
 .\env\Scripts\activate
 ```
 
-After the creation of a new virtual enviroment, we can install the project dependencies defined in [requirements.txt](requirements.txt) for both platforms.
+After the creation of a new virtual environment, we can install the project dependencies defined in [setup.cfg](setup.cfg) for both platforms.
 
 ```
-python3 -m pip install -r requirements.txt 
+python3 -m pip install .
 ```
 
-### Execute data generation
+#### Execute data generation
 
-You can start the data generation with following command. The generated graph and the dataset are saved as ground_truth.gml and samples.csv in the current working directory. Available parameters for data generation can be seen with ```python3 -m src --help```.
+You can start the data generation with following command. The generated graph and the dataset are saved as ground_truth.gml and samples.csv in the current working directory. Available parameters for data generation can be seen with ```python3 -m src.manm_cs --help```.
 
 ```
-python3 -m src \
+python3 -m src.manm_cs \
     --num_nodes 10 \
     --edge_density 0.5 \
     --num_samples 10000 \
     --discrete_node_ratio 0.5
+```
+
+### Build Release
+```
+python3 -m pip install --upgrade build twine
+python3 -m build
+
+# Upload to testPyPi
+# use __token__ as username and the pypi token as password
+python3 -m twine upload --repository testpypi dist/*
+
+# Upload to PyPi
+python3 -m twine upload dist/*
 ```
 
 ## Parameters
