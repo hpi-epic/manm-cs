@@ -9,7 +9,7 @@ The related paper ["MANM-CS: Data Generation for Benchmarking Causal Structure L
 
 ### Installation / Usage via pip
 ```
-python3 -m pip install manm_cs
+python3 -m pip install manm-cs
 python3 -m manm_cs --num_nodes 10 --edge_density 0.5 --num_samples 10000 --discrete_node_ratio 0.5
 ```
 
