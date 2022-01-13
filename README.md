@@ -60,10 +60,10 @@ python3 -m pip install .
 
 #### Execute data generation
 
-You can start the data generation with following command. The generated graph and the dataset are saved as ground_truth.gml and samples.csv in the current working directory. Available parameters for data generation can be seen with ```python3 -m src.manm_cs --help```.
+You can start the data generation with following command. The generated graph and the dataset are saved as ground_truth.gml and samples.csv in the current working directory. Available parameters for data generation can be seen with ```python3 -m manm_cs --help```.
 
 ```
-python3 -m src.manm_cs \
+python3 -m manm_cs \
     --num_nodes 10 \
     --edge_density 0.5 \
     --num_samples 10000 \
