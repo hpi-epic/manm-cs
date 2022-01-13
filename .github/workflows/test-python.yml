@@ -18,6 +18,9 @@ jobs:
     - name: Install pytest
       run: |
         python3 -m pip install pytest --user
+    - name: Install dependencies
+      run: |
+        python3 -m pip install .
     - name: Test with pytest
       run: |
         pytest --ignore test/test_manm_cs_pypi.py
