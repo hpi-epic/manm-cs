@@ -1,7 +1,7 @@
-from src.manm_cs.graph.graph import Graph
-from src.manm_cs.noise import DiscreteNoise
-from src.manm_cs.prob_distributions import BinomialDistribution, CustomDiscreteDistribution, UniformDiscreteDistribution
-from src.manm_cs.variables.discrete_variable import DiscreteVariable
+from manm_cs.graph.graph import Graph
+from manm_cs.noise import DiscreteNoise
+from manm_cs.prob_distributions import BinomialDistribution, CustomDiscreteDistribution, UniformDiscreteDistribution
+from manm_cs.variables.discrete_variable import DiscreteVariable
 import networkx as nx
 
 

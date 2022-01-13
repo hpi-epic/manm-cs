@@ -5,14 +5,14 @@ import numpy as np
 import random
 from validation import validate_int, validate_float, validate_bool
 
-from src.manm_cs.graph import Graph
-from src.manm_cs.noise import GaussianNoiseBuilder, DiscreteNoiseBuilder
-from src.manm_cs.prob_distributions.continuous.bimodal_distribution import BimodalDistribution
-from src.manm_cs.prob_distributions.continuous.gaussian_distribution import GaussianDistribution
-from src.manm_cs.variables.continuous_variable import ContinuousVariable
-from src.manm_cs.variables.discrete_variable import DiscreteVariable
-from src.manm_cs.variables.variable import Variable
-from src.manm_cs.variables.variable_type import VariableType
+from manm_cs.graph import Graph
+from manm_cs.noise import GaussianNoiseBuilder, DiscreteNoiseBuilder
+from manm_cs.prob_distributions.continuous.bimodal_distribution import BimodalDistribution
+from manm_cs.prob_distributions.continuous.gaussian_distribution import GaussianDistribution
+from manm_cs.variables.continuous_variable import ContinuousVariable
+from manm_cs.variables.discrete_variable import DiscreteVariable
+from manm_cs.variables.variable import Variable
+from manm_cs.variables.variable_type import VariableType
 
 
 class GraphBuilder:

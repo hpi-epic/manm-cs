@@ -1,5 +1,5 @@
-from src.manm_cs.noise import DiscreteNoise
-from src.manm_cs.prob_distributions import CustomDiscreteDistribution
+from manm_cs.noise import DiscreteNoise
+from manm_cs.prob_distributions import CustomDiscreteDistribution
 
 
 class DiscreteNoiseBuilder:
