@@ -7,8 +7,8 @@ import networkx as nx
 from manm_cs.graph import Graph, GraphBuilder
 from manm_cs.utils import write_single_csv
 
-GROUND_TRUTH_FILE = "ground_truth.gml"
-SAMPLES_FILE = "samples.csv"
+GROUND_TRUTH_FILE = "ground_truth"
+SAMPLES_FILE = "samples"
 
 
 def type_in_range(type_: Type, lower_bound: Optional[float], upper_bound: Optional[float]) -> \
@@ -114,9 +114,11 @@ def parse_args():
                         help='Defines the upper limit for beta values used for continuous parents. '
                         'Should be larger than lower_limit. Note that we sample from the union of [-upper,-lower] and [lower,upper]')
     parser.add_argument('--output_ground_truth_file', type=str, required=False, default=GROUND_TRUTH_FILE,
-                    help='Output path for the generated ground truth graph (gml).')
+                    help='Output file (path) for the generated ground truth graph (gml). Relative to the directory from which the library is executed. '
+                    'Specify without file extension.')
     parser.add_argument('--output_samples_file', type=str, required=False, default=SAMPLES_FILE,
-                    help='Output path for the generated samples csv.')
+                    help='Output file (path) for the generated samples csv. Relative to the directory from which the library is executed.'
+                    'Specify without file extension.')
     args = parser.parse_args()
 
     assert args.min_discrete_value_classes <= args.max_discrete_value_classes, \
@@ -149,7 +151,7 @@ if __name__ == '__main__':
     graph = graph_from_args(args)
 
     dfs = graph.sample(num_observations=args.num_samples, num_processes=args.num_processes)
-    write_single_csv(dataframes=dfs, target_path=args.output_samples_file)
+    write_single_csv(dataframes=dfs, target_path=f"{args.output_samples_file}.csv")
 
     nx_graph = graph.to_networkx_graph()
-    nx.write_gml(nx_graph, args.output_ground_truth_file)
+    nx.write_gml(nx_graph, f"{args.output_ground_truth_file}.gml")
