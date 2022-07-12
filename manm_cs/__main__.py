@@ -119,6 +119,8 @@ def parse_args():
     parser.add_argument('--output_samples_file', type=str, required=False, default=SAMPLES_FILE,
                     help='Output file (path) for the generated samples csv. Relative to the directory from which the library is executed.'
                     'Specify without file extension.')
+    parser.add_argument('--graph_structure_file', type=str, required=False,
+                    help='.gml file to load a fixed graph structure.')
     args = parser.parse_args()
 
     assert args.min_discrete_value_classes <= args.max_discrete_value_classes, \
@@ -132,18 +134,31 @@ def parse_args():
 
 
 def graph_from_args(args) -> Graph:
-    return GraphBuilder() \
-        .with_num_nodes(args.num_nodes) \
-        .with_edge_density(args.edge_density) \
-        .with_discrete_node_ratio(args.discrete_node_ratio) \
-        .with_discrete_signal_to_noise_ratio(args.discrete_signal_to_noise_ratio) \
-        .with_min_discrete_value_classes(args.min_discrete_value_classes) \
-        .with_max_discrete_value_classes(args.max_discrete_value_classes) \
-        .with_continuous_noise_std(args.continuous_noise_std) \
-        .with_functions(args.functions) \
-        .with_conditional_gaussian(args.conditional_gaussian) \
-        .with_betas(args.beta_lower_limit, args.beta_upper_limit) \
-        .build()
+    if args.graph_structure_file:
+        return GraphBuilder() \
+            .with_graph_structure_file(args.graph_structure_file) \
+            .with_discrete_node_ratio(args.discrete_node_ratio) \
+            .with_discrete_signal_to_noise_ratio(args.discrete_signal_to_noise_ratio) \
+            .with_min_discrete_value_classes(args.min_discrete_value_classes) \
+            .with_max_discrete_value_classes(args.max_discrete_value_classes) \
+            .with_continuous_noise_std(args.continuous_noise_std) \
+            .with_functions(args.functions) \
+            .with_conditional_gaussian(args.conditional_gaussian) \
+            .with_betas(args.beta_lower_limit, args.beta_upper_limit) \
+            .build()
+    else:
+        return GraphBuilder() \
+            .with_num_nodes(args.num_nodes) \
+            .with_edge_density(args.edge_density) \
+            .with_discrete_node_ratio(args.discrete_node_ratio) \
+            .with_discrete_signal_to_noise_ratio(args.discrete_signal_to_noise_ratio) \
+            .with_min_discrete_value_classes(args.min_discrete_value_classes) \
+            .with_max_discrete_value_classes(args.max_discrete_value_classes) \
+            .with_continuous_noise_std(args.continuous_noise_std) \
+            .with_functions(args.functions) \
+            .with_conditional_gaussian(args.conditional_gaussian) \
+            .with_betas(args.beta_lower_limit, args.beta_upper_limit) \
+            .build()
 
 
 if __name__ == '__main__':

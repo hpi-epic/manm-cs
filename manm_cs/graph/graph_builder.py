@@ -3,7 +3,7 @@ from typing import Dict, Optional, Callable, List, Tuple
 import networkx as nx
 import numpy as np
 import random
-from validation import validate_int, validate_float, validate_bool
+from validation import validate_int, validate_float, validate_bool, validate_text
 
 from manm_cs.graph import Graph
 from manm_cs.noise import GaussianNoiseBuilder, DiscreteNoiseBuilder
@@ -31,6 +31,13 @@ class GraphBuilder:
     beta_upper_limit: float
 
     functions: List[Tuple[float, Callable[...,float]]]
+
+    graph_structure_file_name: Optional[str] = None
+
+    def with_graph_structure_file(self, file_name: str) -> 'GraphBuilder':
+        validate_text(file_name, pattern='.*\.gml')
+        self.graph_structure_file_name = file_name
+        return self
 
     def with_num_nodes(self, num_nodes: int) -> 'GraphBuilder':
         validate_int(num_nodes, min_value=1)
@@ -164,7 +171,15 @@ class GraphBuilder:
         return ContinuousVariable(idx=node_idx, parents=parents, functions=functions,
                                   noise=noise, betas=betas)
 
-    def build(self, seed: int = 0) -> Graph:
+    def load_dag_from_file(self) -> 'DiGraph':
+        # Load graph using networkx package
+        dag = nx.read_gml(self.graph_structure_file_name)
+        assert nx.is_directed_acyclic_graph(dag)
+        self.with_num_nodes(nx.number_of_nodes(dag))
+        self.with_edge_density(nx.density(dag))
+        return dag
+
+    def generate_dag_using_networkx(self, seed: int) -> 'DiGraph':
         # Generate graph using networkx package
         G = nx.gnp_random_graph(n=self.num_nodes, p=self.edge_density, seed=seed, directed=True)
         # Convert generated graph to DAG
@@ -172,6 +187,13 @@ class GraphBuilder:
         dag.add_nodes_from(G)
         dag.add_edges_from([(u, v, {}) for (u, v) in G.edges() if u < v])
         assert nx.is_directed_acyclic_graph(dag)
+        return dag
+
+    def generate_or_load_dag(self, seed: int) -> 'DiGraph':
+        return self.load_dag_from_file() if self.graph_structure_file_name else self.generate_dag_using_networkx(seed)
+
+    def build(self, seed: int = 0) -> Graph:
+        dag = self.generate_or_load_dag(seed)
 
         # Create list of topologically sorted nodes
         # Note, nodes are ordered already, sorting step may become relevant, if graph generation above is changed
