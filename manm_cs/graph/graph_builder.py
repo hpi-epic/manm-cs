@@ -3,7 +3,7 @@ from typing import Dict, Optional, Callable, List, Tuple
 import networkx as nx
 import numpy as np
 import random
-from validation import validate_int, validate_float, validate_bool
+from validation import validate_int, validate_float, validate_bool, validate_text
 
 from manm_cs.graph import Graph
 from manm_cs.noise import GaussianNoiseBuilder, DiscreteNoiseBuilder
@@ -31,6 +31,20 @@ class GraphBuilder:
     beta_upper_limit: float
 
     functions: List[Tuple[float, Callable[...,float]]]
+
+    dag: Optional[nx.DiGraph] = None
+
+    def with_graph_structure_file(self, file_name: str) -> 'GraphBuilder':
+        validate_text(file_name, pattern='.*\.gml')
+        self.graph_structure_file_name = file_name
+        return self
+
+    def with_networkx_DiGraph(self, graph: 'DiGraph') -> 'GraphBuilder':
+        assert nx.is_directed_acyclic_graph(graph)
+        self.with_num_nodes(nx.number_of_nodes(graph))
+        self.with_edge_density(nx.density(graph))
+        self.dag = graph
+        return self
 
     def with_num_nodes(self, num_nodes: int) -> 'GraphBuilder':
         validate_int(num_nodes, min_value=1)
@@ -164,7 +178,7 @@ class GraphBuilder:
         return ContinuousVariable(idx=node_idx, parents=parents, functions=functions,
                                   noise=noise, betas=betas)
 
-    def build(self, seed: int = 0) -> Graph:
+    def generate_dag(self, seed: int) -> 'DiGraph':
         # Generate graph using networkx package
         G = nx.gnp_random_graph(n=self.num_nodes, p=self.edge_density, seed=seed, directed=True)
         # Convert generated graph to DAG
@@ -172,15 +186,19 @@ class GraphBuilder:
         dag.add_nodes_from(G)
         dag.add_edges_from([(u, v, {}) for (u, v) in G.edges() if u < v])
         assert nx.is_directed_acyclic_graph(dag)
+        return dag
+
+    def build(self, seed: int = 0) -> Graph:
+        self.dag = self.generate_dag(seed) if self.dag is None else self.dag
 
         # Create list of topologically sorted nodes
         # Note, nodes are ordered already, sorting step may become relevant, if graph generation above is changed
-        top_sort_idx = list(nx.topological_sort(dag))
+        top_sort_idx = list(nx.topological_sort(self.dag))
         num_discrete_nodes = int(self.discrete_node_ratio * self.num_nodes)
 
         variables_by_idx: Dict[int, Variable] = {}
         for i, node_idx in enumerate(top_sort_idx):
-            parents = [variables_by_idx[idx] for idx in sorted(list(dag.predecessors(node_idx)))]
+            parents = [variables_by_idx[idx] for idx in sorted(list(self.dag.predecessors(node_idx)))]
 
             # Conditional Gaussian:
             if self.conditional_gaussian == True:
