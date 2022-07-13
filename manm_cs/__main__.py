@@ -74,10 +74,15 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description='Generate a dataset for benchmarking causal structure learning using '
                     'the mixed additive noise model')
-    parser.add_argument('--num_nodes', type=type_in_range(int, 1, None), required=True,
+    group1 = parser.add_mutually_exclusive_group(required=True)
+    group1.add_argument('--num_nodes', type=type_in_range(int, 1, None),
                         help='Defines the number of nodes to be in the generated DAG.')
-    parser.add_argument('--edge_density', type=type_in_range(float, 0.0, 1.0), required=True,
+    arg_nx_file = group1.add_argument('--graph_structure_file', type=str, required=False,
+                    help='valid .gml file to load a fixed graph structure to networkx.DiGraph structure.')
+    group2 = parser.add_mutually_exclusive_group(required=True)
+    group2.add_argument('--edge_density', type=type_in_range(float, 0.0, 1.0),
                         help='Defines the density of edges in the generated DAG.')
+    group2._group_actions.append(arg_nx_file)
     parser.add_argument('--discrete_node_ratio', type=type_in_range(float, 0.0, 1.0), required=True,
                         help='Defines the percentage of nodes that shall be of discrete type. Depending on its value '
                              'the appropriate model (multivariate normal, mixed gaussian, discrete only) is chosen.')
@@ -119,8 +124,6 @@ def parse_args():
     parser.add_argument('--output_samples_file', type=str, required=False, default=SAMPLES_FILE,
                     help='Output file (path) for the generated samples csv. Relative to the directory from which the library is executed.'
                     'Specify without file extension.')
-    parser.add_argument('--graph_structure_file', type=str, required=False,
-                    help='.gml file to load a fixed graph structure.')
     args = parser.parse_args()
 
     assert args.min_discrete_value_classes <= args.max_discrete_value_classes, \
@@ -135,8 +138,10 @@ def parse_args():
 
 def graph_from_args(args) -> Graph:
     if args.graph_structure_file:
+        dag = nx.read_gml(args.graph_structure_file)
+        assert nx.is_directed_acyclic_graph(dag)
         return GraphBuilder() \
-            .with_graph_structure_file(args.graph_structure_file) \
+            .with_networkx_DiGraph(dag) \
             .with_discrete_node_ratio(args.discrete_node_ratio) \
             .with_discrete_signal_to_noise_ratio(args.discrete_signal_to_noise_ratio) \
             .with_min_discrete_value_classes(args.min_discrete_value_classes) \
