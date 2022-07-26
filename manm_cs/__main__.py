@@ -124,6 +124,8 @@ def parse_args():
     parser.add_argument('--output_samples_file', type=str, required=False, default=SAMPLES_FILE,
                     help='Output file (path) for the generated samples csv. Relative to the directory from which the library is executed.'
                     'Specify without file extension.')
+    parser.add_argument('--normalize', type=to_bool, required=False, default=False,
+                    help='Normalize the continuous variables in the dataset once all samples are generated.')
     args = parser.parse_args()
 
     assert args.min_discrete_value_classes <= args.max_discrete_value_classes, \
@@ -171,6 +173,8 @@ if __name__ == '__main__':
     graph = graph_from_args(args)
 
     dfs = graph.sample(num_observations=args.num_samples, num_processes=args.num_processes)
+    if args.normalize:
+        dfs = graph.normalize_continous_columns(dataframes=dfs)
     write_single_csv(dataframes=dfs, target_path=f"{args.output_samples_file}.csv")
 
     nx_graph = graph.to_networkx_graph()
