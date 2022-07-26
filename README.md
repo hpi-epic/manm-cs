@@ -101,6 +101,7 @@ python3 -m twine upload dist/*
 | beta_lower_limit | (0, Inf) | 0.5 | Lower limit for beta values for influence of continuous parents. Betas are sampled uniform from the union of [-upper,-lower] and [lower,upper]. Upper limit see below. |
 | beta_upper_limit | (0, Inf) | 1 | Upper limit for beta values for influence of continuous parents. Betas are sampled uniform from the union of [-upper,-lower] and [lower,upper]. Lower limit see above. |
 | graph_structure_file |  | None | Defines a path to a .gml file for a fixed DAG structure (ignoring node and edge characteristics) used during manm_cs graph building. Note graph_structure_file is mutually exclusive to num_nodes and edge_density. |
+| normalized | 0 or 1 | 0 | Defines if the generated samples of continuous variables are normalized after sampling. |
 
 ## License
 

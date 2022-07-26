@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 from pathos.multiprocessing import ProcessingPool
 
-from manm_cs.variables.variable import Variable
+from manm_cs.variables.variable import Variable, VariableType
 
 
 class Graph:
@@ -50,3 +50,14 @@ class Graph:
             for parent in var.parents:
                 nx_graph.add_edge(parent.idx, var.idx)
         return nx_graph
+
+    def normalize_continous_columns(self, dataframes: List[pd.DataFrame]) -> List[pd.DataFrame]:
+
+        # merge df in dataframes
+        merged_df = pd.concat(dataframes, axis=1)
+        for variable in self.variables:
+            if variable.type == VariableType.CONTINUOUS:
+                print(variable.idx, merged_df[variable.idx].mean(), merged_df[variable.idx].std())
+                merged_df[variable.idx] =  (merged_df[variable.idx] - merged_df[variable.idx].mean())/ merged_df[variable.idx].std()
+
+        return [merged_df]
