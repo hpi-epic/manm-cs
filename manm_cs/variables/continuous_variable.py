@@ -11,12 +11,14 @@ class ContinuousVariable(Variable):
     type = VariableType.CONTINUOUS
     continuous_mapper_func: Callable[..., float]
     def __init__(self, idx: int, noise: ContinuousNoise, parents: Optional[List[Variable]] = None,
-                 functions: Optional[List[Callable[..., float]]] = None, betas: Optional[List[float]] = None):
+                 functions: Optional[List[Callable[..., float]]] = None, betas: Optional[List[float]] = None,
+                 scale_parents: Optional[bool] = False):
         parents = [] if parents is None else parents
         functions = [] if functions is None else functions
         super(ContinuousVariable, self).__init__(idx=idx, parents=parents, noise=noise, functions=functions)
         self.betas = betas
         self.continuous_mapper_func = self.__create_continuous_mapper_func(functions=functions, betas=betas)
+        self.scale_parents = scale_parents
 
         # Input parameter validation
         if len(functions) != len(self._get_continuous_parents()):
@@ -47,7 +49,8 @@ class ContinuousVariable(Variable):
             else pd.Series(np.zeros(len(df)))
 
         # Aggregate continuous and discrete signal terms into overall signal term
-        return continuous_signal + discrete_signal
+        return (continuous_signal + discrete_signal) / len(self.parents) \
+            if self.scale_parents else continuous_signal + discrete_signal
 
     def sample(self, df: pd.DataFrame, num_observations: int) -> pd.Series:
         if self._is_root():

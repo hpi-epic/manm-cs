@@ -26,6 +26,7 @@ class GraphBuilder:
     min_discrete_value_classes: Optional[int] = None
     max_discrete_value_classes: Optional[int] = None
     continuous_noise_std: float
+    scale_parents_continuous: Optional[bool] = False
 
     beta_lower_limit: float
     beta_upper_limit: float
@@ -102,6 +103,11 @@ class GraphBuilder:
         self.continuous_noise_std = continuous_noise_std
         return self
 
+    def with_scaled_parent_influence_on_continuous(self, scale_parents_continuous: bool) -> 'GraphBuilder':
+        validate_bool(scale_parents_continuous)
+        self.scale_parents_continuous = scale_parents_continuous
+        return self
+
     def with_functions(self, function_tuples: List[Tuple[float, Callable[...,float]]]) -> 'GraphBuilder':
         ### Transform input in form of
         # [(0.5 F1), (0.3 F2), (0.2 F3)]
@@ -176,7 +182,8 @@ class GraphBuilder:
         functions = [self.chose_function() for p in range(num_continuous_parents)]
         betas = [self.sample_beta() for p in range(num_continuous_parents)]
         return ContinuousVariable(idx=node_idx, parents=parents, functions=functions,
-                                  noise=noise, betas=betas)
+                                  noise=noise, betas=betas,
+                                  scale_parents=self.scale_parents_continuous)
 
     def generate_dag(self, seed: int) -> 'DiGraph':
         # Generate graph using networkx package
