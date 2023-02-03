@@ -126,6 +126,8 @@ def parse_args():
                     'Specify without file extension.')
     parser.add_argument('--normalize', type=to_bool, required=False, default=False,
                     help='Normalize the continuous variables in the dataset once all samples are generated.')
+    parser.add_argument('--scale_continuous_parents', type=to_bool, required=False, default=False,
+                    help='Scale the influence of parents on continuous variables.')
     args = parser.parse_args()
 
     assert args.min_discrete_value_classes <= args.max_discrete_value_classes, \
@@ -152,6 +154,7 @@ def graph_from_args(args) -> Graph:
             .with_functions(args.functions) \
             .with_conditional_gaussian(args.conditional_gaussian) \
             .with_betas(args.beta_lower_limit, args.beta_upper_limit) \
+            .with_scaled_parent_influence_on_continuous(args.scale_continuous_parents) \
             .build()
     else:
         return GraphBuilder() \
@@ -165,6 +168,7 @@ def graph_from_args(args) -> Graph:
             .with_functions(args.functions) \
             .with_conditional_gaussian(args.conditional_gaussian) \
             .with_betas(args.beta_lower_limit, args.beta_upper_limit) \
+            .with_scaled_parent_influence_on_continuous(args.scale_continuous_parents) \
             .build()
 
 
