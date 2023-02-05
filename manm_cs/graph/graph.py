@@ -51,7 +51,7 @@ class Graph:
                 nx_graph.add_edge(parent.idx, var.idx)
         return nx_graph
 
-    def normalize_continous_columns(self, dataframes: List[pd.DataFrame]) -> List[pd.DataFrame]:
+    def standardize_continous_columns(self, dataframes: List[pd.DataFrame]) -> List[pd.DataFrame]:
 
         # merge df in dataframes
         merged_df = pd.concat(dataframes, axis=1)
@@ -61,3 +61,15 @@ class Graph:
                 merged_df[variable.idx] =  (merged_df[variable.idx] - merged_df[variable.idx].mean())/ merged_df[variable.idx].std()
 
         return [merged_df]
+    
+    def normalize_continous_columns(self, dataframes: List[pd.DataFrame]) -> List[pd.DataFrame]:
+
+        # merge df in dataframes
+        merged_df = pd.concat(dataframes, axis=1)
+        for variable in self.variables:
+            if variable.type == VariableType.CONTINUOUS:
+                print(variable.idx, merged_df[variable.idx].mean(), merged_df[variable.idx].std())
+                merged_df[variable.idx] =  (merged_df[variable.idx] - merged_df[variable.idx].max())/ (merged_df[variable.idx].max() - merged_df[variable.idx].min())
+
+        return [merged_df]
+
