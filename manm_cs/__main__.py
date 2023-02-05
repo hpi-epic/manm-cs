@@ -69,8 +69,7 @@ def funcs(function_str: str):
     except:
         raise argparse.ArgumentTypeError(f"{function_str} has wrong format or not supported")
         
-SCALE_DICTIONARY = {None: None,
-                    'standard':standardize_continous_columns,
+SCALE_DICTIONARY = {'standard':standardize_continous_columns,
                     'normal':normalize_continous_columns,
                     'rank': rank_transform_columns,
                     'uniform':uniform_transform_columns}
@@ -136,7 +135,7 @@ def parse_args():
     parser.add_argument('--output_samples_file', type=str, required=False, default=SAMPLES_FILE,
                     help='Output file (path) for the generated samples csv. Relative to the directory from which the library is executed.'
                     'Specify without file extension.')
-    parser.add_argument('--variables_scaling, type=scale, required=False, default=None,
+    parser.add_argument('--variables_scaling, type=scale, required=False, default='normal',
                     help='Scale the continuous variables (‘normal’ or ‘standard’) or all variables (‘rank’ or ‘uniform’) in the dataset once all samples are generated.')
     parser.add_argument('--scale_continuous_parents', type=to_bool, required=False, default=False,
                     help='Scale the influence of parents on continuous variables.')
