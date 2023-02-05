@@ -69,10 +69,10 @@ def funcs(function_str: str):
     except:
         raise argparse.ArgumentTypeError(f"{function_str} has wrong format or not supported")
         
-SCALE_DICTIONARY = {'standard': graph.standardize_continous_columns,
-                    'normal': graph.normalize_continous_columns,
-                    'rank': graph.rank_transform_columns,
-                    'uniform':graph.uniform_transform_columns}
+SCALE_DICTIONARY = {'standard': Graph.standardize_continous_columns,
+                    'normal': Graph.normalize_continous_columns,
+                    'rank': Graph.rank_transform_columns,
+                    'uniform':Graph.uniform_transform_columns}
 
 def scale(scale_str: str):
     try:
