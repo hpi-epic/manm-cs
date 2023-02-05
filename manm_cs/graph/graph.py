@@ -91,9 +91,8 @@ class Graph:
         # merge df in dataframes
         merged_df = pd.concat(dataframes, axis=1)
         for variable in self.variables:
-            if variable.type == VariableType.CONTINUOUS:
-                ranked_idx = rankdata(merged_df[variable.idx], method='dense', axis=0).astype(np.float32)
-                merged_df[variable.idx] =  (ranked_idx - ranked_idx.max())/ (ranked_idx.max() - ranked_idx.min())
+            ranked_idx = rankdata(merged_df[variable.idx], method='dense', axis=0).astype(np.float32)
+            merged_df[variable.idx] =  (ranked_idx - ranked_idx.max())/ (ranked_idx.max() - ranked_idx.min())
 
         return [merged_df]
 
