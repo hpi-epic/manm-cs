@@ -196,8 +196,6 @@ if __name__ == '__main__':
         dfs = graph.rank_transform_columns(dataframes=dfs)
     if args.variables_scaling == 'uniform':
         dfs = graph.uniform_transform_columns(dataframes=dfs)        
-    if args.variables_scaling == None:
-        raise argparse.ArgumentTypeError(f"Note: variables_scaling is None")
         
     write_single_csv(dataframes=dfs, target_path=f"{args.output_samples_file}.csv")
 
