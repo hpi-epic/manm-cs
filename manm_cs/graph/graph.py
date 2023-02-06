@@ -71,7 +71,7 @@ class Graph:
         merged_df = pd.concat(dataframes, axis=1)
         for variable in self.variables:
             if variable.type == VariableType.CONTINUOUS:
-                merged_df[variable.idx] =  (merged_df[variable.idx] - merged_df[variable.idx].max())/ (merged_df[variable.idx].max() - merged_df[variable.idx].min())
+                merged_df[variable.idx] =  (merged_df[variable.idx] - merged_df[variable.idx].min())/ (merged_df[variable.idx].max() - merged_df[variable.idx].min())
 
         return [merged_df]
     
