@@ -69,15 +69,15 @@ def funcs(function_str: str):
     except:
         raise argparse.ArgumentTypeError(f"{function_str} has wrong format or not supported")
         
-SCALE_DICTIONARY = {'standard': standardize_continous_columns,
-                    'normal': normalize_continous_columns,
-                    'rank': rank_transform_columns,
-                    'uniform': uniform_transform_columns}
+SCALE_DICTIONARY = {'standard': 'standardize_continous_columns',
+                    'normal': 'normalize_continous_columns',
+                    'rank': 'rank_transform_columns',
+                    'uniform': 'uniform_transform_columns'}
 
 def scale(scale_str: str):
     try:
-        invert_op = getattr(Graph, SCALE_DICTIONARY[str], None)
-        return callable(invert_op)
+        invert_op = getattr(Graph, SCALE_DICTIONARY[scale_str], None)
+        return invert_op
     except:
         raise argparse.ArgumentTypeError(f"{scale_str} has wrong format or not supported")
 
@@ -136,7 +136,7 @@ def parse_args():
     parser.add_argument('--output_samples_file', type=str, required=False, default=SAMPLES_FILE,
                     help='Output file (path) for the generated samples csv. Relative to the directory from which the library is executed.'
                     'Specify without file extension.')
-    parser.add_argument('--variables_scaling', type=scale, required=False, default='normal',
+    parser.add_argument('--variables_scaling', type=scale, required=False, default=None,
                     help='Scale the continuous variables (‘normal’ or ‘standard’) or all variables (‘rank’ or ‘uniform’) in the dataset once all samples are generated.')
     parser.add_argument('--scale_continuous_parents', type=to_bool, required=False, default=False,
                     help='Scale the influence of parents on continuous variables.')
@@ -189,14 +189,8 @@ if __name__ == '__main__':
     graph = graph_from_args(args)
 
     dfs = graph.sample(num_observations=args.num_samples, num_processes=args.num_processes)
-    if args.variables_scaling == 'standard':
-        dfs = graph.standardize_continous_columns(dataframes=dfs)
-    if args.variables_scaling == 'normal':
-        dfs = graph.normalize_continous_columns(dataframes=dfs)
-    if args.variables_scaling == 'rank':
-        dfs = graph.rank_transform_columns(dataframes=dfs)
-    if args.variables_scaling == 'uniform':
-        dfs = graph.uniform_transform_columns(dataframes=dfs)        
+    if (args.variables_scaling):
+        dfs = args.variables_scaling(graph, dataframes=dfs)
         
     write_single_csv(dataframes=dfs, target_path=f"{args.output_samples_file}.csv")
 
