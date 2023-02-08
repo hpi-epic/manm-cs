@@ -26,7 +26,7 @@ class GraphBuilder:
     min_discrete_value_classes: Optional[int] = None
     max_discrete_value_classes: Optional[int] = None
     continuous_noise_std: float
-    scale_parents_continuous: Optional[bool] = False
+    scale_parents: Optional[bool] = False
 
     beta_lower_limit: float
     beta_upper_limit: float
@@ -103,9 +103,9 @@ class GraphBuilder:
         self.continuous_noise_std = continuous_noise_std
         return self
 
-    def with_scaled_parent_influence_on_continuous(self, scale_parents_continuous: bool) -> 'GraphBuilder':
-        validate_bool(scale_parents_continuous)
-        self.scale_parents_continuous = scale_parents_continuous
+    def with_scaled_parent_influence(self, scale_parents: bool) -> 'GraphBuilder':
+        validate_bool(scale_parents)
+        self.scale_parents = scale_parents
         return self
 
     def with_functions(self, function_tuples: List[Tuple[float, Callable[...,float]]]) -> 'GraphBuilder':
@@ -170,7 +170,7 @@ class GraphBuilder:
             .with_num_discrete_values(num_discrete_values=num_values) \
             .build()
         return DiscreteVariable(idx=node_idx, num_values=num_values,
-                                parents=parents, noise=noise)
+                                parents=parents, noise=noise, scale_parents=self.scale_parents)
 
     def generate_continuous_variable(self, parents, node_idx) -> 'ContinuousVariable':
         noise = GaussianNoiseBuilder() \
@@ -182,8 +182,7 @@ class GraphBuilder:
         functions = [self.chose_function() for p in range(num_continuous_parents)]
         betas = [self.sample_beta() for p in range(num_continuous_parents)]
         return ContinuousVariable(idx=node_idx, parents=parents, functions=functions,
-                                  noise=noise, betas=betas,
-                                  scale_parents=self.scale_parents_continuous)
+                                  noise=noise, betas=betas, scale_parents=self.scale_parents)
 
     def generate_dag(self, seed: int) -> 'DiGraph':
         # Generate graph using networkx package

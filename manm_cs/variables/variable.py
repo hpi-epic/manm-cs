@@ -13,12 +13,15 @@ class Variable(ABC):
     parents: List['Variable']
     noise: Noise
     functions: List[Callable[..., float]]
+    scale_parents: bool
 
-    def __init__(self, idx: int, parents: List['Variable'], noise: Noise, functions: Optional[List[Callable[..., float]]] = None):
+    def __init__(self, idx: int, parents: List['Variable'], noise: Noise, functions: Optional[List[Callable[..., float]]] = None,
+                 scale_parents: Optional[bool] = False):
         self.idx = idx
         self.parents = parents
         self.noise = noise
         self.functions = functions
+        self.scale_parents = scale_parents
 
         # Input parameter validation
         if noise.get_type() != self.type:
