@@ -14,9 +14,9 @@ class DiscreteVariable(Variable):
     mapping: Dict[Tuple[int, ...], int]
 
     def __init__(self, idx: int, num_values: int, noise: DiscreteNoise,
-                 parents: List['DiscreteVariable'] = None):
+                 parents: List['DiscreteVariable'] = None, scale_parents: Optional[bool] = False):
         parents = [] if parents is None else parents
-        super(DiscreteVariable, self).__init__(idx=idx, parents=parents, noise=noise)
+        super(DiscreteVariable, self).__init__(idx=idx, parents=parents, noise=noise, scale_parents = scale_parents)
         self.num_values = num_values
         self.logit_mapper_func = self.__create_logit_mapper_func()
 
@@ -61,7 +61,8 @@ class DiscreteVariable(Variable):
             else pd.Series(np.zeros(len(df)))
 
         # Aggregate continuous and discrete signal terms into overall signal term
-        return ((continuous_signal + discrete_signal).astype(int) ) % self.num_values
+        return ((continuous_signal + discrete_signal).astype(int) ) % self.num_values \
+            if self.scale_parents else (continuous_signal + discrete_signal).astype(int)
 
     def sample(self, df: pd.DataFrame, num_observations: int) -> pd.Series:
         if self._is_root():

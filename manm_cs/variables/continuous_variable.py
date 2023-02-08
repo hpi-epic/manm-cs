@@ -15,10 +15,10 @@ class ContinuousVariable(Variable):
                  scale_parents: Optional[bool] = False):
         parents = [] if parents is None else parents
         functions = [] if functions is None else functions
-        super(ContinuousVariable, self).__init__(idx=idx, parents=parents, noise=noise, functions=functions)
+        super(ContinuousVariable, self).__init__(idx=idx, parents=parents, noise=noise, functions=functions,
+                                                 scale_parents = scale_parents)
         self.betas = betas
         self.continuous_mapper_func = self.__create_continuous_mapper_func(functions=functions, betas=betas)
-        self.scale_parents = scale_parents
 
         # Input parameter validation
         if len(functions) != len(self._get_continuous_parents()):
