@@ -61,7 +61,7 @@ class DiscreteVariable(Variable):
             else pd.Series(np.zeros(len(df)))
 
         # Aggregate continuous and discrete signal terms into overall signal term
-        return (continuous_signal + discrete_signal).astype(int)
+        return ((continuous_signal + discrete_signal).astype(int) ) % self.num_values
 
     def sample(self, df: pd.DataFrame, num_observations: int) -> pd.Series:
         if self._is_root():
