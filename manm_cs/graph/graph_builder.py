@@ -186,7 +186,7 @@ class GraphBuilder:
 
     def generate_dag(self, seed: int) -> 'DiGraph':
         # Generate graph using networkx package
-        G = nx.gnp_random_graph(n=self.num_nodes, p=self.edge_density, seed=seed, directed=True)
+        G = nx.gnp_random_graph(n=self.num_nodes, p=self.edge_density, seed=seed, directed=False)
         # Convert generated graph to DAG
         dag = nx.DiGraph()
         dag.add_nodes_from(G)
