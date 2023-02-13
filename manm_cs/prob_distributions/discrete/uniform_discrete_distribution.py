@@ -10,4 +10,4 @@ class UniformDiscreteDistribution(DiscreteDistribution):
         super(UniformDiscreteDistribution, self).__init__(num_values=num_values)
 
     def sample(self, num_observations: int) -> np.array:
-        return np.random.randint(low=0, high=self.num_values - 1, size=num_observations)
+        return np.random.randint(low=0, high=self.num_values, size=num_observations)
