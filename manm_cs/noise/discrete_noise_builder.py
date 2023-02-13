@@ -15,9 +15,14 @@ class DiscreteNoiseBuilder:
         return self
 
     def build(self) -> DiscreteNoise:
+        # Portion transmitted to uniform noise, i.e., signal=0 for no noise and signal =1 for uniform noise
         signal = self.signal_to_noise_ratio
-        num_noise_classes = self.num_discrete_values - 1
-        avg_noise = (1 - signal) / num_noise_classes
-        probs = [signal] + [avg_noise for _ in range(num_noise_classes)]
+        
+        # Portions of unfiform noise over all discrete values
+        signal_noise_classes = signal / num_discrete_values
+        num_noise_classes = num_discrete_values - 1
+        
+        # Probabilities
+        probs = [(1-signal)+signal_noise_classes] + [(signal_noise_classes) for _ in range(num_noise_classes)]
 
         return DiscreteNoise(prob_distribution=CustomDiscreteDistribution(probs=probs))
