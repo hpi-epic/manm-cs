@@ -18,4 +18,4 @@ class CustomDiscreteDistribution(DiscreteDistribution):
         super(CustomDiscreteDistribution, self).__init__(num_values=len(self.probs))
 
     def sample(self, num_observations: int) -> np.array:
-        return np.random.choice(a=np.arange(num_values), size=num_observations), p=self.probs)
+        return np.random.choice(a=np.arange(num_values), size=num_observations, p=self.probs)
