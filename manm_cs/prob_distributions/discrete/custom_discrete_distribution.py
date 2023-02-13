@@ -18,7 +18,4 @@ class CustomDiscreteDistribution(DiscreteDistribution):
         super(CustomDiscreteDistribution, self).__init__(num_values=len(self.probs))
 
     def sample(self, num_observations: int) -> np.array:
-        bins = np.add.accumulate(self.probs)
-        # example bins = [0.8,0.9,1.0]
-        # index of interval random number is within 0 = [0,0.8] 1=[0.8,0.9] 2= [0.9,1]
-        return np.digitize(random_sample(num_observations), bins)
+        return np.random.choice(a=np.arange(num_values), size=num_observations), p=self.probs)
