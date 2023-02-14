@@ -19,8 +19,8 @@ class DiscreteNoiseBuilder:
         signal = self.signal_to_noise_ratio
         
         # Portions of unfiform noise over all discrete values
-        signal_noise_classes = signal / num_discrete_values
-        num_noise_classes = num_discrete_values - 1
+        signal_noise_classes = signal / self.num_discrete_values
+        num_noise_classes = self.num_discrete_values - 1
         
         # Probabilities
         probs = [(1-signal)+signal_noise_classes] + [(signal_noise_classes) for _ in range(num_noise_classes)]
