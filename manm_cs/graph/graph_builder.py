@@ -162,7 +162,7 @@ class GraphBuilder:
     def generate_discrete_variable(self, parents, node_idx) -> 'DiscreteVariable':
         num_values = np.random.randint(
             low=self.min_discrete_value_classes,
-            high=self.max_discrete_value_classes,
+            high=self.max_discrete_value_classes + 1,
             size=1)[0]
         noise = DiscreteNoiseBuilder() \
             .with_signal_to_noise_ratio(
