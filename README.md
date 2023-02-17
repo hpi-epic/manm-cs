@@ -91,7 +91,7 @@ python3 -m twine upload dist/*
 | edge_density                   | \[0, 1\]    | None | Defines the density of edges in the generated DAG.  |
 | discrete_node_ratio            | \[0, 1\]    | None | Defines the percentage of nodes that shall be of discrete type. Depending on its value the appropriate model (multivariate normal, mixed gaussian, discrete only) is chosen. |
 | num_samples                    | \[1, Inf)   | None | Defines the number of samples that shall be generated from the DAG. |
-| discrete_signal_to_noise_ratio | \[0, 1\]    | 0.9 | Defines the probability that no noise is added within the mixed additive noise model. |
+| discrete_signal_to_noise_ratio | \[0, 1\]    | 0.1 | Defines the ratio of uniform noise added within the mixed additive noise model, i.e., 0 = no noise, and 1 = uniform discrete noise  |
 | min_discrete_value_classes     | \[2, Inf)  | 3 | Defines the minimum number of discrete classes a discrete variable shall have. |
 | max_discrete_value_classes     | \[2, Inf)  | 4 | Defines the maximum number of discrete classes a discrete variable shall have. |
 | continuous_noise_std           | \[0, Inf)   | 1.0 | Defines the standard deviation of gaussian noise added to continuous variables. |
