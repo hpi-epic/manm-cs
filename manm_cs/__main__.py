@@ -101,7 +101,7 @@ def parse_args():
     parser.add_argument('--num_samples', type=type_in_range(int, 1, None), required=True,
                         help='Defines the number of samples that shall be generated from the DAG.')
     parser.add_argument('--discrete_signal_to_noise_ratio', type=type_in_range(float, 0.0, 1.0),
-                        required=False, default=0.1,
+                        required=False, default=0.5,
                         help='Defines the probability that no noise is added within the mixed additive noise model.')
     parser.add_argument('--min_discrete_value_classes', type=type_in_range(int, 2, None), default=3,
                         required=False,
